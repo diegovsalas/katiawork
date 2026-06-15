@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ 'Términos y Condiciones' if pagina == 'terminos' else 'Aviso de Privacidad' }} · katia.work</title>
+<link rel="icon" type="image/svg+xml" href="/static/img/katia-favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{--brand:#6d5dfb;--brand-2:#8b5cf6;--ink:#222642;--tenue:#6b6a83;--linea:#e9e6f3;--bg:#f6f5fb;--lav:#f4f1fd}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',-apple-system,sans-serif;color:var(--ink);background:var(--bg);line-height:1.65}
+  a{color:var(--brand);text-decoration:none;font-weight:600}
+  .top{background:#fff;border-bottom:1px solid var(--linea);padding:14px 0}
+  .wrap{max-width:780px;margin:0 auto;padding:0 22px}
+  .top .wrap{display:flex;align-items:center;justify-content:space-between}
+  .top img{height:28px}
+  .top a.back{font-size:14px}
+  .doc{background:#fff;border:1px solid var(--linea);border-radius:20px;padding:38px 34px;margin:30px auto 50px;
+       box-shadow:0 20px 50px -34px rgba(80,60,200,.25)}
+  .doc h1{font-size:27px;font-weight:900;letter-spacing:-.6px;margin-bottom:6px}
+  .doc .upd{color:var(--tenue);font-size:13.5px;margin-bottom:24px}
+  .doc h2{font-size:17.5px;font-weight:800;margin:26px 0 9px;color:var(--ink)}
+  .doc p{margin:9px 0;color:#3a3a4d}
+  .doc ul{margin:9px 0 9px 22px;color:#3a3a4d}
+  .doc li{margin:5px 0}
+  .doc .box{background:var(--lav);border:1px solid #e4dbfb;border-radius:14px;padding:16px 18px;margin:16px 0;font-size:14.5px}
+  .doc .box b{color:var(--ink)}
+  .nota{font-size:13px;color:var(--tenue);border-top:1px solid var(--linea);margin-top:30px;padding-top:16px}
+  footer{text-align:center;color:var(--tenue);font-size:13.5px;padding:0 22px 40px}
+</style>
+</head>
+<body>
+<div class="top"><div class="wrap">
+  <a href="/"><img src="/static/img/katia-logo.svg" alt="katia.work"></a>
+  <a class="back" href="/">← Volver al inicio</a>
+</div></div>
+
+<div class="wrap">
+<div class="doc">
+
+{% if pagina == 'terminos' %}
+  <h1>Términos y Condiciones de Uso</h1>
+  <div class="upd">Última actualización: 15 de junio de 2026</div>
+
+  <div class="box">
+    <b>Responsable del servicio:</b> Diego Velázquez (en lo sucesivo, «katia», «katia.work» o «nosotros»).<br>
+    <b>RFC:</b> VESD890823LT5 &nbsp;·&nbsp; <b>Contacto:</b> <a href="mailto:hola@katia.work">hola@katia.work</a>
+  </div>
+
+  <p>Estos Términos y Condiciones regulan el acceso y uso de la plataforma katia.work
+     (el «Servicio»), un constructor de tiendas en línea y herramientas de venta con
+     inteligencia artificial dirigido a personas y empresas en México. Al crear una
+     cuenta o usar el Servicio, aceptas estos Términos.</p>
+
+  <h2>1. Descripción del servicio</h2>
+  <p>katia permite crear y administrar una tienda o sitio en línea, catálogos de productos
+     y servicios, agenda de citas, registro de ventas (POS), reportes y captación de clientes.
+     Algunas funciones requieren un plan de pago.</p>
+
+  <h2>2. Cuenta y responsabilidad del usuario</h2>
+  <ul>
+    <li>Eres responsable de la veracidad de la información que registras y de mantener la
+        confidencialidad de tu contraseña.</li>
+    <li>Eres el único responsable del contenido, productos, precios y de las transacciones
+        que realices con tus clientes a través de tu tienda.</li>
+    <li>Te comprometes a no usar el Servicio para fines ilícitos, fraudulentos o que infrinjan
+        derechos de terceros.</li>
+  </ul>
+
+  <h2>3. Pagos a tus clientes</h2>
+  <p>Los cobros que recibes de tus clientes finales (por transferencia/SPEI, MercadoPago u
+     otros medios que configures) se procesan directamente en tus propias cuentas. katia
+     <b>no</b> retiene esos fondos ni cobra comisión por venta. katia no es parte de la
+     relación de compraventa entre tú y tus clientes.</p>
+
+  <h2>4. Planes y suscripción</h2>
+  <ul>
+    <li>El plan Gratis no requiere tarjeta. Los planes de pago (Tienda, Ventas Pro, Escala)
+        se cobran de forma mensual recurrente a través de Stripe.</li>
+    <li>Los precios se muestran en pesos mexicanos (MXN) más IVA cuando aplique.</li>
+    <li>Puedes cancelar en cualquier momento; el acceso al plan continúa hasta el fin del
+        periodo ya pagado. Salvo disposición legal aplicable, los pagos no son reembolsables.</li>
+  </ul>
+
+  <h2>5. Inteligencia artificial</h2>
+  <p>El Servicio usa IA para generar textos, sugerencias y logotipos. Estos resultados son
+     orientativos; eres responsable de revisarlos y de su uso final.</p>
+
+  <h2>6. Propiedad intelectual</h2>
+  <p>El contenido que tú subes es y sigue siendo tuyo. La plataforma, su software, marca y
+     diseño son propiedad de katia.work. No se permite copiar, revender o realizar ingeniería
+     inversa del Servicio.</p>
+
+  <h2>7. Disponibilidad y limitación de responsabilidad</h2>
+  <p>El Servicio se ofrece «tal cual». Procuramos su disponibilidad continua, pero no
+     garantizamos que esté libre de interrupciones o errores. En la medida permitida por la
+     ley, katia no será responsable por daños indirectos o pérdida de ingresos derivados del
+     uso o imposibilidad de uso del Servicio.</p>
+
+  <h2>8. Suspensión y terminación</h2>
+  <p>Podemos suspender o cancelar cuentas que incumplan estos Términos o la ley. Puedes
+     eliminar tu cuenta cuando quieras escribiendo a <a href="mailto:hola@katia.work">hola@katia.work</a>.</p>
+
+  <h2>9. Cambios y legislación aplicable</h2>
+  <p>Podemos actualizar estos Términos; los cambios se publicarán en esta página. Estos
+     Términos se rigen por las leyes de los Estados Unidos Mexicanos, con jurisdicción en los
+     tribunales competentes de México.</p>
+
+{% else %}
+  <h1>Aviso de Privacidad</h1>
+  <div class="upd">Última actualización: 15 de junio de 2026</div>
+
+  <div class="box">
+    <b>Responsable del tratamiento de datos personales:</b> Diego Velázquez («katia.work»).<br>
+    <b>RFC:</b> VESD890823LT5 &nbsp;·&nbsp; <b>Contacto:</b> <a href="mailto:hola@katia.work">hola@katia.work</a>
+  </div>
+
+  <p>En cumplimiento de la Ley Federal de Protección de Datos Personales en Posesión de los
+     Particulares (LFPDPPP), katia.work pone a tu disposición el presente Aviso de Privacidad.</p>
+
+  <h2>1. Datos que recabamos</h2>
+  <ul>
+    <li><b>De cuenta:</b> nombre, correo electrónico y contraseña (cifrada).</li>
+    <li><b>De tu negocio:</b> nombre comercial, productos, precios, imágenes y datos de contacto
+        que decidas publicar.</li>
+    <li><b>De operación:</b> ventas, clientes (leads) y citas que registres en la plataforma.</li>
+    <li><b>De facturación:</b> los pagos de suscripción se procesan mediante Stripe; katia no
+        almacena los datos completos de tu tarjeta.</li>
+  </ul>
+
+  <h2>2. Finalidades</h2>
+  <ul>
+    <li>Crear y operar tu cuenta y tu tienda en línea.</li>
+    <li>Procesar tu suscripción y brindarte soporte.</li>
+    <li>Mejorar el Servicio y enviarte avisos relacionados con tu cuenta.</li>
+  </ul>
+
+  <h2>3. Datos de los clientes de tu tienda</h2>
+  <p>Como dueño de una tienda en katia, tú eres responsable de los datos personales de tus
+     propios clientes que captures (nombre, teléfono, etc.). katia los aloja por tu cuenta como
+     encargado del tratamiento, y tú debes informar a tus clientes y tratar sus datos conforme
+     a la ley.</p>
+
+  <h2>4. Transferencias y proveedores</h2>
+  <p>Usamos proveedores que tratan datos por nuestra cuenta, como servicios de hospedaje en la
+     nube, Stripe (pagos), Resend (correos) y Google Gemini (funciones de IA). No vendemos tus
+     datos personales a terceros.</p>
+
+  <h2>5. Derechos ARCO</h2>
+  <p>Tienes derecho a Acceder, Rectificar, Cancelar u Oponerte al tratamiento de tus datos, así
+     como a revocar tu consentimiento. Para ejercerlos, escribe a
+     <a href="mailto:hola@katia.work">hola@katia.work</a> indicando tu solicitud y el correo de tu cuenta.</p>
+
+  <h2>6. Conservación y seguridad</h2>
+  <p>Conservamos tus datos mientras tu cuenta esté activa y el tiempo que exijan las
+     obligaciones legales. Aplicamos medidas de seguridad razonables (cifrado de contraseñas,
+     acceso restringido) para protegerlos.</p>
+
+  <h2>7. Cambios al aviso</h2>
+  <p>Cualquier modificación a este Aviso se publicará en esta misma página.</p>
+{% endif %}
+
+  <p class="nota">Este documento es un modelo general para katia.work. Te recomendamos que un
+     profesional legal lo revise y adapte a tu operación específica antes de operar comercialmente.</p>
+</div>
+</div>
+
+<footer>© katia.work · Hecho en México 🇲🇽 · <a href="mailto:hola@katia.work">hola@katia.work</a></footer>
+</body>
+</html>

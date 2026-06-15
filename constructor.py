@@ -445,6 +445,18 @@ def precios(request: Request):
     })
 
 
+# ------------------- Legal (términos y privacidad) -------------------
+
+@app.get("/terminos", response_class=HTMLResponse)
+def terminos(request: Request):
+    return templates.TemplateResponse(request, "constructor/legal.html", {"pagina": "terminos"})
+
+
+@app.get("/privacidad", response_class=HTMLResponse)
+def privacidad(request: Request):
+    return templates.TemplateResponse(request, "constructor/legal.html", {"pagina": "privacidad"})
+
+
 # ------------------- API de IA usada por el wizard -------------------
 
 @app.post("/api/ia/negocio")

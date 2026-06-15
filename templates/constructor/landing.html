@@ -211,16 +211,23 @@
   table.vs .no{color:#c44;font-weight:700}
   table.vs .head-kat{color:var(--brand);font-weight:800}
   @media(max-width:760px){
-    table.vs,table.vs thead,table.vs tbody,table.vs tr,table.vs th,table.vs td{display:block}
+    .vs-wrap{border:none;box-shadow:none;background:transparent;overflow:visible}
+    table.vs,table.vs tbody,table.vs tr,table.vs th,table.vs td{display:block}
     table.vs thead{display:none}
-    table.vs tr{border-bottom:1px solid var(--linea);padding:14px 0}
-    table.vs tr:last-child{border-bottom:none}
-    table.vs th.row{padding:14px 18px 4px;width:auto;font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--tenue)}
-    table.vs td{padding:6px 18px;border:none}
-    table.vs td::before{content:attr(data-label);display:block;font-size:11.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--tenue);font-weight:700;margin-bottom:2px}
-    table.vs td.kat::before{display:block;color:var(--brand);font-weight:800}
-    table.vs td.kat{background:transparent}
-    table.vs td.kat::after{content:'';display:block;height:3px;width:48px;border-radius:3px;background:linear-gradient(90deg,var(--brand-2),var(--brand));margin-top:6px}
+    /* cada categoría es una tarjeta */
+    table.vs tr{background:#fff;border:1px solid var(--linea);border-radius:16px;
+                padding:15px 15px 11px;margin-bottom:13px;box-shadow:0 12px 28px -24px rgba(80,60,200,.35)}
+    table.vs th.row{padding:0 0 10px;width:auto;font-size:15px;font-weight:800;color:var(--ink);
+                    text-transform:none;letter-spacing:0;border-bottom:1px solid var(--linea);margin-bottom:9px}
+    /* cada proveedor: etiqueta a la izquierda, valor a la derecha */
+    table.vs td{padding:7px 0;border:none;display:flex;align-items:center;justify-content:space-between;gap:14px;text-align:right}
+    table.vs td::before{content:attr(data-label);font-size:12.5px;color:var(--tenue);
+                        font-weight:700;text-transform:none;letter-spacing:0;margin:0;flex-shrink:0;text-align:left}
+    /* fila katia destacada con su marca */
+    table.vs td.kat{background:linear-gradient(90deg,#f4f0fe,#fbfaff);border:1px solid #e4dbfb;
+                    border-radius:11px;padding:9px 12px;margin-top:7px;font-weight:800;color:var(--ink)}
+    table.vs td.kat::before{content:"✦ katia.work";color:var(--brand);font-weight:800}
+    table.vs td.kat::after{content:none}
   }
 
   /* Pricing teaser */
@@ -280,13 +287,17 @@
     .hero .cta-row{justify-content:center}
     .hero .trust{justify-content:center}
     .hero p.lead{margin-left:auto;margin-right:auto}
-    /* En móvil/tablet las tarjetas flotantes se apilan 1·2·3·4 (sin empalmarse) */
-    .hero-art{position:relative;height:auto;transform:none;display:flex;flex-direction:column;
-              gap:20px;max-width:330px;margin:6px auto 0;overflow:visible}
-    .card-f{position:static!important;width:100%!important;
-            top:auto;left:auto;right:auto;bottom:auto;animation:none}
-    .mascot,.hero-art .arc{display:none}
-    .c4 .done-check{right:-8px;bottom:-8px}
+    /* En móvil: tarjetas flotantes escalonadas (dinámico como en PC, compacto) */
+    .hero-art{position:relative;height:auto;transform:none;display:block;
+              max-width:360px;margin:4px auto 0;overflow:visible}
+    .card-f{position:relative!important;top:auto;left:auto;right:auto;bottom:auto;
+            animation:float 7s ease-in-out infinite}     /* conserva el flotar */
+    .c1{width:72%!important;margin:0 auto 0 0;z-index:3}
+    .c2{width:54%!important;margin:-24px 10px 0 auto;z-index:5}
+    .c3{width:80%!important;margin:-16px auto 0 6px;z-index:4}
+    .c4{width:70%!important;margin:-18px 16px 0 auto;z-index:6}
+    .mascot{display:none}
+    .hero-art .arc{display:none}
     .pasos{grid-template-columns:1fr 1fr}
     .feats{grid-template-columns:1fr}
     .planes-mini{grid-template-columns:1fr 1fr}
