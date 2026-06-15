@@ -177,7 +177,16 @@ os.makedirs(BORRADORES_DIR, exist_ok=True)
 
 app = FastAPI(title="katia.work — Constructor de Tiendas con IA")
 _SECRET = os.getenv("SESSION_SECRET_KEY") or secrets.token_urlsafe(32)
-app.add_middleware(SessionMiddleware, secret_key=_SECRET, max_age=60 * 60 * 24 * 30)  # 30 días
+# En producción la cookie de sesión se comparte en *.katia.work (para que el
+# dueño logueado en katia.work entre a su panel en cliente.katia.work) y va solo
+# por HTTPS. En local (localhost) se queda como cookie de host por HTTP.
+_PROD = bool(DOMINIO_BASE and DOMINIO_BASE != "localhost")
+app.add_middleware(
+    SessionMiddleware, secret_key=_SECRET, max_age=60 * 60 * 24 * 30,  # 30 días
+    same_site="lax",
+    domain=f".{DOMINIO_BASE}" if _PROD else None,
+    https_only=_PROD,
+)
 app.mount("/static", StaticFiles(directory="static"), name="static")          # assets del repo
 app.mount("/u", StaticFiles(directory=UPLOADS_DIR), name="uploads")            # imágenes subidas (disco)
 templates = Jinja2Templates(directory="templates")
