@@ -102,6 +102,22 @@ def actualizar(email: str, cambios: dict):
     return data[email]
 
 
+def listar() -> list:
+    """Todos los usuarios (sin el hash de contraseña). Para el panel super-admin."""
+    return [publico(u) for u in _cargar().values()]
+
+
+def eliminar(email: str) -> bool:
+    """Borra una cuenta. Devuelve True si existía."""
+    data = _cargar()
+    email = (email or "").lower().strip()
+    if email not in data:
+        return False
+    del data[email]
+    _guardar(data)
+    return True
+
+
 def autenticar(email: str, password: str):
     """Devuelve (usuario, error)."""
     u = buscar(email)
@@ -122,4 +138,5 @@ def publico(usuario: dict) -> dict:
         "miembro_id": usuario.get("miembro_id", ""),
         "plan": usuario.get("plan", "gratis"),
         "sub_estado": usuario.get("sub_estado", ""),
+        "creado": usuario.get("creado", ""),
     }

@@ -175,6 +175,19 @@ def actualizar_tienda(slug: str, cambios: dict):
     return tienda
 
 
+def eliminar_tienda(slug: str) -> bool:
+    """Borra la tienda (su JSON y su carpeta de imágenes). Devuelve True si existía."""
+    import shutil
+    ruta = _ruta(slug)
+    if not os.path.exists(ruta):
+        return False
+    os.remove(ruta)
+    carpeta = os.path.join(UPLOADS_DIR, slug)
+    if os.path.isdir(carpeta):
+        shutil.rmtree(carpeta, ignore_errors=True)
+    return True
+
+
 def _guardar(tienda: dict):
     _asegurar_dirs()
     with open(_ruta(tienda["slug"]), "w", encoding="utf-8") as f:

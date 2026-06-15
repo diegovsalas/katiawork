@@ -35,6 +35,8 @@ DOMINIO_BASE = os.getenv("DOMINIO_BASE", "localhost")
 KATIA_BASE_URL = os.getenv("KATIA_BASE_URL", "http://localhost:8001")
 # Token para el cron de recordatorios (cron-job.org hace GET/POST con ?token=).
 CRON_TOKEN = os.getenv("CRON_TOKEN", "")
+# Correos con acceso al panel super-admin de plataforma (/admin), separados por coma.
+ADMIN_EMAILS = {e.strip().lower() for e in os.getenv("ADMIN_EMAILS", "").split(",") if e.strip()}
 
 # Planes de suscripción de katia. price_id viene de Stripe (env). Si no hay
 # Stripe configurado, el checkout entra en "modo demo" (activa sin cobrar).
@@ -138,6 +140,24 @@ def _pago_online(tienda: dict) -> bool:
     return permite(_plan_de_tienda(tienda), "checkout_online") and bool(pg.get("spei_activo") or pg.get("mp_activo"))
 
 
+def _suspendida_resp(tienda: dict):
+    """Si la tienda está suspendida, devuelve una página 503; si no, None."""
+    if not tienda.get("suspendida"):
+        return None
+    html = (
+        "<!doctype html><html lang=es><head><meta charset=utf-8>"
+        "<meta name=viewport content='width=device-width,initial-scale=1'>"
+        "<title>Tienda no disponible</title>"
+        "<style>body{font-family:system-ui,-apple-system,sans-serif;background:#f6f5fb;color:#222642;"
+        "display:grid;place-items:center;height:100vh;margin:0;text-align:center;padding:24px}"
+        ".c{max-width:440px}.c h1{font-size:22px;margin:0 0 8px}.c p{color:#6b6a83;line-height:1.6}</style>"
+        "</head><body><div class=c><h1>Esta tienda no está disponible por ahora</h1>"
+        "<p>El negocio tiene su tienda en pausa temporalmente. Si eres el dueño, "
+        "ingresa a tu panel para reactivarla.</p></div></body></html>"
+    )
+    return HTMLResponse(html, status_code=503)
+
+
 def _gate(tienda: dict, cap: str):
     """Lanza 402 si el plan de la tienda no incluye la capacidad."""
     plan = _plan_de_tienda(tienda)
@@ -171,6 +191,12 @@ def _usuario_actual(request: Request):
         return None
     u = usuarios.buscar(email)
     return usuarios.publico(u) if u else None
+
+
+def _es_superadmin(request: Request) -> bool:
+    """True si el usuario logueado está en ADMIN_EMAILS (super-admin de plataforma)."""
+    email = (request.session.get("uid") or "").lower().strip()
+    return bool(email) and email in ADMIN_EMAILS
 
 
 @app.on_event("startup")
@@ -227,6 +253,9 @@ def home(request: Request):
     if slug:
         tienda = tiendas.obtener_tienda(slug)
         if tienda and tienda.get("publicada", True):
+            susp = _suspendida_resp(tienda)
+            if susp:
+                return susp
             return templates.TemplateResponse(
                 request, "constructor/tienda.html", _ctx_tienda(request, tienda, ruta_base="")
             )
@@ -722,6 +751,9 @@ def storefront_local(request: Request, slug: str):
     tienda = tiendas.obtener_tienda(slug)
     if not tienda:
         raise HTTPException(status_code=404, detail="Tienda no encontrada")
+    susp = _suspendida_resp(tienda)
+    if susp:
+        return susp
     return templates.TemplateResponse(
         request, "constructor/tienda.html", _ctx_tienda(request, tienda, ruta_base=f"/t/{slug}")
     )
@@ -737,6 +769,9 @@ def _buscar_producto(tienda: dict, producto_id: str):
 
 
 def _render_producto(request: Request, tienda: dict, producto_id: str, ruta_base: str):
+    susp = _suspendida_resp(tienda)
+    if susp:
+        return susp
     p = _buscar_producto(tienda, producto_id)
     if not p:
         return RedirectResponse(url=(ruta_base or "/"), status_code=303)
@@ -2010,9 +2045,123 @@ def cron_recordatorios(token: str = ""):
     })
 
 
+# ------------------- Panel SUPER-ADMIN de plataforma (/admin) -------------------
+
+def _guard_admin(request: Request):
+    """Bloquea si no es super-admin (404 para no revelar la ruta)."""
+    if not _es_superadmin(request):
+        raise HTTPException(status_code=404, detail="No encontrado")
+
+
+def _admin_contexto():
+    """Métricas globales + listados para el panel super-admin."""
+    us = usuarios.listar()
+    ts = tiendas.listar_tiendas()
+    por_email = {u["email"]: u for u in us}
+    precios = {k: v["precio"] for k, v in PLANES.items()}
+
+    # Conteo de cuentas por plan y MRR (solo suscripciones pagadas reales)
+    por_plan = {"gratis": 0, "tienda": 0, "pro": 0, "escala": 0}
+    mrr = 0
+    pagando = 0
+    demo = 0
+    for u in us:
+        if u.get("rol") == "especialista":
+            continue
+        plan = u.get("plan", "gratis")
+        por_plan[plan] = por_plan.get(plan, 0) + 1
+        est = u.get("sub_estado", "")
+        if est in ("active", "trialing") and plan != "gratis":
+            mrr += precios.get(plan, 0)
+            pagando += 1
+        elif est == "active_demo" and plan != "gratis":
+            demo += 1
+
+    # Enriquecer tiendas con datos del dueño y conteos
+    filas = []
+    for t in ts:
+        owner = por_email.get((t.get("owner_email") or "").lower(), {})
+        filas.append({
+            "slug": t.get("slug", ""),
+            "nombre": t.get("nombre", ""),
+            "owner_email": t.get("owner_email", ""),
+            "owner_plan": owner.get("plan", "gratis"),
+            "productos": len(t.get("productos", [])),
+            "servicios": len(t.get("servicios", [])),
+            "movimientos": len(t.get("movimientos", [])),
+            "suspendida": bool(t.get("suspendida")),
+            "creada": (t.get("creada") or t.get("creado") or "")[:10],
+        })
+    filas.sort(key=lambda x: x["creada"], reverse=True)
+
+    duenos = [u for u in us if u.get("rol") != "especialista"]
+    duenos.sort(key=lambda x: x.get("creado", ""), reverse=True)
+
+    return {
+        "total_tiendas": len(ts),
+        "total_usuarios": len(us),
+        "total_duenos": len(duenos),
+        "total_especialistas": len(us) - len(duenos),
+        "suspendidas": sum(1 for f in filas if f["suspendida"]),
+        "mrr": mrr,
+        "pagando": pagando,
+        "demo": demo,
+        "por_plan": por_plan,
+        "tiendas": filas,
+        "usuarios": duenos,
+        "planes": PLANES,
+    }
+
+
+@app.get("/admin", response_class=HTMLResponse)
+def admin_panel(request: Request):
+    _guard_admin(request)
+    ctx = _admin_contexto()
+    ctx["request"] = request
+    ctx["yo"] = request.session.get("uid", "")
+    return templates.TemplateResponse(request, "constructor/admin.html", ctx)
+
+
+@app.post("/admin/tienda/{slug}/suspender")
+def admin_suspender_tienda(request: Request, slug: str):
+    _guard_admin(request)
+    t = tiendas.obtener_tienda(slug)
+    if t:
+        tiendas.actualizar_tienda(slug, {"suspendida": not bool(t.get("suspendida"))})
+    return RedirectResponse(url="/admin", status_code=303)
+
+
+@app.post("/admin/tienda/{slug}/eliminar")
+def admin_eliminar_tienda(request: Request, slug: str):
+    _guard_admin(request)
+    tiendas.eliminar_tienda(slug)
+    return RedirectResponse(url="/admin", status_code=303)
+
+
+@app.post("/admin/usuario/{email}/plan")
+def admin_cambiar_plan(request: Request, email: str, plan: str = Form(...)):
+    _guard_admin(request)
+    if plan in PLANES:
+        estado = "active" if plan != "gratis" else "canceled"
+        usuarios.actualizar(email, {"plan": plan, "sub_estado": estado})
+    return RedirectResponse(url="/admin", status_code=303)
+
+
+@app.post("/admin/usuario/{email}/eliminar")
+def admin_eliminar_usuario(request: Request, email: str):
+    _guard_admin(request)
+    # No permitir que un super-admin se borre a sí mismo por accidente
+    if email.lower().strip() != (request.session.get("uid") or "").lower().strip():
+        usuarios.eliminar(email)
+    return RedirectResponse(url="/admin", status_code=303)
+
+
 # ------------------- A) Checkout online (storefront) -------------------
 
 def _render_checkout(request: Request, tienda: dict, producto_id: str, ruta_base: str):
+    susp = _suspendida_resp(tienda)
+    if susp:
+        return susp
     if not _pago_online(tienda):
         return RedirectResponse(url=(ruta_base or "/"), status_code=303)
     p = tiendas.buscar_producto(tienda, producto_id)
@@ -2067,7 +2216,7 @@ def _mp_init_point(token: str, items: list, moneda: str, back_url: str):
 async def api_pedido(slug: str, request: Request):
     """Checkout público: crea el pedido. SPEI → instrucciones; MP → link de pago."""
     tienda = tiendas.obtener_tienda(slug)
-    if not tienda or not _pago_online(tienda):
+    if not tienda or not _pago_online(tienda) or tienda.get("suspendida"):
         raise HTTPException(status_code=404, detail="Tienda no encontrada")
     b = await request.json()
     p = tiendas.buscar_producto(tienda, b.get("producto_id", ""))

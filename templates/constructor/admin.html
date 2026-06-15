@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel maestro · katia</title>
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/svg+xml" href="/static/img/katia-favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{--brand:#6d5dfb;--brand-2:#8b5cf6;--ink:#222642;--tenue:#6b6a83;--linea:#e9e6f3;
+        --lav:#f4f1fd;--bg:#f6f5fb;--verde:#16a34a;--rojo:#dc2626;--ambar:#f59e0b}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',-apple-system,sans-serif;color:var(--ink);background:var(--bg);line-height:1.5}
+  a{color:inherit;text-decoration:none}
+  .top{background:#fff;border-bottom:1px solid var(--linea);height:62px;display:flex;align-items:center;
+       justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:10}
+  .top .l{display:flex;align-items:center;gap:12px;font-weight:800}
+  .top .l img{height:28px}
+  .top .badge{background:var(--ink);color:#fff;font-size:11px;font-weight:800;padding:3px 9px;border-radius:99px;letter-spacing:.4px}
+  .top .r{display:flex;align-items:center;gap:14px;font-size:13.5px;color:var(--tenue)}
+  .wrap{max-width:1280px;margin:0 auto;padding:24px}
+  /* Stats */
+  .stats{display:grid;grid-template-columns:repeat(6,1fr);gap:13px;margin-bottom:14px}
+  .stat{background:#fff;border:1px solid var(--linea);border-radius:15px;padding:15px 17px}
+  .stat .n{font-size:25px;font-weight:900;letter-spacing:-1px}
+  .stat .l{font-size:12px;color:var(--tenue);font-weight:600;margin-top:2px}
+  .stat.mrr{background:linear-gradient(120deg,var(--brand-2),var(--brand));color:#fff;border:none}
+  .stat.mrr .l{color:rgba(255,255,255,.9)}
+  .planes{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:22px}
+  .chip{background:#fff;border:1px solid var(--linea);border-radius:11px;padding:9px 15px;font-size:13.5px;font-weight:700}
+  .chip b{color:var(--brand);font-size:16px;margin-left:5px}
+  h2{font-size:16px;font-weight:800;margin:24px 0 12px;display:flex;align-items:center;gap:9px}
+  .card{background:#fff;border:1px solid var(--linea);border-radius:16px;overflow:hidden}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th{text-align:left;font-size:11.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--tenue);
+     font-weight:700;padding:12px 14px;border-bottom:1px solid var(--linea);background:#faf9fe}
+  td{padding:12px 14px;border-bottom:1px solid #f2f0fa;vertical-align:middle}
+  tr:last-child td{border-bottom:none}
+  .pill{font-size:11px;font-weight:800;padding:3px 9px;border-radius:99px;text-transform:capitalize}
+  .pl-gratis{background:#eef0f5;color:#6b7280}
+  .pl-tienda{background:#e0f2fe;color:#0369a1}
+  .pl-pro{background:var(--lav);color:var(--brand)}
+  .pl-escala{background:#fef3c7;color:#b45309}
+  .est-active{color:var(--verde);font-weight:700}
+  .est-demo{color:var(--ambar);font-weight:700}
+  .est-none{color:var(--tenue)}
+  .susp{background:#fde8e8;color:var(--rojo);font-size:11px;font-weight:800;padding:3px 9px;border-radius:99px}
+  .ok-dot{color:var(--verde);font-weight:800;font-size:11px}
+  .acts{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+  .btn{border:1px solid var(--linea);background:#fff;border-radius:9px;padding:7px 11px;font:inherit;font-size:12.5px;
+       font-weight:700;cursor:pointer;color:var(--ink)}
+  .btn:hover{border-color:var(--brand);color:var(--brand)}
+  .btn.warn:hover{border-color:var(--ambar);color:var(--ambar)}
+  .btn.danger:hover{border-color:var(--rojo);color:var(--rojo)}
+  form.inline{display:inline-flex;gap:6px;align-items:center;margin:0}
+  select{border:1px solid var(--linea);border-radius:9px;padding:6px 9px;font:inherit;font-size:12.5px;background:#fff}
+  .mono{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--tenue)}
+  .muted{color:var(--tenue)}
+  .vacio{padding:30px;text-align:center;color:var(--tenue)}
+  @media(max-width:980px){.stats{grid-template-columns:1fr 1fr 1fr}
+    table{font-size:12.5px}.hide-sm{display:none}}
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="l"><img src="/static/img/katia-logo.svg" alt="katia"> <span class="badge">PANEL MAESTRO</span></div>
+  <div class="r"><span>{{ yo }}</span><a class="btn" href="/logout">Salir</a></div>
+</div>
+
+<div class="wrap">
+  <!-- Métricas -->
+  <div class="stats">
+    <div class="stat mrr"><div class="n">${{ '{:,.0f}'.format(mrr) }}</div><div class="l">MRR (MXN/mes)</div></div>
+    <div class="stat"><div class="n">{{ pagando }}</div><div class="l">Suscriptores pagando</div></div>
+    <div class="stat"><div class="n">{{ total_tiendas }}</div><div class="l">Tiendas</div></div>
+    <div class="stat"><div class="n">{{ total_duenos }}</div><div class="l">Cuentas dueño</div></div>
+    <div class="stat"><div class="n">{{ demo }}</div><div class="l">Planes demo</div></div>
+    <div class="stat"><div class="n">{{ suspendidas }}</div><div class="l">Suspendidas</div></div>
+  </div>
+
+  <div class="planes">
+    <div class="chip">Gratis <b>{{ por_plan.gratis }}</b></div>
+    <div class="chip">Tienda <b>{{ por_plan.tienda }}</b></div>
+    <div class="chip">Ventas Pro <b>{{ por_plan.pro }}</b></div>
+    <div class="chip">Escala <b>{{ por_plan.escala }}</b></div>
+    <div class="chip muted">Especialistas <b>{{ total_especialistas }}</b></div>
+  </div>
+
+  <!-- Tiendas -->
+  <h2>🏪 Tiendas ({{ total_tiendas }})</h2>
+  <div class="card">
+    {% if tiendas %}
+    <table>
+      <thead><tr>
+        <th>Tienda</th><th>Dueño</th><th>Plan</th><th class="hide-sm">Catálogo</th>
+        <th class="hide-sm">Creada</th><th>Estado</th><th>Acciones</th>
+      </tr></thead>
+      <tbody>
+        {% for t in tiendas %}
+        <tr>
+          <td><b>{{ t.nombre }}</b><br><span class="mono">/t/{{ t.slug }}</span></td>
+          <td class="muted">{{ t.owner_email or '—' }}</td>
+          <td><span class="pill pl-{{ t.owner_plan }}">{{ t.owner_plan }}</span></td>
+          <td class="hide-sm muted">{{ t.productos }} prod · {{ t.servicios }} serv · {{ t.movimientos }} mov</td>
+          <td class="hide-sm muted">{{ t.creada or '—' }}</td>
+          <td>{% if t.suspendida %}<span class="susp">Suspendida</span>{% else %}<span class="ok-dot">● Activa</span>{% endif %}</td>
+          <td><div class="acts">
+            <a class="btn" href="/t/{{ t.slug }}" target="_blank">Ver</a>
+            <form class="inline" method="post" action="/admin/tienda/{{ t.slug }}/suspender">
+              <button class="btn warn" type="submit">{{ 'Reactivar' if t.suspendida else 'Suspender' }}</button>
+            </form>
+            <form class="inline" method="post" action="/admin/tienda/{{ t.slug }}/eliminar"
+                  onsubmit="return confirm('¿Eliminar la tienda «{{ t.nombre }}» y todas sus imágenes? Esto no se puede deshacer.')">
+              <button class="btn danger" type="submit">Eliminar</button>
+            </form>
+          </div></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}<div class="vacio">Aún no hay tiendas creadas.</div>{% endif %}
+  </div>
+
+  <!-- Cuentas -->
+  <h2>👤 Cuentas de dueño ({{ total_duenos }})</h2>
+  <div class="card">
+    {% if usuarios %}
+    <table>
+      <thead><tr>
+        <th>Correo</th><th class="hide-sm">Nombre</th><th>Plan</th><th>Suscripción</th>
+        <th class="hide-sm">Alta</th><th>Acciones</th>
+      </tr></thead>
+      <tbody>
+        {% for u in usuarios %}
+        <tr>
+          <td><b>{{ u.email }}</b></td>
+          <td class="hide-sm muted">{{ u.nombre or '—' }}</td>
+          <td><span class="pill pl-{{ u.plan }}">{{ u.plan }}</span></td>
+          <td>
+            {% if u.sub_estado in ('active','trialing') %}<span class="est-active">● activa</span>
+            {% elif u.sub_estado == 'active_demo' %}<span class="est-demo">● demo</span>
+            {% elif u.sub_estado %}<span class="est-none">{{ u.sub_estado }}</span>
+            {% else %}<span class="est-none">—</span>{% endif %}
+          </td>
+          <td class="hide-sm muted">{{ (u.creado or '')[:10] or '—' }}</td>
+          <td><div class="acts">
+            <form class="inline" method="post" action="/admin/usuario/{{ u.email }}/plan">
+              <select name="plan">
+                {% for k, v in planes.items() %}
+                <option value="{{ k }}" {{ 'selected' if k == u.plan else '' }}>{{ v.nombre }}</option>
+                {% endfor %}
+              </select>
+              <button class="btn" type="submit">Aplicar</button>
+            </form>
+            {% if u.email != yo %}
+            <form class="inline" method="post" action="/admin/usuario/{{ u.email }}/eliminar"
+                  onsubmit="return confirm('¿Eliminar la cuenta {{ u.email }}? (No borra sus tiendas.)')">
+              <button class="btn danger" type="submit">Eliminar</button>
+            </form>
+            {% endif %}
+          </div></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}<div class="vacio">Aún no hay cuentas registradas.</div>{% endif %}
+  </div>
+
+  <p class="muted" style="margin-top:22px;font-size:12.5px">
+    Cambiar el plan aquí es un override manual (no cobra por Stripe). El MRR solo cuenta
+    suscripciones con estado <b>activa/trialing</b> en planes de pago.
+  </p>
+</div>
+</body>
+</html>
