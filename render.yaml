@@ -52,6 +52,11 @@ services:
       - key: CRON_TOKEN
         generateValue: true
 
+      # Correos con acceso al panel super-admin (/admin), separados por coma.
+      # Ej.: "da.velazquez89@gmail.com". Configúralo en el dashboard de Render.
+      - key: ADMIN_EMAILS
+        sync: false
+
       # --- IA Gemini (opcional; sin llave funciona en modo plantilla) ---
       - key: GEMINI_API_KEY
         sync: false
