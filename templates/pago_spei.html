@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tu transferencia SPEI | Outlet Momatt México</title>
+    <meta name="robots" content="noindex">
+    <link rel="icon" type="image/png" href="/static/img/favicon.png">
+    <link rel="stylesheet" href="/static/estilos.css">
+    {% include "partials/_ga.html" %}
+</head>
+<body>
+    <header class="topbar">
+        <a href="/" class="logo"><img src="/static/img/logo-texto.png" alt="Outlet Momatt México"></a>
+        <a href="/carrito" class="cart-link">🛒 Carrito</a>
+    </header>
+
+    <main class="pago-page">
+        <h1>¡Gracias, {{ nombre }}!</h1>
+        <p>Tu pedido <strong>{{ pedido }}</strong> espera tu transferencia SPEI. Paga desde tu app bancaria con estos datos:</p>
+
+        <div class="datos-pago">
+            <div class="dato"><span>CLABE</span><strong class="copiable">{{ datos.clabe }}</strong></div>
+            {% if datos.banco %}<div class="dato"><span>Banco</span><strong>{{ datos.banco }}</strong></div>{% endif %}
+            {% if datos.referencia %}<div class="dato"><span>Referencia</span><strong class="copiable">{{ datos.referencia }}</strong></div>{% endif %}
+            {% if datos.agreement %}<div class="dato"><span>Convenio</span><strong class="copiable">{{ datos.agreement }}</strong></div>{% endif %}
+            <div class="dato total-pago"><span>Monto a pagar</span><strong>${{ "{:,.0f}".format(total) }} MXN</strong></div>
+        </div>
+
+        <p class="nota">
+            En cuanto tu banco procese la transferencia, recibirás la confirmación
+            de tu pedido <strong>{{ pedido }}</strong>. La CLABE es única para este pago.
+        </p>
+
+        <a href="/" class="btn-pagar">Volver a la tienda</a>
+    </main>
+
+    <footer class="footer"><p>© Outlet Momatt México</p></footer>
+</body>
+</html>

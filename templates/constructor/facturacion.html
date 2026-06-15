@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi plan · katia</title>
+<link rel="icon" type="image/svg+xml" href="/static/img/katia-favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{--brand:#6d5dfb;--brand-2:#8b5cf6;--violeta:#a78bfa;--mint:#63d9ae;--ink:#222642;--tenue:#6b6a83;--linea:#ece8f7;--lav:#f4f1fd;--bg:#f6f5fb;--verde:#16a34a}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased}
+  a{text-decoration:none;color:inherit}
+  .top{background:#fff;border-bottom:1px solid var(--linea);height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:10}
+  .top .logo img{height:32px;display:block}
+  .top .r{display:flex;gap:16px;align-items:center;font-size:14px}
+  .top .r a:hover{color:var(--brand)}
+  .wrap{max-width:1040px;margin:0 auto;padding:30px 24px}
+  h1{font-size:26px;font-weight:800;letter-spacing:-.8px}
+  .sub{color:var(--tenue);font-size:15px;margin:4px 0 24px}
+  .flash{background:#ecfdf5;border:1px solid #a7f3d0;color:#047857;padding:13px 18px;border-radius:13px;margin-bottom:20px;font-weight:600;font-size:14.5px}
+  .flash.demo{background:#fff8ec;border-color:#fde6b8;color:#8a5a12}
+  .actual{background:linear-gradient(120deg,var(--brand-2),var(--brand));color:#fff;border-radius:18px;padding:22px 26px;margin-bottom:26px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px}
+  .actual .l{font-size:13px;opacity:.9;font-weight:600}.actual .n{font-size:26px;font-weight:900;letter-spacing:-.6px}
+  .actual .badge{background:rgba(255,255,255,.2);padding:5px 12px;border-radius:99px;font-size:12.5px;font-weight:700}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+  .plan{background:#fff;border:1px solid var(--linea);border-radius:18px;padding:22px;display:flex;flex-direction:column}
+  .plan.on{border:2px solid var(--brand);box-shadow:0 14px 34px -18px rgba(109,93,251,.4)}
+  .plan h3{font-size:17px;font-weight:800}
+  .plan .precio{font-size:30px;font-weight:900;letter-spacing:-1.5px;margin:8px 0 2px}
+  .plan .precio small{font-size:13px;color:var(--tenue);font-weight:600}
+  .plan .feat{font-size:13px;color:var(--tenue);margin:14px 0;flex:1;line-height:1.5}
+  .btn{width:100%;border:none;font-weight:700;font-size:14px;padding:12px;border-radius:11px;cursor:pointer;background:linear-gradient(120deg,var(--brand-2),var(--brand));color:#fff}
+  .btn.ghost{background:#fff;color:var(--ink);border:1.5px solid var(--linea)}
+  .btn.actualp{background:var(--lav);color:var(--brand);cursor:default}
+  .note{color:var(--tenue);font-size:13px;text-align:center;margin-top:22px}
+  .portal{margin-top:18px;text-align:center}
+  .portal button{background:#fff;border:1.5px solid var(--linea);color:var(--ink);font-weight:700;padding:11px 22px;border-radius:11px;cursor:pointer}
+  @media(max-width:860px){.grid{grid-template-columns:1fr 1fr}}
+  @media(max-width:520px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="top">
+  <a class="logo" href="/"><img src="/static/img/katia-logo.svg" alt="katia.work"></a>
+  <div class="r"><a href="/mis-tiendas">Mis tiendas</a><a href="/logout">Salir</a></div>
+</div>
+
+<div class="wrap">
+  <h1>Mi plan</h1>
+  <p class="sub">Elige el plan que se ajusta a tu negocio. Cambia o cancela cuando quieras.</p>
+
+  {% if ok=='1' %}<div class="flash">✓ ¡Listo! Tu suscripción quedó activa.</div>{% endif %}
+  {% if ok=='demo' %}<div class="flash demo">✓ Plan activado en <b>modo demo</b> (sin cobro real — Stripe no está configurado en este entorno).</div>{% endif %}
+  {% if ok=='gratis' %}<div class="flash">Tu plan volvió a <b>Gratis</b>.</div>{% endif %}
+  {% if ok=='cancel' %}<div class="flash demo">Cancelaste el proceso de pago. No se hizo ningún cargo.</div>{% endif %}
+
+  {% set actual = planes[plan_actual] %}
+  <div class="actual">
+    <div><div class="l">Tu plan actual</div><div class="n">{{ actual.nombre }}</div></div>
+    <div style="display:flex;gap:10px;align-items:center">
+      {% if sub_estado=='active_demo' %}<span class="badge">modo demo</span>{% elif sub_estado %}<span class="badge">{{ sub_estado }}</span>{% endif %}
+      {% if tiene_stripe and stripe_activo %}<button class="btn ghost" id="btnPortal" style="width:auto;padding:9px 16px">Administrar pago</button>{% endif %}
+    </div>
+  </div>
+
+  <div class="grid">
+    {% set feats = {
+      'gratis':'Tienda en subdominio · IA · pedidos por WhatsApp · marca katia',
+      'tienda':'Todo lo de Gratis + dominio propio · sin marca · 0% comisión · SEO',
+      'pro':'Todo lo de Tienda + CRM de leads · recordatorios · caja y reportes',
+      'escala':'Todo lo de Pro + multi-sucursal · equipo con logins · facturación'
+    } %}
+    {% for key, p in planes.items() %}
+    <div class="plan {{ 'on' if key==plan_actual else '' }}">
+      <h3>{{ p.nombre }}</h3>
+      <div class="precio">${{ "{:,.0f}".format(p.precio) }}<small>{{ '/mes' if p.precio else '' }}</small></div>
+      <div class="feat">{{ feats[key] }}</div>
+      {% if key==plan_actual %}
+        <button class="btn actualp">Tu plan actual</button>
+      {% elif key=='gratis' %}
+        <button class="btn ghost" data-plan="gratis">Bajar a Gratis</button>
+      {% else %}
+        <button class="btn" data-plan="{{ key }}">Elegir {{ p.nombre }}</button>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+
+  <p class="note">
+    {% if stripe_activo %}Pagos seguros con Stripe. Cancela cuando quieras desde "Administrar pago".
+    {% else %}⚙️ Stripe no está configurado en este entorno: los cambios de plan se aplican en <b>modo demo</b> (sin cobro). En producción se cobra con Stripe Checkout.{% endif %}
+  </p>
+</div>
+
+<script>
+document.querySelectorAll('[data-plan]').forEach(b=>b.onclick=async()=>{
+  b.disabled=true; const orig=b.textContent; b.textContent='Procesando…';
+  try{
+    const r=await fetch('/api/suscripcion/checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({plan:b.dataset.plan})});
+    const d=await r.json();
+    if(d.url) location.href=d.url; else { alert(d.detail||'No se pudo procesar.'); b.disabled=false; b.textContent=orig; }
+  }catch(e){ alert('Error de conexión.'); b.disabled=false; b.textContent=orig; }
+});
+const bp=document.getElementById('btnPortal');
+if(bp) bp.onclick=async()=>{
+  const r=await fetch('/api/suscripcion/portal',{method:'POST'}); const d=await r.json();
+  if(d.url) location.href=d.url; else alert(d.detail||'No disponible.');
+};
+</script>
+</body>
+</html>

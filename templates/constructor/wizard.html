@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crea tu tienda — katia</title>
+<link rel="icon" type="image/svg+xml" href="/static/img/katia-favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --brand:#6d5dfb; --brand-2:#8b5cf6; --brand-osc:#5a46d6; --violeta:#a78bfa; --mint:#63d9ae;
+    --ink:#222642; --tinta:#222642; --tenue:#6b6a83; --linea:#ece8f7; --ok:#22c55e;
+    --lav:#f4f1fd; --lav-2:#ebe5fb;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);
+       background:linear-gradient(180deg,#faf8ff,#f1ecfc 240px);line-height:1.55;-webkit-font-smoothing:antialiased;min-height:100vh}
+  a{color:var(--brand)}
+  .grad{background:linear-gradient(115deg,var(--brand-2),var(--brand) 55%,var(--violeta));
+        -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  /* Top bar */
+  .top{background:rgba(255,255,255,.8);backdrop-filter:blur(14px);border-bottom:1px solid var(--linea);
+       padding:0 26px;height:74px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:20}
+  .marca{display:flex;align-items:center}
+  .marca img{height:42px;display:block}
+  .top .salir{font-size:14px;font-weight:600;color:var(--tenue)}
+  .top .salir:hover{color:var(--brand)}
+  .wrap{max-width:720px;margin:34px auto 60px;padding:0 18px}
+  /* Barra de progreso */
+  .steps{display:flex;gap:8px;margin-bottom:26px}
+  .steps .s{flex:1;height:7px;border-radius:99px;background:#e7e1f6;transition:.3s}
+  .steps .s.on{background:linear-gradient(90deg,var(--brand-2),var(--brand))}
+  /* Tarjeta */
+  .card{background:#fff;border:1px solid var(--linea);border-radius:22px;padding:34px;
+        box-shadow:0 20px 50px -28px rgba(80,60,200,.22)}
+  .card h2{font-size:26px;font-weight:800;letter-spacing:-.8px;margin-bottom:5px}
+  .card .sub{color:var(--tenue);margin-bottom:24px;font-size:15.5px}
+  label{display:block;font-weight:600;font-size:14px;margin:18px 0 7px}
+  input,textarea,select{width:100%;padding:13px 15px;border:1.5px solid var(--linea);border-radius:13px;font:inherit;
+        background:#fcfbff;color:var(--ink);transition:.15s}
+  input::placeholder,textarea::placeholder{color:#a8a5be}
+  input:focus,textarea:focus,select:focus{outline:none;border-color:var(--brand);background:#fff;
+        box-shadow:0 0 0 4px rgba(109,93,251,.12)}
+  textarea{min-height:92px;resize:vertical}
+  .row{display:flex;gap:12px}.row>*{flex:1}
+  /* Botones */
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:none;font-weight:700;font-size:15px;
+       padding:14px 24px;border-radius:14px;cursor:pointer;transition:.18s;color:#fff;
+       background:linear-gradient(120deg,var(--brand-2),var(--brand));box-shadow:0 10px 24px -8px rgba(109,93,251,.5)}
+  .btn:hover{transform:translateY(-2px);box-shadow:0 16px 30px -8px rgba(109,93,251,.55)}
+  .btn:disabled{opacity:.55;cursor:not-allowed;transform:none;box-shadow:none}
+  .btn.ghost{background:#fff;color:var(--ink);border:1.5px solid var(--linea);box-shadow:none}
+  .btn.ghost:hover{border-color:var(--violeta);color:var(--brand);transform:none}
+  .btn.ia{background:linear-gradient(120deg,#efeafe,#e8e2fd);color:#5a3fd6;border:1.5px solid #ddd3fb;box-shadow:none}
+  .btn.ia:hover{background:linear-gradient(120deg,#e8e0fe,#ded3fc);transform:translateY(-1px)}
+  .nav{display:flex;justify-content:space-between;gap:12px;margin-top:30px}
+  .hint{font-size:13px;color:var(--tenue);margin-top:7px}
+  .hidden{display:none}
+  /* Logo */
+  .logo-box{display:flex;gap:18px;align-items:center;margin:16px 0}
+  .logo-prev{width:118px;height:118px;border-radius:18px;border:2px dashed #d9d0f5;display:grid;place-items:center;
+        overflow:hidden;background:var(--lav);flex-shrink:0;color:var(--tenue);font-size:13px}
+  .logo-prev img{width:100%;height:100%;object-fit:contain}
+  /* Productos */
+  table{width:100%;border-collapse:collapse;margin-top:10px}
+  th,td{text-align:left;font-size:13px;padding:6px 6px}
+  th{color:var(--tenue);font-weight:600}
+  td input{padding:10px 11px;font-size:14px}
+  .pfoto{display:grid;place-items:center;width:48px;height:48px;border-radius:12px;border:1.5px dashed #d9d0f5;
+        background:var(--lav);cursor:pointer;overflow:hidden;color:var(--brand);font-size:22px;font-weight:700;transition:.15s}
+  .pfoto:hover{background:var(--lav-2);border-color:var(--violeta)}
+  .pfoto img{width:100%;height:100%;object-fit:cover}
+  .pfoto.load{opacity:.5;pointer-events:none}
+  .del{background:none;border:none;color:#dc2626;cursor:pointer;font-size:20px;line-height:1}
+  .add{margin-top:12px;background:var(--lav);border:1.5px dashed #d9d0f5;color:var(--brand);width:100%;
+        padding:13px;border-radius:13px;cursor:pointer;font-weight:700;transition:.15s}
+  .add:hover{background:var(--lav-2)}
+  /* Selector de tipo de negocio */
+  .tipo-sel{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:8px 0 4px}
+  .tipo-opt{display:flex;flex-direction:column;align-items:center;gap:2px;padding:16px 8px;border-radius:14px;
+        border:1.5px solid var(--linea);background:#fff;cursor:pointer;transition:.15s;font-family:inherit}
+  .tipo-opt:hover{border-color:var(--violeta)}
+  .tipo-opt.on{border-color:var(--brand);background:var(--lav);box-shadow:0 0 0 3px rgba(109,93,251,.12)}
+  .tipo-opt .ti{font-size:24px}
+  .tipo-opt b{font-size:14.5px}
+  .tipo-opt small{font-size:11.5px;color:var(--tenue)}
+  /* Días de atención */
+  .dias{display:flex;gap:8px;flex-wrap:wrap}
+  .dia{padding:9px 14px;border-radius:11px;border:1.5px solid var(--linea);background:#fff;cursor:pointer;
+       font-weight:700;font-size:13.5px;color:var(--tenue);transition:.15s;font-family:inherit}
+  .dia.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+  /* Swatches de color (plan gratis) */
+  .swatches{display:flex;gap:10px;flex-wrap:wrap}
+  .sw{width:34px;height:34px;border-radius:9px;cursor:pointer;border:3px solid transparent;transition:.12s}
+  .sw:hover{transform:scale(1.08)}
+  .sw.on{border-color:var(--ink);box-shadow:0 0 0 2px #fff inset}
+  /* Selector de plantillas */
+  .temas{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+  .tema-op{position:relative;border:2px solid var(--linea);border-radius:14px;overflow:hidden;cursor:pointer;background:#fff;transition:.15s;text-align:left}
+  .tema-op:hover{border-color:var(--violeta)}
+  .tema-op.on{border-color:var(--brand);box-shadow:0 0 0 3px rgba(109,93,251,.12)}
+  .tema-op .prev{height:64px;display:block}
+  .tema-op .meta{padding:9px 11px}
+  .tema-op .meta b{font-size:13.5px;display:block}
+  .tema-op .meta span{font-size:11.5px;color:var(--tenue)}
+  .tema-op.lock{cursor:not-allowed}
+  .tema-op .candado{position:absolute;top:6px;right:6px;background:#fff;border:1px solid var(--linea);border-radius:99px;font-size:10.5px;font-weight:700;color:var(--brand);padding:2px 8px}
+  .tema-op.lock .prev,.tema-op.lock .meta{opacity:.55}
+  .hero-prev{width:150px;height:64px;border-radius:12px;border:1.5px dashed #d9d0f5;display:grid;place-items:center;overflow:hidden;background:var(--lav);flex-shrink:0;color:var(--tenue);font-size:12px}
+  .hero-prev img{width:100%;height:100%;object-fit:cover}
+  /* Color */
+  .colorrow{display:flex;align-items:center;gap:10px}
+  input[type=color]{width:52px;height:44px;padding:3px;cursor:pointer;flex:none}
+  .spin{display:inline-block;width:15px;height:15px;border:2px solid #ffffff66;border-top-color:#fff;border-radius:50%;
+        animation:r .7s linear infinite;vertical-align:-2px;margin-right:7px}
+  .spin.dark{border:2px solid #6d5dfb33;border-top-color:#5a3fd6}
+  @keyframes r{to{transform:rotate(360deg)}}
+  /* Éxito */
+  .done{text-align:center;padding:20px 0}
+  .done .ok{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#34d399,var(--mint));
+        color:#fff;font-size:38px;display:grid;place-items:center;margin:0 auto 18px;
+        box-shadow:0 16px 34px -8px rgba(52,211,153,.55)}
+  .linkbox{background:var(--lav);border:1px solid var(--linea);border-radius:13px;padding:15px;margin:18px 0;
+        word-break:break-all;font-weight:700;color:var(--brand)}
+  .panel-box{margin-top:22px;padding:20px;border:1.5px dashed #d9d0f5;border-radius:16px;background:#fcfbff;text-align:left}
+  .ia-banner{background:#fff8ec;border:1px solid #fde6b8;color:#8a5a12;font-size:13.5px;padding:12px 16px;
+        border-radius:13px;margin-bottom:20px}
+  .ia-banner code{background:#fdebc6;padding:1px 6px;border-radius:5px;font-size:12.5px}
+</style>
+</head>
+<body>
+<div class="top">
+  <a class="marca" href="/"><img src="/static/img/katia-logo.svg" alt="katia.work"></a>
+  <a href="/" class="salir">← Salir</a>
+</div>
+
+<div class="wrap">
+  {% if not ia_activa %}
+  <div class="ia-banner">⚙️ La IA está en <b>modo plantilla</b> (no hay <code>GEMINI_API_KEY</code> configurada).
+     El asistente funciona igual; los textos y el logo se generan con plantillas. Configura la llave para activar Gemini.</div>
+  {% endif %}
+
+  <div class="steps">
+    <div class="s on" data-s="1"></div><div class="s" data-s="2"></div>
+    <div class="s" data-s="3"></div><div class="s" data-s="4"></div><div class="s" data-s="5"></div>
+  </div>
+
+  <!-- PASO 1: Negocio -->
+  <div class="card paso" data-paso="1">
+    <h2>1 · Cuéntanos de tu negocio</h2>
+    <p class="sub">Con esto katia crea tu marca: eslogan, descripción y colores.</p>
+
+    <label>¿Qué ofreces?</label>
+    <div class="tipo-sel" id="tipoSel">
+      <button type="button" class="tipo-opt on" data-tipo="productos">
+        <span class="ti">🛍️</span><b>Productos</b><small>Vendo artículos</small>
+      </button>
+      <button type="button" class="tipo-opt" data-tipo="servicios">
+        <span class="ti">📅</span><b>Servicios</b><small>Agendo citas</small>
+      </button>
+      <button type="button" class="tipo-opt" data-tipo="ambos">
+        <span class="ti">✨</span><b>Ambos</b><small>Productos y citas</small>
+      </button>
+    </div>
+
+    <label>Nombre del negocio *</label>
+    <input id="nombre" placeholder="Ej. Café del Sur">
+    <label>¿A qué se dedica? (giro)</label>
+    <input id="giro" placeholder="Ej. Cafetería y repostería artesanal">
+    <label>Descríbelo en pocas palabras</label>
+    <textarea id="contexto" placeholder="Ej. Vendemos café de especialidad y pan recién horneado. Somos un negocio familiar en Monterrey, ambiente acogedor, precios accesibles."></textarea>
+    <button class="btn ia" id="genNegocio" style="margin-top:14px">✨ Generar mi marca con IA</button>
+    <div id="marcaResult" class="hidden">
+      <label>Eslogan</label>
+      <input id="eslogan">
+      <label>Sobre nosotros</label>
+      <textarea id="sobre"></textarea>
+      <label>Color de tu marca</label>
+      <div id="swatches" class="swatches"></div>
+      <div id="colorFull" class="hidden">
+        <div class="colorrow" style="margin-top:10px">
+          <input type="color" id="color" value="#6c5ce7"><span class="hint">Primario</span>
+          <input type="color" id="color2" value="#222642"><span class="hint">Secundario</span>
+        </div>
+      </div>
+      <div class="hint" id="colorHint"></div>
+    </div>
+    <div class="nav"><span></span><button class="btn" data-next>Siguiente →</button></div>
+  </div>
+
+  <!-- PASO 2: Logo y diseño -->
+  <div class="card paso hidden" data-paso="2">
+    <h2>2 · Logo y diseño</h2>
+    <p class="sub">Tu logo, la plantilla de tu sitio y la imagen de portada.</p>
+    <div class="logo-box">
+      <div class="logo-prev" id="logoPrev"><span class="hint">Sin logo aún</span></div>
+      <div style="flex:1">
+        <button class="btn ia" id="genLogo">✨ Generar logo con IA</button>
+        <div style="margin-top:10px">
+          <label style="margin-top:0">…o sube el tuyo</label>
+          <input type="file" id="logoFile" accept=".png,.jpg,.jpeg,.webp,.svg">
+        </div>
+      </div>
+    </div>
+
+    <label style="margin-top:22px">Plantilla de tu sitio</label>
+    <div class="temas" id="temas"></div>
+
+    <label style="margin-top:22px">Imagen de portada (hero) <span class="hint" style="font-weight:400">— opcional, recomendado 1600×600 px</span></label>
+    <div class="logo-box">
+      <div class="hero-prev" id="heroPrev"><span class="hint">Sin imagen</span></div>
+      <div style="flex:1">
+        <input type="file" id="heroFile" accept=".png,.jpg,.jpeg,.webp">
+        <div class="hint">Se usa como banner de portada. Si no subes, se usa el diseño de la plantilla.</div>
+      </div>
+    </div>
+
+    <div class="nav"><button class="btn ghost" data-prev>← Atrás</button><button class="btn" data-next>Siguiente →</button></div>
+  </div>
+
+  <!-- PASO 3: Catálogo (productos y/o servicios) -->
+  <div class="card paso hidden" data-paso="3">
+    <h2 id="p3title">3 · Tu catálogo</h2>
+    <p class="sub" id="p3sub">Agrega lo que ofreces. katia puede escribir las descripciones por ti.</p>
+
+    <!-- Productos -->
+    <div id="secProductos">
+      <table><thead><tr>
+        <th style="width:54px">Foto</th><th>Producto</th><th>Precio</th><th>Antes</th><th>Stock</th><th></th>
+      </tr></thead><tbody id="prodBody"></tbody></table>
+      <button class="add" id="addProd">+ Agregar producto</button>
+      <button class="btn ia" id="genProd" style="margin-top:14px">✨ Describir productos con IA</button>
+      <div class="hint" id="prodHint"></div>
+    </div>
+
+    <!-- Servicios -->
+    <div id="secServicios" class="hidden">
+      <table><thead><tr>
+        <th style="width:54px">Foto</th><th>Servicio</th><th>Precio</th><th>Duración</th><th></th>
+      </tr></thead><tbody id="servBody"></tbody></table>
+      <button class="add" id="addServ">+ Agregar servicio</button>
+
+      <!-- Horarios de atención -->
+      <div class="horario">
+        <label style="margin-top:22px">Días que atiendes</label>
+        <div class="dias" id="dias">
+          <button type="button" class="dia on" data-d="0">Lun</button>
+          <button type="button" class="dia on" data-d="1">Mar</button>
+          <button type="button" class="dia on" data-d="2">Mié</button>
+          <button type="button" class="dia on" data-d="3">Jue</button>
+          <button type="button" class="dia on" data-d="4">Vie</button>
+          <button type="button" class="dia on" data-d="5">Sáb</button>
+          <button type="button" class="dia" data-d="6">Dom</button>
+        </div>
+        <div class="row" style="margin-top:14px;max-width:340px">
+          <div><label style="margin-top:0">Abre</label><input type="time" id="apertura" value="09:00"></div>
+          <div><label style="margin-top:0">Cierra</label><input type="time" id="cierre" value="18:00"></div>
+        </div>
+        <div class="hint">Tus clientes solo podrán reservar dentro de este horario.</div>
+      </div>
+    </div>
+
+    <div class="nav"><button class="btn ghost" data-prev>← Atrás</button><button class="btn" data-next>Siguiente →</button></div>
+  </div>
+
+  <!-- PASO 4: Contacto y dominio -->
+  <div class="card paso hidden" data-paso="4">
+    <h2>4 · Contacto y dirección web</h2>
+    <p class="sub">Cómo te contactan tus clientes y dónde vivirá tu tienda.</p>
+    <div class="row">
+      <div><label>WhatsApp</label><input id="whatsapp" placeholder="+52 81 1234 5678"></div>
+      <div><label>Correo</label><input id="correo" placeholder="hola@minegocio.com"></div>
+    </div>
+    <label>Ciudad</label><input id="ciudad" placeholder="Monterrey, N.L.">
+    <label>Tu dirección web</label>
+    <div class="colorrow">
+      <input id="subdominio" placeholder="minegocio" style="text-align:right">
+      <span class="hint" style="white-space:nowrap">.{{ dominio_base }}</span>
+    </div>
+    <div class="hint">Se genera sola desde el nombre; puedes cambiarla.</div>
+    <label>¿Ya tienes un dominio propio pagado? (opcional)</label>
+    <input id="dominio_propio" placeholder="www.minegocio.com">
+    <div class="hint">Si lo pones, te diremos cómo apuntarlo a tu tienda.</div>
+    <div class="nav"><button class="btn ghost" data-prev>← Atrás</button><button class="btn" data-next>Revisar y publicar →</button></div>
+  </div>
+
+  <!-- PASO 5: Publicar -->
+  <div class="card paso hidden" data-paso="5">
+    <h2>5 · Casi listo</h2>
+    <p class="sub">Revisa el resumen y publica tu tienda.</p>
+    <div id="resumen"></div>
+    <div class="nav">
+      <button class="btn ghost" data-prev>← Atrás</button>
+      <button class="btn" id="publicar">🚀 Publicar mi tienda</button>
+    </div>
+  </div>
+
+  <!-- ÉXITO -->
+  <div class="card paso hidden" data-paso="done">
+    <div class="done">
+      <div class="ok">✓</div>
+      <h2>¡Tu tienda está publicada!</h2>
+      <p class="sub" id="doneDom"></p>
+      <div class="linkbox" id="doneLink"></div>
+      <a class="btn" id="verTienda" target="_blank" style="margin-bottom:8px">Ver mi tienda →</a>
+
+      <div class="panel-box">
+        <div style="font-weight:700;margin-bottom:4px">🗂️ Tu panel de ventas (CRM)</div>
+        <p style="font-size:13.5px;color:var(--tenue);margin-bottom:10px">Aquí ves tus leads, citas y pipeline. <b>Guarda este enlace</b>: es tu acceso privado.</p>
+        <div class="linkbox" id="panelLink" style="margin:0 0 12px"></div>
+        <a class="btn ghost" id="verPanel" target="_blank">Abrir mi panel →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const IA_ACTIVA = {{ 'true' if ia_activa else 'false' }};
+const PLAN="{{ plan }}";
+const TEMAS={{ temas|tojson }};
+const PALETA={{ paleta|tojson }};
+const COLORES_FULL={{ 'true' if colores_full else 'false' }};
+const ORDEN=["gratis","tienda","pro","escala"];
+const rank=p=>ORDEN.indexOf(p);
+const TEMA_PREV={aurora:'linear-gradient(135deg,#8b5cf6,#6d5dfb)',minimal:'#fff',bold:'#222642',boutique:'#f7f2ec',vibrante:'linear-gradient(125deg,#6d5dfb,#ff6ec4,#ffb45e)'};
+const estado = { tipo:"productos", color:PALETA[0]||"#6d5dfb", color_2:"#222642", tono:"", logo:"", hero:"", tema:"aurora", productos:[], servicios:[] };
+let paso = 1;
+const $ = s => document.querySelector(s);
+
+function mostrar(p){
+  document.querySelectorAll('.paso').forEach(c=>c.classList.add('hidden'));
+  document.querySelector(`[data-paso="${p}"]`).classList.remove('hidden');
+  document.querySelectorAll('.steps .s').forEach(s=>{
+    s.classList.toggle('on', Number(s.dataset.s) <= (p==='done'?5:p));
+  });
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function next(){ if(paso<5){ paso++; if(paso===5) pintarResumen(); mostrar(paso);} }
+function prev(){ if(paso>1){ paso--; mostrar(paso);} }
+document.querySelectorAll('[data-next]').forEach(b=>b.onclick=guardYNext);
+document.querySelectorAll('[data-prev]').forEach(b=>b.onclick=prev);
+
+function guardYNext(){
+  if(paso===1 && !$('#nombre').value.trim()){ alert('Escribe el nombre de tu negocio.'); return; }
+  if(paso===1){ autoSubdominio(); }
+  next();
+}
+function autoSubdominio(){
+  if(!$('#subdominio').value){
+    $('#subdominio').value = ($('#nombre').value||'')
+      .toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'')
+      .replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+  }
+}
+
+function spinner(btn, txt){ btn.disabled=true; btn.dataset.txt=btn.innerHTML;
+  btn.innerHTML=`<span class="spin"></span>${txt}`; }
+function unspin(btn){ btn.disabled=false; btn.innerHTML=btn.dataset.txt; }
+
+// --- PASO 1: generar marca ---
+$('#genNegocio').onclick = async (e)=>{
+  const btn=e.currentTarget;
+  if(!$('#nombre').value.trim()){ alert('Escribe el nombre primero.'); return; }
+  spinner(btn,'Creando tu marca…');
+  try{
+    const r = await fetch('/api/ia/negocio',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({nombre:$('#nombre').value,giro:$('#giro').value,contexto:$('#contexto').value})});
+    const d = await r.json();
+    $('#eslogan').value=d.eslogan||''; $('#sobre').value=d.sobre_nosotros||''; estado.tono=d.tono||'';
+    if(COLORES_FULL && d.color) setColor(d.color, d.color_2);  // gratis usa paleta, ignora color IA
+    $('#marcaResult').classList.remove('hidden');
+  }catch(err){ alert('No se pudo generar. Intenta de nuevo.'); }
+  unspin(btn);
+};
+
+// --- Apariencia: color, plantilla, imagen de hero ---
+function setColor(c, c2){
+  if(c){ estado.color=c; const p=$('#color'); if(p) p.value=c; }
+  if(c2){ estado.color_2=c2; const p2=$('#color2'); if(p2) p2.value=c2; }
+  document.querySelectorAll('#swatches .sw').forEach(s=>s.classList.toggle('on', s.dataset.c===estado.color));
+}
+$('#swatches').innerHTML=PALETA.map(c=>`<span class="sw" data-c="${c}" style="background:${c}"></span>`).join('');
+$('#swatches').querySelectorAll('.sw').forEach(s=>s.onclick=()=>setColor(s.dataset.c));
+setColor(estado.color);
+if(COLORES_FULL){
+  $('#colorFull').classList.remove('hidden');
+  $('#color').oninput=e=>setColor(e.target.value);
+  $('#color2').oninput=e=>{ estado.color_2=e.target.value; };
+  $('#colorHint').textContent='Edición libre: elige color primario y secundario.';
+}else{
+  $('#colorHint').innerHTML='Colores del plan Gratis. <a href="/facturacion" target="_blank">Mejora a Tienda</a> para edición libre.';
+}
+function pintarTemas(){
+  $('#temas').innerHTML=Object.entries(TEMAS).map(([id,t])=>{
+    const bloq = rank(PLAN) < rank(t.plan);
+    return `<div class="tema-op ${id===estado.tema?'on':''} ${bloq?'lock':''}" data-id="${id}" data-lock="${bloq?1:0}">
+      ${bloq?`<span class="candado">🔒 ${t.plan==='tienda'?'Tienda':'Pro'}</span>`:''}
+      <span class="prev" style="background:${TEMA_PREV[id]||'#eee'}"></span>
+      <div class="meta"><b>${t.nombre}</b><span>${t.desc}</span></div></div>`;
+  }).join('');
+  $('#temas').querySelectorAll('.tema-op').forEach(el=>el.onclick=()=>{
+    if(el.dataset.lock==='1'){ if(confirm('La plantilla "'+TEMAS[el.dataset.id].nombre+'" es del plan '+TEMAS[el.dataset.id].plan+'. ¿Ir a mejorar tu plan?')) location.href='/facturacion'; return; }
+    estado.tema=el.dataset.id; pintarTemas();
+  });
+}
+pintarTemas();
+$('#heroFile').onchange=async(e)=>{
+  const f=e.target.files[0]; if(!f) return;
+  const fd=new FormData(); fd.append('archivo',f);
+  const r=await fetch('/api/upload-imagen',{method:'POST',body:fd}); const d=await r.json();
+  if(d.url){ estado.hero=d.url; $('#heroPrev').innerHTML=`<img src="${d.url}">`; } else alert(d.error||'No se pudo subir la imagen.');
+};
+
+// --- PASO 2: logo ---
+$('#genLogo').onclick = async (e)=>{
+  const btn=e.currentTarget;
+  spinner(btn,'Diseñando…');
+  try{
+    const r = await fetch('/api/ia/logo',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({nombre:$('#nombre').value||'Mi Tienda',giro:$('#giro').value,color:estado.color})});
+    const d = await r.json();
+    if(d.url){ estado.logo=d.url; $('#logoPrev').innerHTML=`<img src="${d.url}">`; }
+  }catch(err){ alert('No se pudo generar el logo.'); }
+  unspin(btn);
+};
+$('#logoFile').onchange = async (e)=>{
+  const file=e.target.files[0]; if(!file) return;
+  const fd=new FormData(); fd.append('archivo',file);
+  const r=await fetch('/api/upload-logo',{method:'POST',body:fd});
+  const d=await r.json();
+  if(d.url){ estado.logo=d.url; $('#logoPrev').innerHTML=`<img src="${d.url}">`; }
+  else alert(d.error||'No se pudo subir.');
+};
+
+// --- PASO 3: productos ---
+function filaProducto(p={}){
+  const tr=document.createElement('tr');
+  tr.innerHTML=`
+    <td><label class="pfoto" title="Subir foto"><input type="file" class="p-file" accept="image/*" hidden><span class="pfoto-ph">＋</span></label></td>
+    <td><input class="p-nombre" value="${p.nombre||''}" placeholder="Nombre"></td>
+    <td><input class="p-precio" type="number" value="${p.precio??''}" placeholder="0"></td>
+    <td><input class="p-antes" type="number" value="${p.precio_anterior??''}" placeholder="—"></td>
+    <td><input class="p-stock" type="number" value="${p.stock??''}" placeholder="0"></td>
+    <td><button class="del" title="Quitar">×</button></td>`;
+  if(p.imagen){ tr.dataset.imagen=p.imagen; pintarFoto(tr,p.imagen); }
+  tr.querySelector('.del').onclick=()=>tr.remove();
+  tr.querySelector('.p-file').onchange=e=>subirFoto(e,tr);
+  return tr;
+}
+function pintarFoto(tr,url){
+  const lbl=tr.querySelector('.pfoto');
+  lbl.innerHTML=`<input type="file" class="p-file" accept="image/*" hidden><img src="${url}">`;
+  lbl.querySelector('.p-file').onchange=e=>subirFoto(e,tr);
+}
+async function subirFoto(e,tr){
+  const file=e.target.files[0]; if(!file) return;
+  const lbl=tr.querySelector('.pfoto'); lbl.classList.add('load');
+  const fd=new FormData(); fd.append('archivo',file);
+  try{
+    const r=await fetch('/api/upload-imagen',{method:'POST',body:fd});
+    const d=await r.json();
+    if(d.url){ tr.dataset.imagen=d.url; pintarFoto(tr,d.url); }
+    else alert(d.error||'No se pudo subir la foto.');
+  }catch(_){ alert('No se pudo subir la foto.'); }
+  lbl.classList.remove('load');
+}
+$('#addProd').onclick=()=>$('#prodBody').appendChild(filaProducto());
+// arranca con 2 filas
+$('#prodBody').appendChild(filaProducto()); $('#prodBody').appendChild(filaProducto());
+
+function leerProductos(){
+  return [...$('#prodBody').querySelectorAll('tr')].map(tr=>({
+    nombre: tr.querySelector('.p-nombre').value.trim(),
+    precio: tr.querySelector('.p-precio').value,
+    precio_anterior: tr.querySelector('.p-antes').value,
+    stock: tr.querySelector('.p-stock').value,
+    imagen: tr.dataset.imagen||'',
+    descripcion: tr.dataset.desc||'', categoria: tr.dataset.cat||'',
+  })).filter(p=>p.nombre);
+}
+$('#genProd').onclick = async (e)=>{
+  const btn=e.currentTarget;
+  const prods=leerProductos();
+  if(!prods.length){ alert('Agrega al menos un producto con nombre.'); return; }
+  spinner(btn,'Escribiendo descripciones…');
+  try{
+    const r=await fetch('/api/ia/productos',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({productos:prods,giro:$('#giro').value})});
+    const d=await r.json();
+    // guarda descripciones/categorías en las filas (por orden)
+    const rows=[...$('#prodBody').querySelectorAll('tr')].filter(tr=>tr.querySelector('.p-nombre').value.trim());
+    d.productos.forEach((p,i)=>{ if(rows[i]){ rows[i].dataset.desc=p.descripcion||''; rows[i].dataset.cat=p.categoria||''; }});
+    $('#prodHint').textContent='✓ Descripciones y categorías generadas. Se aplicarán al publicar.';
+  }catch(err){ alert('No se pudo generar.'); }
+  unspin(btn);
+};
+
+// --- Tipo de negocio (paso 1) ---
+document.querySelectorAll('#tipoSel .tipo-opt').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#tipoSel .tipo-opt').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');
+  estado.tipo=b.dataset.tipo;
+  aplicarTipo();
+});
+function aplicarTipo(){
+  const prod = estado.tipo==='productos' || estado.tipo==='ambos';
+  const serv = estado.tipo==='servicios' || estado.tipo==='ambos';
+  $('#secProductos').classList.toggle('hidden', !prod);
+  $('#secServicios').classList.toggle('hidden', !serv);
+  $('#p3title').textContent = serv && !prod ? '3 · Tus servicios' : (serv ? '3 · Tu catálogo' : '3 · Tus productos');
+  $('#p3sub').textContent = serv && !prod
+    ? 'Agrega tus servicios con su duración y define tu horario de atención.'
+    : 'Agrega lo que ofreces. katia puede escribir las descripciones por ti.';
+}
+
+// --- Servicios (paso 3) ---
+function filaServicio(s={}){
+  const tr=document.createElement('tr');
+  tr.innerHTML=`
+    <td><label class="pfoto" title="Subir foto"><input type="file" class="p-file" accept="image/*" hidden><span class="pfoto-ph">＋</span></label></td>
+    <td><input class="s-nombre" value="${s.nombre||''}" placeholder="Ej. Corte de cabello"></td>
+    <td><input class="s-precio" type="number" value="${s.precio??''}" placeholder="0"></td>
+    <td><input class="s-dur" type="number" value="${s.duracion??30}" placeholder="30" title="Minutos"> min</td>
+    <td><button class="del" title="Quitar">×</button></td>`;
+  if(s.imagen){ tr.dataset.imagen=s.imagen; pintarFoto(tr,s.imagen); }
+  tr.querySelector('.del').onclick=()=>tr.remove();
+  tr.querySelector('.p-file').onchange=e=>subirFoto(e,tr);
+  return tr;
+}
+$('#addServ').onclick=()=>$('#servBody').appendChild(filaServicio());
+$('#servBody').appendChild(filaServicio()); $('#servBody').appendChild(filaServicio());
+function leerServicios(){
+  return [...$('#servBody').querySelectorAll('tr')].map(tr=>({
+    nombre: tr.querySelector('.s-nombre').value.trim(),
+    precio: tr.querySelector('.s-precio').value,
+    duracion: tr.querySelector('.s-dur').value || 30,
+    imagen: tr.dataset.imagen||'',
+  })).filter(s=>s.nombre);
+}
+
+// --- Horarios (paso 3) ---
+document.querySelectorAll('#dias .dia').forEach(b=>b.onclick=()=>b.classList.toggle('on'));
+function leerHorarios(){
+  return {
+    dias: [...document.querySelectorAll('#dias .dia.on')].map(b=>Number(b.dataset.d)),
+    apertura: $('#apertura').value || '09:00',
+    cierre: $('#cierre').value || '18:00',
+  };
+}
+
+// --- PASO 5: resumen ---
+function pintarResumen(){
+  estado.productos=leerProductos();
+  estado.servicios=leerServicios();
+  const logo = estado.logo? `<img src="${estado.logo}" style="width:54px;height:54px;border-radius:10px;object-fit:contain;border:1px solid #eee">`:'🛍️';
+  const chip = (t)=>`<span style="background:#f3f4f6;padding:6px 12px;border-radius:99px">${t}</span>`;
+  const muestraProd = estado.tipo!=='servicios';
+  const muestraServ = estado.tipo!=='productos';
+  $('#resumen').innerHTML=`
+    <div style="display:flex;gap:14px;align-items:center;margin-bottom:14px">
+      ${logo}
+      <div><b style="font-size:18px">${$('#nombre').value}</b><br>
+      <span style="color:#6b7280">${$('#eslogan').value||$('#giro').value||''}</span></div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;font-size:14px;color:#374151">
+      ${muestraProd?chip('📦 '+estado.productos.length+' producto(s)'):''}
+      ${muestraServ?chip('📅 '+estado.servicios.length+' servicio(s)'):''}
+      ${chip('🎨 <span style="color:'+estado.color+'">'+estado.color+'</span>')}
+      ${chip('🖼️ '+(TEMAS[estado.tema]?TEMAS[estado.tema].nombre:estado.tema))}
+      ${chip('🌐 '+($('#subdominio').value||'minegocio')+'.{{ dominio_base }}')}
+      ${$('#whatsapp').value?chip('📱 '+$('#whatsapp').value):''}
+    </div>`;
+}
+
+// --- PUBLICAR ---
+$('#publicar').onclick = async (e)=>{
+  const btn=e.currentTarget;
+  spinner(btn,'Publicando…');
+  const payload={
+    nombre:$('#nombre').value, giro:$('#giro').value, contexto:$('#contexto').value,
+    eslogan:$('#eslogan').value, sobre_nosotros:$('#sobre').value,
+    color:estado.color, color_2:estado.color_2, tono:estado.tono, logo:estado.logo,
+    tema:estado.tema, hero_imagen:estado.hero,
+    whatsapp:$('#whatsapp').value, correo:$('#correo').value, ciudad:$('#ciudad').value,
+    slug:$('#subdominio').value, dominio_propio:$('#dominio_propio').value,
+    tipo: estado.tipo,
+    productos: estado.tipo==='servicios' ? [] : (estado.productos.length? estado.productos : leerProductos()),
+    servicios: estado.tipo==='productos' ? [] : (estado.servicios.length? estado.servicios : leerServicios()),
+    horarios: leerHorarios(),
+  };
+  try{
+    const r=await fetch('/crear',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    const d=await r.json();
+    if(!d.ok){ alert(d.detail||'Error al publicar'); unspin(btn); return; }
+    const dom = location.protocol+'//'+location.host;
+    const url = d.url.startsWith('//')? location.protocol+d.url : dom+d.url;
+    $('#doneLink').textContent=url;
+    $('#doneDom').textContent='Tu tienda ya está en línea:';
+    $('#verTienda').href = d.url.startsWith('//')? location.protocol+d.url : d.url;
+    // Panel de ventas (CRM) — enlace privado con token
+    if(d.panel){
+      const panelUrl = d.panel.startsWith('//')? location.protocol+d.panel : dom+d.panel;
+      $('#panelLink').textContent=panelUrl;
+      $('#verPanel').href=panelUrl;
+    }
+    mostrar('done');
+  }catch(err){ alert('No se pudo publicar. Intenta de nuevo.'); unspin(btn); }
+};
+</script>
+</body>
+</html>

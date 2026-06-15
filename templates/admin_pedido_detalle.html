@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pedido {{ pedido.id }} · Admin</title>
+    <meta name="robots" content="noindex">
+    <link rel="icon" type="image/png" href="/static/img/favicon.png">
+    <link rel="stylesheet" href="/static/estilos.css">
+    {% include "partials/_ga.html" %}
+</head>
+<body>
+    <header class="topbar">
+        <a href="/" class="logo"><img src="/static/img/logo-texto.png" alt="Outlet Momatt México"></a>
+        <nav class="topbar-nav">
+            <a href="/admin" class="topbar-link">⚙️ Admin</a>
+            <a href="/admin/pedidos" class="topbar-link">Pedidos</a>
+            <a href="/admin/usuarios" class="topbar-link">Usuarios</a>
+            <a href="/perfil" class="topbar-link">👤 {{ usuario.nombre.split()[0] }}</a>
+        </nav>
+    </header>
+
+    <main class="admin-page pago-page">
+        <p><a href="/admin/pedidos" style="color:var(--amarillo);text-decoration:none;">← Volver a pedidos</a></p>
+        <h1>Pedido {{ pedido.id }}</h1>
+        <p>Hecho el {{ pedido.created_at.strftime("%d %b %Y · %H:%M") }}
+           · <span class="estado estado-{{ pedido.estado }}">{{ pedido.estado.replace('_',' ') }}</span></p>
+
+        <!-- Acciones del admin -->
+        <div class="datos-pago" style="border-color:var(--amarillo);">
+            <h3 style="padding:8px 0;color:var(--amarillo);">⚙️ Cambiar estado</h3>
+            <form action="/admin/pedido/{{ pedido.id }}/estado" method="post" class="admin-acciones">
+                <label>Nuevo estado
+                    <select name="nuevo_estado" required>
+                        {% for e in estados %}
+                        <option value="{{ e }}" {% if pedido.estado == e %}selected{% endif %}>{{ e.replace('_',' ') }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+                <label>Guía de envío (si vas a marcar como "enviado")
+                    <input type="text" name="guia" value="{{ pedido.guia or '' }}" placeholder="Ej. 1234567890">
+                </label>
+                <button type="submit" class="btn-pagar">Guardar cambio</button>
+            </form>
+        </div>
+
+        <div class="datos-pago">
+            <h3 style="padding:8px 0;color:var(--amarillo);">Cliente</h3>
+            <div class="dato"><span>Nombre</span><strong>{{ pedido.nombre }}</strong></div>
+            <div class="dato"><span>Correo</span><strong>{{ pedido.email }}</strong></div>
+            {% if pedido.telefono %}<div class="dato"><span>Teléfono</span><strong>{{ pedido.telefono }}</strong></div>{% endif %}
+            {% if pedido.user_id %}<div class="dato"><span>Usuario</span><strong>Registrado (id {{ pedido.user_id }})</strong></div>
+            {% else %}<div class="dato"><span>Usuario</span><strong>Invitado</strong></div>{% endif %}
+        </div>
+
+        <div class="datos-pago">
+            <h3 style="padding:8px 0;color:var(--amarillo);">📦 Envío</h3>
+            <div class="dato"><span>Paquetería</span><strong>{{ pedido.paqueteria }}</strong></div>
+            {% if pedido.ciudad_entrega %}<div class="dato"><span>Ciudad</span><strong>{{ pedido.ciudad_entrega }}{% if pedido.estado_entrega %}, {{ pedido.estado_entrega }}{% endif %}</strong></div>{% endif %}
+            {% if pedido.sucursal %}<div class="dato"><span>Sucursal</span><strong>{{ pedido.sucursal }}</strong></div>{% endif %}
+            {% if pedido.guia %}<div class="dato"><span>Guía</span><strong style="font-family:monospace;">{{ pedido.guia }}</strong></div>{% endif %}
+        </div>
+
+        {% if pedido.razon_social or pedido.rfc %}
+        <div class="datos-pago">
+            <h3 style="padding:8px 0;color:var(--amarillo);">🧾 Facturación</h3>
+            {% if pedido.razon_social %}<div class="dato"><span>Razón social</span><strong>{{ pedido.razon_social }}</strong></div>{% endif %}
+            {% if pedido.rfc %}<div class="dato"><span>RFC</span><strong>{{ pedido.rfc }}</strong></div>{% endif %}
+            {% if pedido.cp_fiscal %}<div class="dato"><span>CP fiscal</span><strong>{{ pedido.cp_fiscal }}</strong></div>{% endif %}
+        </div>
+        {% endif %}
+
+        <div class="datos-pago">
+            <h3 style="padding:8px 0;color:var(--amarillo);">Productos</h3>
+            {% for it in items %}
+            <div class="dato">
+                <span>{{ it.cantidad }} × {{ it.nombre }}</span>
+                <strong>${{ "{:,.0f}".format(it.subtotal) }}</strong>
+            </div>
+            {% endfor %}
+            <div class="dato"><span>Subtotal productos</span><strong>${{ "{:,.0f}".format(pedido.subtotal_prod) }}</strong></div>
+            <div class="dato"><span>Envío</span><strong>${{ "{:,.0f}".format(pedido.envio) }}</strong></div>
+            <div class="dato"><span>IVA (16%)</span><strong>${{ "{:,.0f}".format(pedido.iva) }}</strong></div>
+            <div class="dato total-pago"><span>Total</span><strong>${{ "{:,.0f}".format(pedido.total) }} MXN</strong></div>
+        </div>
+
+        <div class="datos-pago">
+            <h3 style="padding:8px 0;color:var(--amarillo);">Recordatorios</h3>
+            <div class="dato"><span>Enviados</span><strong>{{ pedido.recordatorios_enviados or 0 }} / 2</strong></div>
+            {% if pedido.recordatorio_pago_at %}<div class="dato"><span>Último enviado</span><strong>{{ pedido.recordatorio_pago_at.strftime("%d %b %Y · %H:%M") }}</strong></div>{% endif %}
+        </div>
+
+        <p><a href="/pedido/{{ pedido.id }}" target="_blank" style="color:var(--amarillo);">Ver vista del cliente ↗</a></p>
+    </main>
+
+    <footer class="footer"><p class="footer-bottom">© Outlet Momatt México · Admin</p></footer>
+</body>
+</html>

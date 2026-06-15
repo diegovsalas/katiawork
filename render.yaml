@@ -1,0 +1,77 @@
+# render.yaml — Blueprint de Render para katia.work
+# -------------------------------------------------------------------
+# Cómo se usa:
+#   1. En render.com → New + → Blueprint
+#   2. Conecta el repo de GitHub de katia
+#   3. Render lee este archivo y crea el servicio web + el disco
+#   4. Llena en el dashboard los valores marcados como sync:false (secretos)
+#
+# Nota: el disco persistente requiere plan "starter" (no existe en free).
+#       Ahí viven las tiendas, usuarios e imágenes (KATIA_DATA_DIR).
+# -------------------------------------------------------------------
+
+services:
+  - type: web
+    name: katia-work
+    runtime: python
+    plan: starter                # requerido para disco persistente (~$7 USD/mes)
+    region: oregon               # us-west, cercano a México
+    branch: main
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn constructor:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /
+    autoDeploy: true             # cada push a main re-deploya
+
+    # Disco persistente: aquí se guardan data/ (tiendas, usuarios) e imágenes.
+    disk:
+      name: katia-datos
+      mountPath: /var/data
+      sizeGB: 1                  # ampliable después sin perder datos
+
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.7"
+
+      # Raíz de datos persistente = punto de montaje del disco
+      - key: KATIA_DATA_DIR
+        value: /var/data
+
+      # Dominio base para resolver tiendas por subdominio (futuro wildcard).
+      # Con rutas /t/<tienda> funciona igual aunque no haya wildcard aún.
+      - key: DOMINIO_BASE
+        value: katia.work
+
+      - key: KATIA_BASE_URL
+        value: https://katia.work
+
+      # Llave de sesión: Render genera una aleatoria y estable
+      - key: SESSION_SECRET_KEY
+        generateValue: true
+
+      # Token secreto para el cron externo de recordatorios (cron-job.org)
+      - key: CRON_TOKEN
+        generateValue: true
+
+      # --- IA Gemini (opcional; sin llave funciona en modo plantilla) ---
+      - key: GEMINI_API_KEY
+        sync: false
+
+      # --- Stripe: suscripción a los planes de katia (configura en dashboard) ---
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_PUBLISHABLE_KEY
+        sync: false
+      - key: STRIPE_SUB_WEBHOOK_SECRET
+        sync: false
+      - key: STRIPE_PRICE_TIENDA
+        sync: false
+      - key: STRIPE_PRICE_PRO
+        sync: false
+      - key: STRIPE_PRICE_ESCALA
+        sync: false
+
+      # --- Resend: correos transaccionales (opcional) ---
+      - key: RESEND_API_KEY
+        sync: false
+      - key: KATIA_RESEND_FROM
+        value: "katia <hola@katia.work>"

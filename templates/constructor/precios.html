@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Planes y precios · katia.work</title>
+<meta name="description" content="Planes de katia.work: crea tu tienda gratis y crece con un asistente de ventas por WhatsApp. Desde $0, sin comisión por venta. Lo que una agencia cobra $30,000, katia lo hace en minutos.">
+<link rel="icon" type="image/svg+xml" href="/static/img/katia-favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --brand:#6d5dfb; --brand-2:#8b5cf6; --brand-osc:#5a46d6; --violeta:#a78bfa; --mint:#63d9ae;
+    --ink:#222642; --tenue:#6b6a83; --linea:#ece8f7; --lav:#f4f1fd; --lav-2:#ebe5fb;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:'Inter',-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);background:#fff;
+       line-height:1.55;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+  .grad{background:linear-gradient(115deg,var(--brand-2),var(--brand) 55%,var(--violeta));
+        -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:700;font-size:15px;
+       padding:13px 24px;border-radius:13px;border:none;cursor:pointer;transition:.18s;width:100%}
+  .btn.primary{color:#fff;background:linear-gradient(120deg,var(--brand-2),var(--brand));
+       box-shadow:0 10px 24px -8px rgba(109,93,251,.5)}
+  .btn.primary:hover{transform:translateY(-2px)}
+  .btn.ghost{background:#fff;color:var(--ink);border:1.5px solid var(--linea)}
+  .btn.ghost:hover{border-color:var(--violeta);color:var(--brand)}
+  /* Nav */
+  nav{position:sticky;top:0;z-index:30;background:rgba(255,255,255,.82);backdrop-filter:blur(14px);border-bottom:1px solid var(--linea)}
+  .nav-in{display:flex;justify-content:space-between;align-items:center;height:74px}
+  .logo img{height:42px;display:block}
+  .nav-cta{width:auto;padding:11px 20px;font-size:14px}
+  /* Hero */
+  .ph{text-align:center;padding:64px 0 12px;background:linear-gradient(180deg,#fff,#f7f4fe)}
+  .ph .eyebrow{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--linea);
+        color:var(--brand);font-weight:600;font-size:14px;padding:7px 16px;border-radius:999px;
+        box-shadow:0 6px 18px rgba(109,93,251,.12);margin-bottom:22px}
+  .ph .eyebrow .s{color:var(--mint)}
+  .ph h1{font-size:clamp(32px,5vw,52px);font-weight:900;letter-spacing:-1.8px;line-height:1.04}
+  .ph p{font-size:clamp(16px,2vw,20px);color:var(--tenue);max-width:600px;margin:18px auto 0}
+  /* Ancla de valor */
+  .anchor{max-width:760px;margin:24px auto 0;background:var(--lav);border:1px solid var(--linea);border-radius:16px;
+          padding:16px 22px;font-size:15px;color:var(--ink);display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap}
+  .anchor b{color:var(--brand)}
+  /* Planes */
+  .planes{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;padding:48px 0 20px;align-items:stretch}
+  .plan{display:flex;flex-direction:column;background:#fff;border:1px solid var(--linea);border-radius:22px;padding:28px 24px;
+        transition:.18s;position:relative}
+  .plan:hover{box-shadow:0 22px 50px -26px rgba(109,93,251,.3);transform:translateY(-3px)}
+  .plan.pop{border:2px solid var(--brand);box-shadow:0 26px 60px -26px rgba(109,93,251,.45)}
+  .plan .tagpop{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:linear-gradient(120deg,var(--brand-2),var(--brand));
+        color:#fff;font-size:12px;font-weight:800;padding:5px 14px;border-radius:99px;box-shadow:0 8px 18px -4px rgba(109,93,251,.5);letter-spacing:.3px}
+  .plan h3{font-size:19px;font-weight:800;letter-spacing:-.4px}
+  .plan .desc{font-size:13.5px;color:var(--tenue);margin:6px 0 18px;min-height:38px}
+  .plan .precio{display:flex;align-items:baseline;gap:5px;margin-bottom:4px}
+  .plan .precio .n{font-size:38px;font-weight:900;letter-spacing:-1.5px}
+  .plan .precio .u{font-size:14px;color:var(--tenue);font-weight:600}
+  .plan .pnota{font-size:12.5px;color:var(--tenue);min-height:18px;margin-bottom:20px}
+  .plan .btn{margin-bottom:22px}
+  .plan ul{list-style:none;display:flex;flex-direction:column;gap:11px}
+  .plan li{display:flex;gap:10px;font-size:13.8px;line-height:1.4}
+  .plan li .ck{color:var(--mint);flex-shrink:0;font-weight:800;margin-top:1px}
+  .plan li b{font-weight:700}
+  .plan .hdr{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--tenue);margin-bottom:2px}
+  /* FAQ / nota */
+  .nota{text-align:center;color:var(--tenue);font-size:14px;padding:14px 0 70px}
+  /* Comparativo */
+  .vs{background:linear-gradient(180deg,#faf8ff,#f4f1fd);padding:70px 0}
+  .vs h2{text-align:center;font-size:clamp(24px,4vw,34px);font-weight:800;letter-spacing:-1px;margin-bottom:10px}
+  .vs .sub{text-align:center;color:var(--tenue);font-size:17px;margin-bottom:40px}
+  .vscards{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  .vscard{background:#fff;border:1px solid var(--linea);border-radius:18px;padding:26px;text-align:center}
+  .vscard .big{font-size:30px;font-weight:900;letter-spacing:-1px;margin:6px 0}
+  .vscard.k .big{color:var(--brand)}
+  .vscard .lab{font-size:13.5px;color:var(--tenue)}
+  .vscard h4{font-size:15px;font-weight:700;margin-bottom:6px}
+  /* CTA */
+  .cta{background:linear-gradient(125deg,var(--brand-2),var(--brand) 55%,#7c5cf5);color:#fff;border-radius:28px;
+       padding:60px 24px;text-align:center;margin:60px 0}
+  .cta h2{font-size:clamp(26px,4vw,38px);font-weight:800;letter-spacing:-1.2px;margin-bottom:12px}
+  .cta p{opacity:.92;font-size:18px;margin-bottom:26px}
+  .cta .btn{background:#fff;color:var(--brand);width:auto;padding:15px 30px;display:inline-flex}
+  footer{border-top:1px solid var(--linea);padding:30px 0;color:var(--tenue);font-size:14px;text-align:center}
+  @media(max-width:980px){.planes{grid-template-columns:1fr 1fr}.vscards{grid-template-columns:1fr}}
+  @media(max-width:560px){.planes{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap nav-in">
+    <a class="logo" href="/"><img src="/static/img/katia-logo.svg" alt="katia.work"></a>
+    <a class="btn primary nav-cta" href="/crear">Crear mi tienda</a>
+  </div>
+</nav>
+
+<header class="ph">
+  <div class="wrap">
+    <span class="eyebrow"><span class="s">✦</span> Precios claros, sin sorpresas</span>
+    <h1>Empieza gratis.<br><span class="grad">Crece cuando vendas.</span></h1>
+    <p>Crea tu tienda sin costo y suma herramientas conforme tu negocio despega. Sin contratos, cancela cuando quieras.</p>
+    <div class="anchor">
+      🏷️ Una agencia cobra <b>$18,000–$45,000</b> por armar tu tienda. Con katia empiezas en <b>$0</b> · y <b>0% de comisión</b> por venta.
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="planes">
+
+    <!-- GRATIS -->
+    <div class="plan">
+      <h3>Gratis</h3>
+      <div class="desc">Para empezar a vender hoy sin riesgo.</div>
+      <div class="precio"><span class="n">$0</span><span class="u">/mes</span></div>
+      <div class="pnota">Para siempre · sin tarjeta</div>
+      <a class="btn ghost" href="/crear">Crear mi tienda</a>
+      <ul>
+        <li><span class="ck">✓</span> Tienda en <b>tunegocio.katia.work</b></li>
+        <li><span class="ck">✓</span> Logo y textos con <b>IA</b></li>
+        <li><span class="ck">✓</span> Hasta 20 productos con fotos</li>
+        <li><span class="ck">✓</span> Pedidos por <b>WhatsApp</b></li>
+        <li><span class="ck">✓</span> Chatbot básico</li>
+        <li><span class="ck">✓</span> Diseño responsivo</li>
+      </ul>
+    </div>
+
+    <!-- TIENDA -->
+    <div class="plan">
+      <h3>Tienda</h3>
+      <div class="desc">Tu marca, tu dominio, sin comisiones.</div>
+      <div class="precio"><span class="n">$249</span><span class="u">MXN/mes</span></div>
+      <div class="pnota">2 meses gratis al pagar anual</div>
+      <a class="btn ghost" href="/facturacion">Elegir Tienda</a>
+      <ul>
+        <li><span class="ck">✓</span> <b>Todo lo de Gratis</b>, y además:</li>
+        <li><span class="ck">✓</span> <b>Dominio propio</b> (tunegocio.com)</li>
+        <li><span class="ck">✓</span> Productos <b>ilimitados</b></li>
+        <li><span class="ck">✓</span> Páginas de producto + <b>SEO</b> (Google)</li>
+        <li><span class="ck">✓</span> Sin marca katia</li>
+        <li><span class="ck">✓</span> <b>0% comisión</b> por venta</li>
+        <li><span class="ck">✓</span> Analítica básica</li>
+      </ul>
+    </div>
+
+    <!-- VENTAS PRO (popular) -->
+    <div class="plan pop">
+      <span class="tagpop">★ Más popular</span>
+      <h3>Ventas Pro</h3>
+      <div class="desc">Para que no se te escape ningún cliente de WhatsApp.</div>
+      <div class="precio"><span class="n">$799</span><span class="u">MXN/mes</span></div>
+      <div class="pnota">El plan que paga su propia inversión</div>
+      <a class="btn primary" href="/facturacion">Elegir Ventas Pro</a>
+      <ul>
+        <li><span class="ck">✓</span> <b>Todo lo de Tienda</b>, y además:</li>
+        <li><span class="ck">✓</span> <b>Asistente de ventas IA en WhatsApp</b> 24/7</li>
+        <li><span class="ck">✓</span> <b>Bandeja / CRM de leads</b> (no pierdas prospectos)</li>
+        <li><span class="ck">✓</span> Seguimiento y recordatorios automáticos</li>
+        <li><span class="ck">✓</span> Carrito + pagos en línea (tarjeta/SPEI)</li>
+        <li><span class="ck">✓</span> Analítica avanzada (Pixel, GA4, UTMs)</li>
+      </ul>
+    </div>
+
+    <!-- ESCALA -->
+    <div class="plan">
+      <h3>Escala</h3>
+      <div class="desc">Para negocios con volumen o varias sucursales.</div>
+      <div class="precio"><span class="n">$1,999</span><span class="u">MXN/mes</span></div>
+      <div class="pnota">o a la medida de tu operación</div>
+      <a class="btn ghost" href="/facturacion">Elegir Escala</a>
+      <ul>
+        <li><span class="ck">✓</span> <b>Todo lo de Ventas Pro</b>, y además:</li>
+        <li><span class="ck">✓</span> <b>Multi-sucursal</b> y multi-usuario</li>
+        <li><span class="ck">✓</span> Varios agentes en el CRM de WhatsApp</li>
+        <li><span class="ck">✓</span> <b>Facturación CFDI</b> / ERP (Alegra, Bind)</li>
+        <li><span class="ck">✓</span> Catálogo grande (cientos de SKUs)</li>
+        <li><span class="ck">✓</span> Soporte prioritario + onboarding</li>
+      </ul>
+    </div>
+
+  </div>
+  <p class="nota">Precios en pesos mexicanos (MXN) + IVA. Cambia o cancela tu plan cuando quieras.</p>
+</div>
+
+<!-- Comparativo de valor -->
+<section class="vs">
+  <div class="wrap">
+    <h2>Por qué katia, y no una agencia</h2>
+    <p class="sub">Los números del mercado mexicano hablan por sí solos.</p>
+    <div class="vscards">
+      <div class="vscard">
+        <h4>Agencia / freelancer</h4>
+        <div class="big">$18k–$45k</div>
+        <div class="lab">por armar tu e-commerce, una sola vez + $3,000/mes de mantenimiento</div>
+      </div>
+      <div class="vscard">
+        <h4>Shopify / Tiendanube</h4>
+        <div class="big">$399–$5,999<span style="font-size:15px">/mes</span></div>
+        <div class="lab">+ ~2% de comisión sobre cada venta que haces</div>
+      </div>
+      <div class="vscard k">
+        <h4>katia.work</h4>
+        <div class="big">Desde $0</div>
+        <div class="lab">la IA hace el trabajo, listo en minutos y <b>0% de comisión</b> por venta</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+  <section class="cta">
+    <h2>Tu tienda no necesita esperar (ni un presupuesto enorme)</h2>
+    <p>Empieza gratis hoy. Subes a un plan de paga solo cuando ya estés vendiendo.</p>
+    <a class="btn" href="/crear">Crear mi tienda gratis →</a>
+  </section>
+</div>
+
+<footer>katia.work · Empieza gratis, crece cuando vendas. Sin comisión por venta.</footer>
+</body>
+</html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar sesión | Outlet Momatt México</title>
+    <meta name="robots" content="noindex">
+    <link rel="icon" type="image/png" href="/static/img/favicon.png">
+    <link rel="stylesheet" href="/static/estilos.css">
+    {% include "partials/_ga.html" %}
+</head>
+<body>
+    <header class="topbar">
+        <a href="/" class="logo"><img src="/static/img/logo-texto.png" alt="Outlet Momatt México"></a>
+        <a href="/registro" class="topbar-link">Crear cuenta</a>
+    </header>
+
+    <main class="auth-page">
+        <div class="auth-box">
+            <h1>Iniciar sesión</h1>
+            <p class="auth-sub">Accede para ver tus pedidos y datos guardados.</p>
+
+            {% if error %}<div class="auth-error">{{ error }}</div>{% endif %}
+
+            <form action="/login" method="post">
+                <label>Correo electrónico
+                    <input type="email" name="email" value="{{ email or '' }}" required autofocus>
+                </label>
+                <label>Contraseña
+                    <input type="password" name="password" required>
+                </label>
+                <button type="submit" class="btn-pagar">Entrar</button>
+            </form>
+
+            <p class="auth-foot">¿No tienes cuenta? <a href="/registro">Regístrate gratis</a></p>
+        </div>
+    </main>
+</body>
+</html>

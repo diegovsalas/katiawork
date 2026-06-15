@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Datos para tu transferencia | Outlet Momatt México</title>
+    <meta name="robots" content="noindex">
+    <link rel="icon" type="image/png" href="/static/img/favicon.png">
+    <link rel="stylesheet" href="/static/estilos.css">
+    {% include "partials/_ga.html" %}
+</head>
+<body>
+    <header class="topbar">
+        <a href="/" class="logo"><img src="/static/img/logo-texto.png" alt="Outlet Momatt México"></a>
+        <a href="/carrito" class="cart-link">🛒 Carrito</a>
+    </header>
+
+    <main class="pago-page">
+        <h1>¡Gracias, {{ nombre }}!</h1>
+        <p>Tu pedido <strong>{{ pedido }}</strong> está reservado. Haz tu transferencia con estos datos:</p>
+
+        <div class="datos-pago">
+            <div class="dato"><span>Titular</span><strong>{{ banregio.titular }}</strong></div>
+            <div class="dato"><span>Banco</span><strong>{{ banregio.banco }}</strong></div>
+            <div class="dato"><span>CLABE</span><strong class="copiable">{{ banregio.clabe }}</strong></div>
+            {% if banregio.cuenta %}<div class="dato"><span>Cuenta</span><strong class="copiable">{{ banregio.cuenta }}</strong></div>{% endif %}
+            <div class="dato"><span>Concepto / referencia</span><strong>{{ pedido }}</strong></div>
+        </div>
+
+        <div class="datos-pago">
+            <div class="dato"><span>Productos ({{ unidades }} pz)</span><strong>${{ "{:,.0f}".format(subtotal_prod) }}</strong></div>
+            <div class="dato"><span>Envío ocurre vía {{ paqueteria }}</span><strong>${{ "{:,.0f}".format(envio) }}</strong></div>
+            <div class="dato"><span>IVA (16%)</span><strong>${{ "{:,.0f}".format(iva) }}</strong></div>
+            <div class="dato total-pago"><span>Total a transferir</span><strong>${{ "{:,.0f}".format(total) }} MXN</strong></div>
+        </div>
+
+        <div class="datos-pago">
+            <h3 style="padding:8px 0;color:var(--amarillo);">📦 Recoger en sucursal</h3>
+            <div class="dato"><span>Paquetería</span><strong>{{ paqueteria }}</strong></div>
+            <div class="dato"><span>Ciudad</span><strong>{{ ciudad_entrega }}, {{ estado_entrega }}</strong></div>
+            {% if sucursal %}<div class="dato"><span>Sucursal</span><strong>{{ sucursal }}</strong></div>{% endif %}
+            {% if paqueteria == 'Castores' %}
+            <p style="padding:14px 0 4px;color:var(--texto-tenue);font-size:0.88rem;">
+                Consulta la sucursal Castores más cercana en
+                <a href="https://www.castores.com.mx/sucursales.html" target="_blank" rel="noopener" style="color:var(--amarillo);">castores.com.mx/sucursales ↗</a>
+            </p>
+            {% endif %}
+        </div>
+
+        <p class="nota">
+            Después de transferir, envía tu comprobante por WhatsApp o correo
+            <strong>{{ banregio.correo }}</strong>, indicando tu número de pedido
+            <strong>{{ pedido }}</strong>. Confirmamos y preparamos tu envío.
+        </p>
+
+        <a href="/pedido/{{ pedido }}" class="btn-pagar">📄 Ver e imprimir mi pedido</a>
+        <a href="https://wa.me/{{ sitio.whatsapp }}?text=Hola,%20realic%C3%A9%20mi%20pago%20del%20pedido%20{{ pedido }}%20por%20${{ '{:,.0f}'.format(total) }}%20MXN.%20Adjunto%20mi%20comprobante."
+           class="btn-pagar btn-pagar-wa" target="_blank" rel="noopener">
+            💬 Mandar comprobante por WhatsApp
+        </a>
+        <a href="/" class="btn-volver">Volver a la tienda</a>
+    </main>
+
+    <footer class="footer"><p>© Outlet Momatt México</p></footer>
+
+    <!-- GA4: purchase (conversión principal) -->
+    <script>
+      if (typeof gtag === 'function') {
+        gtag('event', 'purchase', {
+          transaction_id: {{ pedido | tojson }},
+          value:    {{ total }},
+          tax:      {{ iva }},
+          shipping: {{ envio }},
+          currency: 'MXN',
+          items: [
+            {% for it in items_snapshot %}
+            {
+              item_id:   {{ it.id | tojson }},
+              item_name: {{ it.nombre | tojson }},
+              price:     {{ it.precio }},
+              quantity:  {{ it.cantidad }}
+            }{% if not loop.last %},{% endif %}
+            {% endfor %}
+          ]
+        });
+      }
+    </script>
+</body>
+</html>

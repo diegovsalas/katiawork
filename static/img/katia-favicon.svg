@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+    <defs>
+      <linearGradient id="katiaPurpleSoft" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#A78BFA"/>
+        <stop offset="100%" stop-color="#6D5DFB"/>
+      </linearGradient>
+    </defs>
+<rect width="512" height="512" rx="116" fill="url(#katiaPurpleSoft)"/>
+<g transform="translate(118,118) scale(1.15)">
+  <path d="M73 42H148C178 42 198 62 198 93V136C198 166 177 186 147 186H102L63 213L72 186H70C45 186 28 169 28 144V93C28 62 43 42 73 42Z" fill="none" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M27 117C6 137 12 177 45 197C78 217 136 218 171 190" fill="none" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round" opacity="0.95"/>
+  <circle cx="26" cy="117" r="10" fill="none" stroke="#FFFFFF" stroke-width="6"/>
+  <text x="82" y="147" font-family="Inter, DejaVu Sans, Arial, sans-serif" font-weight="800" font-size="105" fill="#FFFFFF" text-anchor="middle">k</text>
+  <path d="M154 65 C157 78 158 79 171 82 C158 85 157 86 154 99 C151 86 150 85 137 82 C150 79 151 78 154 65Z" fill="#FFFFFF"/>
+  <circle cx="184" cy="174" r="23" fill="#FFFFFF"/>
+  <path d="M173 174L181 182L197 164" fill="none" stroke="#6D5DFB" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+</svg>

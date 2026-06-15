@@ -1,0 +1,20 @@
+# --- Núcleo del constructor katia.work ---
+fastapi
+uvicorn[standard]
+jinja2
+python-multipart
+itsdangerous            # requerido por SessionMiddleware
+requests
+
+# --- IA del constructor (Gemini). Opcional: sin GEMINI_API_KEY funciona en modo plantilla ---
+google-genai
+
+# --- Pasarelas de pago (opcionales; solo se activan si pones las API keys) ---
+stripe                  # suscripción a katia (planes)
+mercadopago             # checkout online de las tiendas (tarjeta)
+
+# --- Correos transaccionales (opcional; sin RESEND_API_KEY no envía) ---
+resend
+
+# --- Exportar reportes a Excel (.xlsx). Si falta, cae a CSV ---
+openpyxl

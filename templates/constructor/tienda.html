@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% set descr = (t.sobre_nosotros or t.eslogan or t.giro or t.nombre)[:160] %}
+{% set canonica = host_url ~ ruta_base ~ '/' %}
+{% set og_img = (host_url ~ (hero_imagen or t.logo)) if (hero_imagen or t.logo) else '' %}
+<title>{{ t.nombre }}{% if t.eslogan %} · {{ t.eslogan }}{% endif %}</title>
+<meta name="description" content="{{ descr }}">
+<link rel="canonical" href="{{ canonica }}">
+<meta name="robots" content="index, follow">
+<meta name="theme-color" content="{{ t.color or '#6d5dfb' }}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="{{ t.nombre }}">
+<meta property="og:title" content="{{ t.nombre }}{% if t.eslogan %} · {{ t.eslogan }}{% endif %}">
+<meta property="og:description" content="{{ descr }}">
+<meta property="og:url" content="{{ canonica }}">
+{% if og_img %}<meta property="og:image" content="{{ og_img }}"><meta name="twitter:card" content="summary_large_image">{% endif %}
+<meta property="og:locale" content="es_MX">
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@type":"Store",
+  "name": {{ t.nombre|tojson }},
+  "description": {{ descr|tojson }},
+  "url": {{ canonica|tojson }}
+  {% if og_img %},"image": {{ og_img|tojson }}{% endif %}
+  {% if t.whatsapp %},"telephone": {{ t.whatsapp|tojson }}{% endif %}
+  {% if t.ciudad %},"address":{"@type":"PostalAddress","addressLocality": {{ t.ciudad|tojson }},"addressCountry":"MX"}{% endif %}
+  {% if redes and redes.values()|list %},"sameAs": {{ (redes.values()|list)|tojson }}{% endif %}
+}
+</script>
+{% if t.logo %}<link rel="icon" href="{{ t.logo }}">{% else %}<link rel="icon" type="image/svg+xml" href="/static/img/katia-favicon.svg">{% endif %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --brand:{{ t.color or '#6d5dfb' }};
+    --brand-2:{{ t.color_2 or '#222642' }};
+    --tinta:#1c1c26; --tenue:#6b7280; --linea:#eceaf0; --bg:#ffffff; --panel:#f7f6fa;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--tinta);background:var(--bg);
+       line-height:1.55;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 22px}
+  /* Header */
+  .topbar{display:flex;justify-content:space-between;align-items:center;padding:13px 24px;
+          background:rgba(255,255,255,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--linea);
+          position:sticky;top:0;z-index:10}
+  .brand{display:flex;align-items:center;gap:12px;font-weight:800;font-size:21px;letter-spacing:-.4px}
+  .brand img{height:44px;width:44px;border-radius:11px;object-fit:contain;box-shadow:0 4px 12px rgba(0,0,0,.07)}
+  .wa{display:inline-flex;align-items:center;gap:7px;background:#25D366;color:#fff;font-weight:700;
+      padding:10px 18px;border-radius:12px;font-size:14px;box-shadow:0 6px 16px -4px rgba(37,211,102,.5);transition:.15s}
+  .wa:hover{transform:translateY(-1px)}
+  /* Hero */
+  .hero{position:relative;overflow:hidden;color:#fff;padding:84px 22px;text-align:center;
+        background:linear-gradient(135deg,var(--brand),var(--brand-2))}
+  .hero::after{content:'';position:absolute;width:520px;height:520px;border-radius:50%;
+        background:rgba(255,255,255,.10);top:-260px;right:-120px}
+  .hero > *{position:relative;z-index:2}
+  .hero h1{font-size:clamp(30px,5vw,46px);line-height:1.08;letter-spacing:-1.4px;font-weight:800;margin-bottom:14px}
+  .hero p{font-size:clamp(16px,2vw,19px);opacity:.95;max-width:600px;margin:0 auto}
+  .badge{display:inline-block;background:rgba(255,255,255,.18);backdrop-filter:blur(4px);padding:5px 14px;
+         border-radius:99px;font-size:13px;font-weight:600;margin-bottom:16px}
+  /* Categorías */
+  .cats{display:flex;gap:10px;flex-wrap:wrap;padding:34px 0 6px}
+  .cat{background:var(--panel);border:1px solid var(--linea);padding:9px 18px;border-radius:99px;font-size:14px;
+       font-weight:600;cursor:pointer;transition:.15s}
+  .cat:hover{border-color:var(--brand)}
+  .cat.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+  /* Grid */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(238px,1fr));gap:20px;padding:22px 0 60px}
+  .card{border:1px solid var(--linea);border-radius:18px;overflow:hidden;background:#fff;display:flex;
+        flex-direction:column;transition:.18s}
+  .card:hover{box-shadow:0 20px 44px -22px rgba(34,38,66,.28);transform:translateY(-4px);border-color:#e2dcf3}
+  .thumb{height:172px;background:var(--panel);display:grid;place-items:center;font-size:48px;color:var(--brand)}
+  .thumb img{width:100%;height:100%;object-fit:cover}
+  .card .body{padding:16px;display:flex;flex-direction:column;flex:1}
+  .card h3{font-size:16.5px;font-weight:700;margin-bottom:5px}
+  .card .desc{font-size:13.5px;color:var(--tenue);flex:1;margin-bottom:12px}
+  .price{font-size:21px;font-weight:800;color:var(--brand);letter-spacing:-.5px}
+  .price .antes{font-size:13px;color:var(--tenue);text-decoration:line-through;font-weight:500;margin-left:6px}
+  .cot{font-size:15px;font-weight:700;color:var(--tenue)}
+  .stock{font-size:12px;color:#16a34a;margin-top:5px;font-weight:600}
+  .stock.no{color:#dc2626}
+  /* Sobre nosotros */
+  /* Bloque Google Negocio */
+  .google-block{padding:0 22px 10px}
+  .gb-in{max-width:880px;margin:0 auto;background:#fff;border:1px solid var(--linea);border-radius:18px;
+        padding:20px 26px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;box-shadow:0 10px 30px -18px rgba(34,38,66,.2)}
+  .gb-ic{width:48px;height:48px;border-radius:12px;background:#f4f6fb;display:grid;place-items:center;flex-shrink:0}
+  .gb-tx{flex:1;min-width:160px}.gb-tx b{font-size:16px;font-weight:800;display:block}.gb-tx span{font-size:13px;color:var(--tenue)}
+  .gb-btns{display:flex;gap:10px;flex-wrap:wrap}
+  .gb-btn{background:var(--panel);border:1.5px solid var(--linea);color:var(--ink);font-weight:700;font-size:13.5px;padding:11px 16px;border-radius:11px;transition:.15s}
+  .gb-btn:hover{border-color:var(--brand);transform:translateY(-1px)}
+  .gb-btn.star{background:#fff8e1;border-color:#ffe08a;color:#a16207}
+  .about{background:var(--panel);padding:64px 22px;text-align:center}
+  .about h2{font-size:clamp(24px,3.5vw,30px);font-weight:800;letter-spacing:-.8px;margin-bottom:14px}
+  .about p{max-width:680px;margin:0 auto;color:#475569;font-size:17px}
+  footer{background:var(--brand-2);color:#fff;padding:40px 22px;text-align:center;font-size:14px}
+  footer a{color:#fff;font-weight:700}
+  .vacio{text-align:center;color:var(--tenue);padding:64px 0}
+  /* Chatbot */
+  .chat-btn{position:fixed;bottom:24px;right:24px;width:62px;height:62px;border-radius:50%;
+            background:var(--brand);border:none;cursor:pointer;z-index:50;display:grid;place-items:center;
+            box-shadow:0 12px 28px -6px rgba(0,0,0,.35);transition:.2s}
+  .chat-btn:hover{transform:translateY(-3px) scale(1.04)}
+  .chat-btn img{width:34px;height:34px}
+  .chat-win{position:fixed;bottom:98px;right:24px;width:350px;max-width:92vw;height:480px;background:#fff;
+            border-radius:20px;box-shadow:0 24px 60px rgba(34,38,66,.3);display:none;flex-direction:column;
+            overflow:hidden;z-index:50;border:1px solid var(--linea)}
+  .chat-win.open{display:flex;animation:pop .22s ease}
+  @keyframes pop{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:none}}
+  .chat-head{background:linear-gradient(135deg,var(--brand),var(--brand-2));color:#fff;padding:14px 16px;
+             display:flex;align-items:center;gap:11px}
+  .chat-head .av{width:38px;height:38px;border-radius:50%;background:#fff;display:grid;place-items:center;flex-shrink:0;
+             box-shadow:0 3px 8px rgba(0,0,0,.15)}
+  .chat-head .av img{width:26px;height:26px}
+  .chat-head b{font-size:15px;display:block;line-height:1.2}
+  .chat-head small{font-size:11.5px;opacity:.9;display:flex;align-items:center;gap:4px}
+  .chat-msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;background:var(--panel)}
+  .msg{padding:10px 14px;border-radius:14px;font-size:14px;max-width:84%;line-height:1.45}
+  .msg.bot{background:#fff;border:1px solid var(--linea);align-self:flex-start;border-bottom-left-radius:5px}
+  .msg.user{background:var(--brand);color:#fff;align-self:flex-end;border-bottom-right-radius:5px}
+  .chat-in{display:flex;border-top:1px solid var(--linea);background:#fff}
+  .chat-in input{flex:1;border:none;padding:14px;font:inherit;outline:none;background:transparent}
+  .chat-in button{border:none;background:var(--brand);color:#fff;padding:0 20px;cursor:pointer;font-weight:700;font-size:16px}
+  .powered{text-align:center;font-size:11px;color:var(--tenue);padding:7px;background:#fff;border-top:1px solid var(--linea)}
+  .powered a{color:var(--brand);font-weight:700}
+
+  /* ---- UX mejorado ---- */
+  /* Barra de anuncio */
+  .announce{background:var(--brand-2);color:#fff;text-align:center;font-size:13px;font-weight:500;padding:9px 16px;letter-spacing:.2px}
+  /* Nav del header */
+  .tnav{display:flex;gap:26px;margin-left:auto;margin-right:26px}
+  .tnav a{font-size:14.5px;font-weight:600;color:var(--tinta);opacity:.85;transition:.15s}
+  .tnav a:hover{opacity:1;color:var(--brand)}
+  /* Hero */
+  .hero .logo-badge{width:88px;height:88px;border-radius:24px;background:#fff;display:grid;place-items:center;
+        margin:0 auto 22px;box-shadow:0 16px 34px rgba(0,0,0,.2);overflow:hidden}
+  .hero .logo-badge img{width:100%;height:100%;object-fit:contain;padding:9px}
+  .hero-cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:28px}
+  .hbtn{display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:15px;padding:14px 26px;
+        border-radius:13px;transition:.18s;cursor:pointer}
+  .hbtn.solid{background:#fff;color:var(--brand)}
+  .hbtn.solid:hover{transform:translateY(-2px);box-shadow:0 14px 28px rgba(0,0,0,.22)}
+  .hbtn.line{background:rgba(255,255,255,.12);color:#fff;border:1.5px solid rgba(255,255,255,.55)}
+  .hbtn.line:hover{background:rgba(255,255,255,.22)}
+  .hero-vals{display:flex;gap:10px 28px;justify-content:center;flex-wrap:wrap;margin-top:32px;
+        font-size:13.5px;font-weight:600;opacity:.96}
+  .hero-vals span{display:inline-flex;align-items:center;gap:7px}
+  /* Encabezado de sección */
+  .sec-head{display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding:40px 0 0}
+  .sec-head h2{font-size:clamp(22px,3vw,30px);font-weight:800;letter-spacing:-.8px}
+  .sec-head .count{color:var(--tenue);font-size:14px;font-weight:600;white-space:nowrap}
+  /* Producto */
+  .card{position:relative}
+  .mono{width:100%;height:100%;display:grid;place-items:center;font-size:46px;font-weight:800;color:#fff;
+        background:linear-gradient(135deg,var(--brand),var(--brand-2))}
+  .disc{position:absolute;top:12px;left:12px;background:#e0394b;color:#fff;font-size:12px;font-weight:800;
+        padding:4px 10px;border-radius:9px;z-index:2;box-shadow:0 6px 14px rgba(224,57,75,.4)}
+  .ptag{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--brand);
+        margin-bottom:7px;opacity:.9}
+  .low{font-size:12px;color:#d97706;font-weight:700;margin-top:6px}
+  .pwa{margin-top:13px;display:flex;align-items:center;justify-content:center;gap:8px;width:100%;background:var(--brand);
+       color:#fff;border:none;font-weight:700;font-size:14px;padding:11px;border-radius:12px;cursor:pointer;
+       transition:.15s;text-decoration:none}
+  .pwa:hover{filter:brightness(.93);transform:translateY(-1px)}
+  .pwa.cot{background:#fff;color:var(--brand);border:1.5px solid var(--linea)}
+  .pwa.off{background:var(--panel);color:var(--tenue);pointer-events:none}
+  /* Valores */
+  .values{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;padding:64px 0}
+  .value{text-align:center;padding:8px}
+  .value .vi{width:60px;height:60px;border-radius:18px;display:grid;place-items:center;font-size:26px;margin:0 auto 14px;
+        background:color-mix(in srgb,var(--brand) 13%,#fff)}
+  .value h4{font-size:16.5px;font-weight:700;margin-bottom:5px}
+  .value p{font-size:14px;color:var(--tenue);max-width:280px;margin:0 auto}
+  /* Footer */
+  .foot-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:34px;text-align:left;max-width:1120px;
+        margin:0 auto;padding:0 22px}
+  .foot-grid .fb{font-size:20px;font-weight:800;margin-bottom:10px}
+  .foot-grid h5{font-size:12px;font-weight:700;margin-bottom:13px;opacity:.6;text-transform:uppercase;letter-spacing:.6px}
+  .foot-grid a,.foot-grid p{display:block;color:rgba(255,255,255,.85);font-size:14px;margin-bottom:9px}
+  .foot-grid a:hover{color:#fff}
+  .foot-social{display:flex;gap:12px;justify-content:center;margin-top:28px}
+  .foot-social a{width:40px;height:40px;border-radius:11px;background:rgba(255,255,255,.12);display:grid;place-items:center;color:#fff;transition:.15s}
+  .foot-social a:hover{background:rgba(255,255,255,.24);transform:translateY(-2px)}
+  .foot-social svg{width:20px;height:20px}
+  .foot-bottom{border-top:1px solid rgba(255,255,255,.16);margin:24px auto 0;max-width:1120px;padding:20px 22px 0;
+        font-size:13px;opacity:.85;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+  /* Micro-formulario de captura de lead */
+  .cap-ov{position:fixed;inset:0;background:rgba(28,28,38,.5);backdrop-filter:blur(3px);display:none;
+          align-items:center;justify-content:center;z-index:60;padding:18px}
+  .cap-ov.open{display:flex}
+  .cap{background:#fff;border-radius:20px;width:100%;max-width:400px;padding:26px;box-shadow:0 30px 70px rgba(0,0,0,.35)}
+  .cap h3{font-size:20px;font-weight:800;letter-spacing:-.5px;margin-bottom:5px}
+  .cap p{font-size:14px;color:var(--tenue);margin-bottom:16px}
+  .cap label{display:block;font-weight:600;font-size:13px;margin:12px 0 5px}
+  .cap input{width:100%;padding:12px 14px;border:1.5px solid var(--linea);border-radius:12px;font:inherit;background:#fcfbff}
+  .cap input:focus{outline:none;border-color:var(--brand);background:#fff}
+  .cap .go{width:100%;margin-top:18px;background:#25D366;color:#fff;border:none;font-weight:700;font-size:15px;
+        padding:14px;border-radius:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+  .cap .skip{display:block;width:100%;text-align:center;margin-top:12px;background:none;border:none;color:var(--tenue);
+        font-size:13px;cursor:pointer;text-decoration:underline}
+  /* ===== Imagen de hero (banner) — sobre cualquier tema ===== */
+  .hero.con-img{background:linear-gradient(rgba(20,18,30,.42),rgba(20,18,30,.55)),var(--hero-img);
+        background-size:cover;background-position:center;color:#fff}
+  .hero.con-img::after{display:none}
+  .hero.con-img h1,.hero.con-img p{color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.3)}
+
+  /* ===== TEMA: Minimal (limpio, claro) ===== */
+  .tema-minimal .hero{background:#fff;color:var(--ink);border-bottom:1px solid var(--linea);padding:72px 22px}
+  .tema-minimal .hero::after{display:none}
+  .tema-minimal .hero h1{font-weight:800;letter-spacing:-1.5px}
+  .tema-minimal .hero p,.tema-minimal .badge{color:var(--tenue)}
+  .tema-minimal .badge{background:var(--panel)}
+  .tema-minimal .hbtn.solid{background:var(--ink);color:#fff}
+  .tema-minimal .hbtn.line{background:#fff;color:var(--ink);border-color:var(--linea)}
+  .tema-minimal .hero-vals{color:var(--tenue)}
+  .tema-minimal .topbar{border-bottom:1px solid var(--linea)}
+  .tema-minimal .card{border-radius:8px}
+  .tema-minimal .card:hover{transform:none;box-shadow:0 6px 20px -10px rgba(0,0,0,.15)}
+  .tema-minimal .thumb{border-radius:0}
+
+  /* ===== TEMA: Bold (oscuro, tipografía grande) ===== */
+  .tema-bold .hero{background:var(--brand-2);padding:96px 22px}
+  .tema-bold .hero::after{background:rgba(255,255,255,.06)}
+  .tema-bold .hero h1{font-size:clamp(36px,6vw,60px);font-weight:900;letter-spacing:-2px;text-transform:uppercase}
+  .tema-bold .hbtn.solid{background:var(--brand);color:#fff;border-radius:4px}
+  .tema-bold .hbtn.line{border-radius:4px}
+  .tema-bold .sec-head h2{font-size:clamp(26px,4vw,38px);font-weight:900;text-transform:uppercase;letter-spacing:-1px}
+  .tema-bold .card{border-radius:6px;border-width:2px}
+  .tema-bold .price{font-size:23px}
+  .tema-bold .pwa,.tema-bold .cat.on{border-radius:4px}
+
+  /* ===== TEMA: Boutique (serif elegante) ===== */
+  .tema-boutique .hero{background:#f7f2ec;color:#3a3024;padding:88px 22px}
+  .tema-boutique .hero::after{display:none}
+  .tema-boutique h1,.tema-boutique .sec-head h2,.tema-boutique .about h2,.tema-boutique .brand{font-family:Georgia,'Times New Roman',serif;font-weight:700;letter-spacing:0}
+  .tema-boutique .hero h1{font-size:clamp(32px,5vw,50px)}
+  .tema-boutique .hero p,.tema-boutique .badge{color:#7a6c58}
+  .tema-boutique .badge{background:#efe7db}
+  .tema-boutique .hbtn.solid{background:#3a3024;color:#fff}
+  .tema-boutique .hbtn.line{background:transparent;color:#3a3024;border-color:#c9bba6}
+  .tema-boutique .topbar{border-bottom-color:#e7ddcd}
+  .tema-boutique .card{border-radius:3px;border-color:#eaddcb}
+  .tema-boutique .thumb{border-radius:0}
+  .tema-boutique .ptag{letter-spacing:1.5px}
+
+  /* ===== TEMA: Vibrante (colorido, catálogo) ===== */
+  .tema-vibrante .hero{background:linear-gradient(125deg,var(--brand),#ff6ec4 50%,#ffb45e);padding:84px 22px}
+  .tema-vibrante .hero h1{font-size:clamp(34px,5.5vw,56px);font-weight:900;letter-spacing:-1.5px}
+  .tema-vibrante .hbtn.solid{background:#fff;color:var(--brand);border-radius:99px}
+  .tema-vibrante .hbtn.line{border-radius:99px}
+  .tema-vibrante .grid{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
+  .tema-vibrante .card{border-radius:20px;border:none;box-shadow:0 10px 30px -14px rgba(0,0,0,.18)}
+  .tema-vibrante .card{border-top:4px solid var(--brand)}
+  .tema-vibrante .cat{border-radius:99px}
+  .tema-vibrante .pwa{border-radius:99px}
+  .tema-vibrante .price{color:var(--brand)}
+
+  @media(max-width:760px){
+    .hero{padding:60px 22px}
+    .tnav{display:none}
+    .values{grid-template-columns:1fr;gap:18px;padding:44px 0}
+    .foot-grid{grid-template-columns:1fr;gap:26px}
+    .foot-bottom{flex-direction:column}
+  }
+</style>
+</head>
+<body class="tema-{{ tema }}">
+{% set wanum = (t.whatsapp or '') | replace('+','') | replace(' ','') | replace('-','') %}
+
+{% if wanum %}
+<div class="announce">{% if muestra_servicios and not muestra_productos %}✦ Reserva tu cita en línea — fácil y rápido{% else %}✦ Haz tu pedido por WhatsApp — te respondemos al instante{% endif %}</div>
+{% endif %}
+
+<header class="topbar">
+  <a class="brand" href="{{ ruta_base }}/">
+    {% if t.logo %}<img src="{{ t.logo }}" alt="{{ t.nombre }}">{% endif %}
+    <span>{{ t.nombre }}</span>
+  </a>
+  <nav class="tnav">
+    {% if muestra_servicios %}<a href="#servicios">Servicios</a>{% endif %}
+    {% if muestra_productos %}<a href="#productos">Productos</a>{% endif %}
+    {% if t.sobre_nosotros %}<a href="#nosotros">Nosotros</a>{% endif %}
+  </nav>
+  {% if wanum %}
+  <a class="wa" href="https://wa.me/{{ wanum }}" target="_blank">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163a11.867 11.867 0 01-1.587-5.946C.16 5.335 5.495 0 12.05 0a11.82 11.82 0 018.413 3.488 11.82 11.82 0 013.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 01-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884a9.82 9.82 0 001.51 5.26l-.999 3.648 3.978-1.207z"/></svg>
+    WhatsApp
+  </a>
+  {% endif %}
+</header>
+
+<section class="hero{% if hero_imagen %} con-img{% endif %}"{% if hero_imagen %} style="--hero-img:url('{{ hero_imagen }}')"{% endif %}>
+  {% if t.logo %}<div class="logo-badge"><img src="{{ t.logo }}" alt="{{ t.nombre }}"></div>{% endif %}
+  {% if t.ciudad %}<div class="badge">📍 {{ t.ciudad }}</div>{% endif %}
+  <h1>{{ t.eslogan or t.nombre }}</h1>
+  {% if t.giro %}<p>{{ t.giro }}</p>{% endif %}
+  <div class="hero-cta">
+    {% if muestra_servicios and not muestra_productos %}
+      <a class="hbtn solid" href="#servicios">Reservar cita</a>
+    {% else %}
+      <a class="hbtn solid" href="#productos">Ver productos</a>
+    {% endif %}
+    {% if wanum %}<a class="hbtn line" href="https://wa.me/{{ wanum }}" target="_blank">Escríbenos</a>{% endif %}
+  </div>
+  <div class="hero-vals">
+    {% if muestra_servicios and not muestra_productos %}
+      <span>📅 Reserva en línea</span>
+      <span>⏰ Elige tu horario</span>
+      <span>💜 Atención personalizada</span>
+    {% else %}
+      {% if wanum %}<span>💬 Pide por WhatsApp</span>{% endif %}
+      <span>🚚 Envíos a domicilio</span>
+      <span>💜 Atención personalizada</span>
+    {% endif %}
+  </div>
+</section>
+
+{% if muestra_servicios %}
+<div class="wrap" id="servicios">
+  <div class="sec-head">
+    <h2>Nuestros servicios</h2>
+    {% if servicios %}<span class="count">Reserva en línea</span>{% endif %}
+  </div>
+  {% if servicios %}
+  <div class="grid serv-grid">
+    {% for s in servicios %}
+    <article class="card serv">
+      <a class="thumb" href="{{ ruta_base }}/reservar/{{ s.id }}">
+        {% if s.imagen %}<img src="{{ s.imagen }}" alt="{{ s.nombre }}">
+        {% else %}<div class="mono">{{ s.nombre[0] | upper }}</div>{% endif %}
+      </a>
+      <div class="body">
+        <div class="ptag">⏱ {{ s.duracion }} min</div>
+        <h3><a href="{{ ruta_base }}/reservar/{{ s.id }}">{{ s.nombre }}</a></h3>
+        <p class="desc">{{ s.descripcion or '' }}</p>
+        {% if s.precio is not none %}
+          <div class="price">${{ "{:,.2f}".format(s.precio) }} {{ t.moneda }}</div>
+        {% else %}
+          <div class="cot">Precio a consultar</div>
+        {% endif %}
+        <a class="pwa" href="{{ ruta_base }}/reservar/{{ s.id }}">📅 Reservar cita</a>
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="vacio">Esta tienda aún no tiene servicios publicados.</div>
+  {% endif %}
+</div>
+{% endif %}
+
+{% if muestra_productos %}
+<div class="wrap" id="productos">
+  <div class="sec-head">
+    <h2>Nuestros productos</h2>
+    {% if productos %}<span class="count">{{ productos|length }} producto{{ 's' if productos|length != 1 else '' }}</span>{% endif %}
+  </div>
+
+  {% if categorias %}
+  <div class="cats">
+    <span class="cat on" data-cat="">Todos</span>
+    {% for c in categorias %}<span class="cat" data-cat="{{ c }}">{{ c }}</span>{% endfor %}
+  </div>
+  {% endif %}
+
+  {% if productos %}
+  <div class="grid" id="grid">
+    {% for p in productos %}
+    <article class="card" data-cat="{{ p.categoria or 'General' }}">
+      {% if p.precio_anterior and p.precio %}
+        <span class="disc">-{{ ((1 - p.precio / p.precio_anterior) * 100) | round | int }}%</span>
+      {% endif %}
+      <a class="thumb" href="{{ ruta_base }}/producto/{{ p.id }}">
+        {% if p.imagen %}<img src="{{ p.imagen }}" alt="{{ p.nombre }}">
+        {% else %}<div class="mono">{{ p.nombre[0] | upper }}</div>{% endif %}
+      </a>
+      <div class="body">
+        {% if p.categoria %}<div class="ptag">{{ p.categoria }}</div>{% endif %}
+        <h3><a href="{{ ruta_base }}/producto/{{ p.id }}">{{ p.nombre }}</a></h3>
+        <p class="desc">{{ p.descripcion or '' }}</p>
+        {% if p.precio is not none %}
+          <div class="price">${{ "{:,.2f}".format(p.precio) }} {{ t.moneda }}
+            {% if p.precio_anterior %}<span class="antes">${{ "{:,.2f}".format(p.precio_anterior) }}</span>{% endif %}
+          </div>
+        {% else %}
+          <div class="cot">Precio bajo cotización</div>
+        {% endif %}
+        {% if p.stock and p.stock > 0 and p.stock <= 3 %}
+          <div class="low">🔥 ¡Últimas {{ p.stock }} piezas!</div>
+        {% elif not p.stock and p.precio is not none %}
+          <div class="low" style="color:#dc2626">Agotado</div>
+        {% endif %}
+
+        {% if wanum %}
+          {% set msg = ('Hola ' ~ t.nombre ~ ', me interesa ' ~ p.nombre ~ (' ($' ~ ('%.2f'|format(p.precio)) ~ ')' if p.precio is not none else '') ~ '. ¿Me das más información?') %}
+          {% set agotado = (not p.stock and p.precio is not none) %}
+          <a class="pwa{{ ' cot' if p.precio is none else '' }}{{ ' off' if agotado else ' js-wa' }}"
+             href="https://wa.me/{{ wanum }}?text={{ msg | urlencode }}" target="_blank"
+             data-prod="{{ p.nombre }}"{% if p.precio is not none %} data-valor="{{ p.precio }}"{% endif %}>
+            {% if agotado %}Agotado{% elif p.precio is none %}Cotizar por WhatsApp{% else %}Pedir por WhatsApp{% endif %}
+          </a>
+        {% endif %}
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="vacio">Esta tienda aún no tiene productos publicados.</div>
+  {% endif %}
+</div>
+{% endif %}
+
+<!-- Valores -->
+<div class="wrap">
+  <div class="values">
+    {% if muestra_servicios %}
+    <div class="value"><div class="vi">📅</div><h4>Reserva en línea</h4><p>Agenda tu cita en segundos, sin llamadas ni esperas.</p></div>
+    <div class="value"><div class="vi">⏰</div><h4>Sin filas</h4><p>Eliges el día y la hora que mejor te acomoden.</p></div>
+    <div class="value"><div class="vi">💜</div><h4>Atención personalizada</h4><p>Te atendemos con dedicación en cada visita.</p></div>
+    {% else %}
+    <div class="value"><div class="vi">💬</div><h4>Pide por WhatsApp</h4><p>Haz tu pedido en segundos y te atendemos al instante.</p></div>
+    <div class="value"><div class="vi">🚚</div><h4>Envíos a domicilio</h4><p>Coordinamos la entrega de tus productos hasta tu puerta.</p></div>
+    <div class="value"><div class="vi">💜</div><h4>Calidad y dedicación</h4><p>Cada producto preparado con cuidado, pensando en ti.</p></div>
+    {% endif %}
+  </div>
+</div>
+
+{% if t.sobre_nosotros %}
+<section class="about" id="nosotros">
+  <h2>Sobre nosotros</h2>
+  <p>{{ t.sobre_nosotros }}</p>
+</section>
+{% endif %}
+
+{% if redes.maps or redes.google_review %}
+<section class="google-block">
+  <div class="gb-in">
+    <div class="gb-ic">
+      <svg viewBox="0 0 24 24" width="26" height="26"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23z"/><path fill="#FBBC05" d="M5.84 14.1a6.6 6.6 0 0 1 0-4.2V7.06H2.18a11 11 0 0 0 0 9.88l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84C6.71 7.3 9.14 5.38 12 5.38z"/></svg>
+    </div>
+    <div class="gb-tx"><b>Encuéntranos en Google</b><span>Visítanos o déjanos tu reseña ⭐</span></div>
+    <div class="gb-btns">
+      {% if redes.maps %}<a href="{{ redes.maps }}" target="_blank" rel="noopener" class="gb-btn">📍 Ver en Google Maps</a>{% endif %}
+      {% if redes.google_review %}<a href="{{ redes.google_review }}" target="_blank" rel="noopener" class="gb-btn star">⭐ Déjanos una reseña</a>{% endif %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<footer>
+  <div class="foot-grid">
+    <div>
+      <div class="fb">{{ t.nombre }}</div>
+      <p style="opacity:.8">{{ t.eslogan or t.giro or '' }}</p>
+    </div>
+    <div>
+      <h5>Contacto</h5>
+      {% if wanum %}<a href="https://wa.me/{{ wanum }}" target="_blank">WhatsApp: {{ t.whatsapp }}</a>{% endif %}
+      {% if t.correo %}<a href="mailto:{{ t.correo }}">{{ t.correo }}</a>{% endif %}
+      {% if t.ciudad %}<p>{{ t.ciudad }}</p>{% endif %}
+    </div>
+    {% if categorias %}
+    <div>
+      <h5>Categorías</h5>
+      {% for c in categorias %}<a href="#productos">{{ c }}</a>{% endfor %}
+    </div>
+    {% endif %}
+  </div>
+  {% if redes %}
+  <div class="foot-social">
+    {% if redes.instagram %}<a href="{{ redes.instagram }}" target="_blank" rel="noopener" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.2c3.2 0 3.6 0 4.9.07 1.17.05 1.8.25 2.23.41.56.22.96.48 1.38.9.42.42.68.82.9 1.38.16.42.36 1.06.41 2.23.06 1.27.07 1.65.07 4.86s0 3.6-.07 4.86c-.05 1.17-.25 1.8-.41 2.23-.22.56-.48.96-.9 1.38-.42.42-.82.68-1.38.9-.42.16-1.06.36-2.23.41-1.27.06-1.65.07-4.86.07s-3.6 0-4.86-.07c-1.17-.05-1.8-.25-2.23-.41a3.7 3.7 0 0 1-1.38-.9 3.7 3.7 0 0 1-.9-1.38c-.16-.42-.36-1.06-.41-2.23C2.21 15.6 2.2 15.2 2.2 12s0-3.6.07-4.86c.05-1.17.25-1.8.41-2.23.22-.56.48-.96.9-1.38.42-.42.82-.68 1.38-.9.42-.16 1.06-.36 2.23-.41C8.4 2.21 8.8 2.2 12 2.2zm0 3.05a6.75 6.75 0 1 0 0 13.5 6.75 6.75 0 0 0 0-13.5zm0 11.13a4.38 4.38 0 1 1 0-8.76 4.38 4.38 0 0 1 0 8.76zm6.95-11.4a1.58 1.58 0 1 1-3.15 0 1.58 1.58 0 0 1 3.15 0z"/></svg></a>{% endif %}
+    {% if redes.facebook %}<a href="{{ redes.facebook }}" target="_blank" rel="noopener" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 12a10 10 0 1 0-11.56 9.88v-6.99H7.9V12h2.54V9.8c0-2.5 1.49-3.89 3.78-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56V12h2.78l-.44 2.89h-2.34v6.99A10 10 0 0 0 22 12z"/></svg></a>{% endif %}
+    {% if redes.tiktok %}<a href="{{ redes.tiktok }}" target="_blank" rel="noopener" aria-label="TikTok"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.6 5.82a4.28 4.28 0 0 1-1.05-2.82h-3.1v12.4a2.59 2.59 0 0 1-2.6 2.5 2.59 2.59 0 1 1 .73-5.07V9.66a5.7 5.7 0 0 0-.73-.05A5.66 5.66 0 1 0 15.5 15.3V9.01a7.3 7.3 0 0 0 4.3 1.38V7.3a4.28 4.28 0 0 1-3.2-1.48z"/></svg></a>{% endif %}
+    {% if redes.youtube %}<a href="{{ redes.youtube }}" target="_blank" rel="noopener" aria-label="YouTube"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.5a3 3 0 0 0-2.1-2.1C19.5 3.9 12 3.9 12 3.9s-7.5 0-9.4.5A3 3 0 0 0 .5 6.5C0 8.4 0 12 0 12s0 3.6.5 5.5a3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1C24 15.6 24 12 24 12s0-3.6-.5-5.5zM9.6 15.6V8.4l6.2 3.6-6.2 3.6z"/></svg></a>{% endif %}
+    {% if redes.x %}<a href="{{ redes.x }}" target="_blank" rel="noopener" aria-label="X"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.9 2H22l-7.4 8.45L23.3 22h-6.8l-5.3-6.93L5.1 22H2l7.9-9.04L1 2h6.97l4.8 6.34L18.9 2zm-2.38 18h1.88L7.57 3.9H5.55L16.52 20z"/></svg></a>{% endif %}
+    {% if redes.sitio %}<a href="{{ redes.sitio }}" target="_blank" rel="noopener" aria-label="Sitio web"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18z"/></svg></a>{% endif %}
+  </div>
+  {% endif %}
+  <div class="foot-bottom">
+    <span>© {{ t.nombre }}. Todos los derechos reservados.</span>
+    {% if not sin_marca %}<span>Hecho con <a href="https://katia.work" target="_blank" style="display:inline;color:#fff;font-weight:700">katia.work</a></span>{% endif %}
+  </div>
+</footer>
+
+<!-- Micro-formulario: captura el lead antes de ir a WhatsApp -->
+<div class="cap-ov" id="capOv">
+  <div class="cap">
+    <h3>Casi listo 🎉</h3>
+    <p id="capSub">Déjanos tus datos y te atendemos por WhatsApp.</p>
+    <label>Tu nombre</label>
+    <input id="capNombre" placeholder="Nombre y apellido" autocomplete="name">
+    <label>Tu WhatsApp</label>
+    <input id="capTel" placeholder="81 1234 5678" inputmode="tel" autocomplete="tel">
+    <button class="go" id="capGo">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163a11.867 11.867 0 01-1.587-5.946C.16 5.335 5.495 0 12.05 0a11.82 11.82 0 018.413 3.488 11.82 11.82 0 013.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 01-5.688-1.448L.057 24z"/></svg>
+      Continuar a WhatsApp
+    </button>
+    <button class="skip" id="capSkip">Ir directo sin dejar mis datos</button>
+  </div>
+</div>
+
+<!-- Chatbot con la mascota de katia -->
+<button class="chat-btn" id="chatBtn" aria-label="Abrir chat">
+  <img src="/static/img/katia-icon-white.svg" alt="">
+</button>
+<div class="chat-win" id="chatWin">
+  <div class="chat-head">
+    <span class="av"><img src="/static/img/katia-icon.svg" alt=""></span>
+    <span>
+      <b>Asistente de {{ t.nombre }}</b>
+      <small>✦ con tecnología katia</small>
+    </span>
+  </div>
+  <div class="chat-msgs" id="chatMsgs">
+    <div class="msg bot">¡Hola! 👋 Soy el asistente de {{ t.nombre }}. ¿En qué puedo ayudarte hoy?</div>
+  </div>
+  <div class="chat-in">
+    <input id="chatInput" placeholder="Escribe tu pregunta…" autocomplete="off">
+    <button id="chatSend">➤</button>
+  </div>
+  {% if not sin_marca %}<div class="powered">Hecho con <a href="https://katia.work" target="_blank">katia.work</a></div>{% endif %}
+</div>
+
+<script>
+const SLUG = "{{ t.slug }}";
+
+// --- Captura de lead antes de ir a WhatsApp ---
+const capOv=document.getElementById('capOv');
+let waPendiente=null;   // {url, prod, valor}
+function abrirCaptura(url, prod, valor){
+  waPendiente={url, prod, valor};
+  document.getElementById('capSub').textContent = prod
+    ? `Déjanos tus datos para atender tu pedido de "${prod}" por WhatsApp.`
+    : 'Déjanos tus datos y te atendemos por WhatsApp.';
+  capOv.classList.add('open');
+  setTimeout(()=>document.getElementById('capNombre').focus(),50);
+}
+function irWhatsapp(){ if(waPendiente) window.open(waPendiente.url,'_blank'); capOv.classList.remove('open'); }
+document.querySelectorAll('a.js-wa').forEach(a=>{
+  a.addEventListener('click',e=>{
+    e.preventDefault();
+    abrirCaptura(a.getAttribute('href'), a.dataset.prod||'', a.dataset.valor||'');
+  });
+});
+document.getElementById('capGo').onclick=async()=>{
+  const nombre=document.getElementById('capNombre').value.trim();
+  const tel=document.getElementById('capTel').value.trim();
+  if(nombre||tel){
+    try{ await fetch('/api/lead/'+SLUG,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({nombre,telefono:tel,interes:waPendiente?.prod||'',valor:waPendiente?.valor||'',origen:'WhatsApp'})}); }
+    catch(_){}
+  }
+  irWhatsapp();
+};
+document.getElementById('capSkip').onclick=irWhatsapp;
+capOv.addEventListener('click',e=>{ if(e.target===capOv) capOv.classList.remove('open'); });
+
+// Filtro de categorías
+document.querySelectorAll('.cat').forEach(c=>c.onclick=()=>{
+  document.querySelectorAll('.cat').forEach(x=>x.classList.remove('on'));
+  c.classList.add('on');
+  const f=c.dataset.cat;
+  document.querySelectorAll('#grid .card').forEach(card=>{
+    card.style.display = (!f || card.dataset.cat===f)?'flex':'none';
+  });
+});
+// Chatbot
+const win=document.getElementById('chatWin'), msgs=document.getElementById('chatMsgs');
+const inp=document.getElementById('chatInput');
+let historial=[];
+document.getElementById('chatBtn').onclick=()=>win.classList.toggle('open');
+function push(rol,texto){
+  const d=document.createElement('div'); d.className='msg '+(rol==='user'?'user':'bot');
+  d.textContent=texto; msgs.appendChild(d); msgs.scrollTop=msgs.scrollHeight;
+}
+async function enviar(){
+  const texto=inp.value.trim(); if(!texto) return;
+  push('user',texto); historial.push({rol:'user',texto}); inp.value='';
+  const pensando=document.createElement('div'); pensando.className='msg bot'; pensando.textContent='…';
+  msgs.appendChild(pensando); msgs.scrollTop=msgs.scrollHeight;
+  try{
+    const r=await fetch('/api/chat/'+SLUG,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({mensaje:texto,historial})});
+    const d=await r.json(); pensando.remove();
+    push('bot',d.respuesta); historial.push({rol:'bot',texto:d.respuesta});
+  }catch(e){ pensando.remove(); push('bot','Lo siento, hubo un error. Intenta de nuevo.'); }
+}
+document.getElementById('chatSend').onclick=enviar;
+inp.addEventListener('keydown',e=>{ if(e.key==='Enter') enviar(); });
+</script>
+</body>
+</html>

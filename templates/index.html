@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ meta.titulo }}</title>
+    <meta name="description" content="{{ meta.descripcion }}">
+    <meta name="keywords" content="{{ meta.keywords }}">
+    <link rel="canonical" href="{{ meta.canonical }}">
+    <meta name="robots" content="index, follow">
+    <link rel="icon" type="image/png" href="/static/img/favicon.png">
+
+    <!-- Open Graph (cómo se ve al compartir en WhatsApp/Facebook) -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="{{ meta.og_titulo }}">
+    <meta property="og:description" content="{{ meta.og_descripcion }}">
+    <meta property="og:url" content="{{ meta.canonical }}">
+    <meta property="og:image" content="{{ sitio.dominio }}/static/img/logo-momatt.png">
+    <meta property="og:locale" content="es_MX">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <!-- Datos estructurados para Google (rich snippets) -->
+    <script type="application/ld+json">{{ schema_org | safe }}</script>
+
+    <link rel="stylesheet" href="/static/estilos.css">
+    <meta name="x-whatsapp" content="{{ sitio.whatsapp }}">
+    <script src="/static/chatbot.js" defer></script>
+    {% include "partials/_ga.html" %}
+</head>
+<body>
+    <header class="topbar">
+        <a href="/" class="logo"><img src="/static/img/logo-texto.png" alt="Outlet Momatt México - Patines Hidráulicos Industriales"></a>
+        <nav class="topbar-nav">
+            {% if usuario %}
+            <a href="/perfil" class="topbar-link">👤 {{ usuario.nombre.split()[0] }}</a>
+            {% else %}
+            <a href="/login" class="topbar-link">Iniciar sesión</a>
+            {% endif %}
+            <a href="/carrito" class="cart-link">🛒 Carrito
+                {% if total_items > 0 %}<span class="badge">{{ total_items }}</span>{% endif %}
+            </a>
+        </nav>
+    </header>
+    <section class="hero hero-img">
+        <!-- Texto visible solo para lectores de pantalla y Google; el contenido visual está en la imagen -->
+        <h1 class="sr-only">Patines Hidráulicos Industriales · Calidad, seguridad y rendimiento para tu operación</h1>
+        <a href="#catalogo" class="hero-img-link" aria-label="Ver catálogo de patines hidráulicos">
+            <img src="/static/img/home.png" alt="Patines hidráulicos industriales Outlet Momatt México" loading="eager">
+        </a>
+        <div class="hero-trust">
+            <span>✓ {{ sitio.anios_experiencia }} en el mercado</span>
+            <span>✓ Facturación SAT (CFDI 4.0)</span>
+            <span>✓ Envío a todo México</span>
+        </div>
+    </section>
+
+    <!-- Tira de confianza -->
+    <section class="trust-bar" aria-label="Garantías y servicios">
+        <div class="trust-item">
+            <span class="trust-ico">🚚</span>
+            <div><strong>Envío a todo México</strong><small>Salida en 24-48 hrs hábiles</small></div>
+        </div>
+        <div class="trust-item">
+            <span class="trust-ico">🧾</span>
+            <div><strong>Factura electrónica</strong><small>CFDI 4.0 para tu empresa</small></div>
+        </div>
+        <div class="trust-item">
+            <span class="trust-ico">🔒</span>
+            <div><strong>Pago seguro</strong><small>SPEI Openpay y Banregio</small></div>
+        </div>
+        <div class="trust-item">
+            <span class="trust-ico">💬</span>
+            <div><strong>Asesoría real</strong><small>WhatsApp {{ sitio.whatsapp_visible }}</small></div>
+        </div>
+    </section>
+
+    <main class="catalogo" id="catalogo">
+        {% for cat in categorias %}
+        <h2 class="categoria-titulo">{{ cat }}</h2>
+        <div class="grid">
+            {% for p in productos if p.categoria == cat %}
+            <article class="card">
+                <a href="/producto/{{ p.id }}" class="card-img" aria-label="Ver {{ p.nombre }}">
+                    <img src="/static/img/{{ p.imagen }}" alt="{{ p.nombre }} {{ p.capacidad }}" loading="lazy">
+                </a>
+                <div class="card-body">
+                    <span class="marca">{{ p.marca }} · {{ p.capacidad }}</span>
+                    <h3><a href="/producto/{{ p.id }}" class="card-titulo">{{ p.nombre }}</a></h3>
+                    <p class="desc">{{ p.descripcion }}</p>
+                    {% if p.precio is not none %}
+                        {% if p.precio_anterior %}
+                        <div class="precio-bloque">
+                            <span class="precio-old">${{ "{:,.0f}".format(p.precio_anterior) }}</span>
+                            <span class="precio-off">-{{ ((p.precio_anterior - p.precio) / p.precio_anterior * 100) | round | int }}%</span>
+                        </div>
+                        {% endif %}
+                        <div class="precio">${{ "{:,.0f}".format(p.precio) }} <small class="precio-iva">MXN + IVA</small></div>
+                        <a href="/producto/{{ p.id }}" class="btn-ver">Ver detalles</a>
+                        <form action="/agregar" method="post">
+                            <input type="hidden" name="producto_id" value="{{ p.id }}">
+                            <button type="submit" class="btn-agregar">Agregar al carrito</button>
+                        </form>
+                    {% else %}
+                        <div class="precio cotizar">Precio sujeto a cotización</div>
+                        <a href="/producto/{{ p.id }}" class="btn-cotizar">Ver y cotizar</a>
+                    {% endif %}
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+        {% endfor %}
+        <p class="precios-nota">* Precios <strong>antes de IVA (16%)</strong>, sujetos a cambio sin previo aviso. El impuesto se agrega al checkout. Solicita cotización formal para confirmar disponibilidad y tiempo de entrega.</p>
+    </main>
+
+    <!-- Testimoniales (al final, en formato compacto) -->
+    {% if testimonios %}
+    <section class="testimonios-section" aria-label="Lo que dicen nuestros clientes">
+        <h2>Lo que dicen nuestros clientes</h2>
+        <div class="testimonios-grid">
+            {% for t in testimonios %}
+            <article class="testimonio-card">
+                <div class="estrellas">{% for _ in range(t.rating) %}★{% endfor %}{% for _ in range(5 - t.rating) %}☆{% endfor %}</div>
+                <p class="testimonio-texto">"{{ t.texto }}"</p>
+                <div class="testimonio-firma">
+                    <strong>{{ t.nombre }}</strong>
+                    <small>{{ t.empresa }}</small>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <footer class="footer">
+        <div class="footer-grid">
+            <div>
+                <strong>{{ sitio.nombre }}</strong>
+                <p>{{ sitio.descripcion_corta }}</p>
+            </div>
+            <div>
+                <strong>Contacto</strong>
+                <p>📞 <a href="tel:{{ sitio.telefono }}">{{ sitio.telefono }}</a></p>
+                <p>✉️ <a href="mailto:{{ sitio.email }}">{{ sitio.email }}</a></p>
+                <p>📍 {{ sitio.ciudad }}, {{ sitio.estado }}</p>
+                <p>🕒 {{ sitio.horario }}</p>
+            </div>
+            <div>
+                <strong>Confianza</strong>
+                <p>🧾 Facturamos CFDI 4.0</p>
+                <p>🏭 {{ sitio.anios_experiencia }} surtiendo industria</p>
+                <p>🔒 Pago SPEI (Openpay) y Banregio</p>
+                <p>🚚 Envío asegurado a todo México</p>
+            </div>
+        </div>
+        <p class="footer-bottom">© Outlet Momatt México · Todos los derechos reservados</p>
+    </footer>
+
+    <!-- Botón flotante de WhatsApp -->
+    <a href="https://wa.me/{{ sitio.whatsapp }}?text=Hola,%20me%20interesa%20información%20sobre%20sus%20patines%20hidráulicos."
+       class="whatsapp-float" target="_blank" rel="noopener" aria-label="Contactar por WhatsApp">
+        <span>💬</span>
+        <strong>¿Dudas? Asesor</strong>
+    </a>
+</body>
+</html>

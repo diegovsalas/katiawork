@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Editar {{ t.nombre }} · katia</title>
+<link rel="icon" type="image/svg+xml" href="/static/img/katia-favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{--brand:#6d5dfb;--brand-2:#8b5cf6;--violeta:#a78bfa;--mint:#63d9ae;--ink:#222642;--tenue:#6b6a83;--linea:#ece8f7;--lav:#f4f1fd;--lav-2:#ebe5fb;--bg:#f6f5fb}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased}
+  a{text-decoration:none;color:inherit}
+  .top{background:rgba(255,255,255,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--linea);height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:20}
+  .top .l{display:flex;align-items:center;gap:12px}.top .logo img{height:30px;display:block}
+  .top .tn{font-weight:800;font-size:15px}.top .tn small{display:block;font-weight:600;font-size:11px;color:var(--tenue)}
+  .top .r{display:flex;gap:12px;align-items:center}
+  .lnk{font-size:13.5px;font-weight:600;color:var(--tenue)}.lnk:hover{color:var(--brand)}
+  .btn{display:inline-flex;align-items:center;gap:7px;background:linear-gradient(120deg,var(--brand-2),var(--brand));color:#fff;border:none;font-weight:700;font-size:14px;padding:11px 20px;border-radius:12px;cursor:pointer;box-shadow:0 8px 20px -8px rgba(109,93,251,.5)}
+  .btn:disabled{opacity:.6}
+  .wrap{max-width:760px;margin:26px auto 70px;padding:0 18px}
+  .card{background:#fff;border:1px solid var(--linea);border-radius:20px;padding:26px;margin-bottom:18px}
+  .card h2{font-size:17px;font-weight:800;letter-spacing:-.4px;margin-bottom:4px}
+  .card .s{color:var(--tenue);font-size:13.5px;margin-bottom:16px}
+  label{display:block;font-weight:600;font-size:13.5px;margin:14px 0 5px}
+  input,textarea{width:100%;padding:12px 14px;border:1.5px solid var(--linea);border-radius:12px;font:inherit;background:#fcfbff}
+  input:focus,textarea:focus{outline:none;border-color:var(--brand);background:#fff}
+  textarea{min-height:80px;resize:vertical}
+  .row{display:flex;gap:12px}.row>*{flex:1}
+  .hint{font-size:12.5px;color:var(--tenue);margin-top:6px}
+  .logo-box{display:flex;gap:16px;align-items:center;margin-top:6px}
+  .prevbox{width:96px;height:96px;border-radius:16px;border:1.5px dashed #d9d0f5;display:grid;place-items:center;overflow:hidden;background:var(--lav);flex-shrink:0;color:var(--tenue);font-size:12px}
+  .prevbox.wide{width:200px;height:80px}
+  .prevbox img{width:100%;height:100%;object-fit:contain}.prevbox.wide img{object-fit:cover}
+  .swatches{display:flex;gap:10px;flex-wrap:wrap}
+  .sw{width:34px;height:34px;border-radius:9px;cursor:pointer;border:3px solid transparent;transition:.12s}
+  .sw:hover{transform:scale(1.08)} .sw.on{border-color:var(--ink)}
+  .colorrow{display:flex;align-items:center;gap:10px;margin-top:10px}
+  input[type=color]{width:50px;height:42px;padding:3px;cursor:pointer;flex:none}
+  .temas{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px}
+  .tema-op{position:relative;border:2px solid var(--linea);border-radius:14px;overflow:hidden;cursor:pointer;background:#fff;transition:.15s}
+  .tema-op:hover{border-color:var(--violeta)} .tema-op.on{border-color:var(--brand);box-shadow:0 0 0 3px rgba(109,93,251,.12)}
+  .tema-op .prev{height:58px;display:block} .tema-op .meta{padding:8px 10px}
+  .tema-op .meta b{font-size:13px;display:block}.tema-op .meta span{font-size:11px;color:var(--tenue)}
+  .tema-op.lock{cursor:not-allowed}.tema-op.lock .prev,.tema-op.lock .meta{opacity:.55}
+  .candado{position:absolute;top:6px;right:6px;background:#fff;border:1px solid var(--linea);border-radius:99px;font-size:10px;font-weight:700;color:var(--brand);padding:2px 8px}
+  .save-bar{position:sticky;bottom:0;background:rgba(246,245,251,.92);backdrop-filter:blur(8px);border-top:1px solid var(--linea);padding:14px 0;display:flex;justify-content:flex-end;gap:12px;align-items:center}
+  .flash{color:var(--mint);font-weight:700;font-size:14px;display:none}
+  input[type=file]{font-size:13px}
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="l">
+    <a class="logo" href="/"><img src="/static/img/katia-logo.svg" alt="katia"></a>
+    <div class="tn">{{ t.nombre }}<small>Editar tienda · plan {{ plan_label }}</small></div>
+  </div>
+  <div class="r">
+    <a class="lnk" href="{{ ruta_base }}/" target="_blank">Ver tienda ↗</a>
+    <a class="lnk" href="/mis-tiendas">Mis tiendas</a>
+  </div>
+</div>
+
+<div class="wrap">
+  <!-- Información -->
+  <div class="card">
+    <h2>Información del negocio</h2>
+    <p class="s">Lo que ven tus clientes en la tienda.</p>
+    <label>Nombre *</label><input id="f-nombre" value="{{ t.nombre }}">
+    <label>Eslogan</label><input id="f-eslogan" value="{{ t.eslogan }}">
+    <label>Giro</label><input id="f-giro" value="{{ t.giro }}">
+    <div class="row">
+      <div><label>Ciudad</label><input id="f-ciudad" value="{{ t.ciudad }}"></div>
+      <div><label>WhatsApp</label><input id="f-whatsapp" value="{{ t.whatsapp }}"></div>
+    </div>
+    <label>Correo</label><input id="f-correo" value="{{ t.correo }}">
+    <label>Sobre nosotros</label><textarea id="f-sobre">{{ t.sobre_nosotros }}</textarea>
+  </div>
+
+  <!-- Apariencia -->
+  <div class="card">
+    <h2>Logo</h2>
+    <div class="logo-box">
+      <div class="prevbox" id="logoPrev">{% if t.logo %}<img src="{{ t.logo }}">{% else %}Sin logo{% endif %}</div>
+      <div><label style="margin-top:0">Cambiar logo</label><input type="file" id="logoFile" accept=".png,.jpg,.jpeg,.webp,.svg"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Plantilla</h2>
+    <p class="s">El diseño de tu sitio. {% if not colores_full %}Algunas requieren plan Tienda.{% endif %}</p>
+    <div class="temas" id="temas"></div>
+  </div>
+
+  <div class="card">
+    <h2>Imagen de portada (hero)</h2>
+    <p class="s">Banner opcional, recomendado 1600×600 px.</p>
+    <div class="logo-box">
+      <div class="prevbox wide" id="heroPrev">{% if t.hero_imagen %}<img src="{{ t.hero_imagen }}">{% else %}Sin imagen{% endif %}</div>
+      <div>
+        <input type="file" id="heroFile" accept=".png,.jpg,.jpeg,.webp">
+        {% if t.hero_imagen %}<div class="hint"><a href="#" id="quitarHero" style="color:#dc2626;font-weight:700">Quitar imagen</a></div>{% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Colores</h2>
+    <p class="s">{% if colores_full %}Edición libre.{% else %}Paleta del plan Gratis. <a href="/facturacion" style="color:var(--brand);font-weight:700">Mejora a Tienda</a> para edición libre.{% endif %}</p>
+    <div class="swatches" id="swatches"></div>
+    {% if colores_full %}
+    <div class="colorrow">
+      <input type="color" id="color" value="{{ t.color }}"><span class="hint">Primario</span>
+      <input type="color" id="color2" value="{{ t.color_2 or '#222642' }}"><span class="hint">Secundario</span>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <h2>Redes sociales</h2>
+    {% if redes_full %}
+    <p class="s">Pega tu usuario (@tunegocio) o el link completo. Se muestran como íconos en tu tienda.</p>
+    <div class="row"><div><label>Instagram</label><input id="r-instagram" value="{{ t.redes.instagram or '' }}" placeholder="@tunegocio"></div>
+      <div><label>Facebook</label><input id="r-facebook" value="{{ t.redes.facebook or '' }}" placeholder="tunegocio"></div></div>
+    <div class="row"><div><label>TikTok</label><input id="r-tiktok" value="{{ t.redes.tiktok or '' }}" placeholder="@tunegocio"></div>
+      <div><label>YouTube</label><input id="r-youtube" value="{{ t.redes.youtube or '' }}" placeholder="@tunegocio"></div></div>
+    <div class="row"><div><label>X (Twitter)</label><input id="r-x" value="{{ t.redes.x or '' }}" placeholder="@tunegocio"></div>
+      <div><label>Sitio web</label><input id="r-sitio" value="{{ t.redes.sitio or '' }}" placeholder="www.tunegocio.com"></div></div>
+    {% else %}
+    <p class="s">Conecta tus redes para que tus clientes te sigan. Disponible desde el plan <b>Tienda</b>. <a href="/facturacion" style="color:var(--brand);font-weight:700">Mejorar plan</a></p>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <h2>🟢 Google Negocio</h2>
+    {% if redes_full %}
+    <p class="s">Conecta tu ficha de Google para que te encuentren y te dejen reseñas.</p>
+    <label>Link de Google Maps / tu negocio</label>
+    <input id="r-maps" value="{{ t.redes.maps or '' }}" placeholder="https://maps.app.goo.gl/...">
+    <div class="hint">En Google Maps → tu negocio → Compartir → copia el link.</div>
+    <label>Link para dejar reseña (opcional)</label>
+    <input id="r-google_review" value="{{ t.redes.google_review or '' }}" placeholder="https://g.page/r/... o https://g.co/...">
+    <div class="hint">En tu Perfil de Empresa de Google → "Pedir reseñas" → copia el enlace corto.</div>
+    {% else %}
+    <p class="s">Muestra tu ubicación de Google y pide reseñas. Disponible desde el plan <b>Tienda</b>. <a href="/facturacion" style="color:var(--brand);font-weight:700">Mejorar plan</a></p>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <h2>💳 Cobros (pagos de tus clientes)</h2>
+    {% if redes_full %}
+    <p class="s">Para cobrar en línea y en mostrador. El dinero llega <b>directo a tu cuenta</b>.</p>
+    <label>Transferencia / SPEI</label>
+    <div class="row"><div><label style="margin-top:4px">Titular</label><input id="pg-titular" value="{{ t.pagos.titular or '' }}" placeholder="Nombre del titular"></div>
+      <div><label style="margin-top:4px">Banco</label><input id="pg-banco" value="{{ t.pagos.banco or '' }}" placeholder="BBVA, Banorte…"></div></div>
+    <label>CLABE (18 dígitos)</label><input id="pg-clabe" value="{{ t.pagos.clabe or '' }}" placeholder="012345678901234567" inputmode="numeric">
+    <label>Instrucciones (opcional)</label><input id="pg-instrucciones" value="{{ t.pagos.instrucciones or '' }}" placeholder="Ej. envía tu comprobante por WhatsApp">
+    <label style="margin-top:18px">MercadoPago (cobro con tarjeta — opcional)</label>
+    <input id="pg-mp" value="{{ t.pagos.mercadopago_token or '' }}" placeholder="APP_USR-... (Access Token de tu cuenta MercadoPago)">
+    <div class="hint">Pégalo y activa cobro con tarjeta/meses. Si lo dejas vacío, se usa solo transferencia/SPEI.</div>
+    {% else %}
+    <p class="s">Cobra a tus clientes en línea y en mostrador. Disponible desde el plan <b>Tienda</b>. <a href="/facturacion" style="color:var(--brand);font-weight:700">Mejorar plan</a></p>
+    {% endif %}
+  </div>
+
+  <div class="save-bar">
+    <span class="flash" id="flash">✓ Guardado</span>
+    <button class="btn" id="guardar">Guardar cambios</button>
+  </div>
+</div>
+
+<script>
+const SLUG="{{ t.slug }}", K="{{ k }}", PLAN="{{ plan }}", COLORES_FULL={{ 'true' if colores_full else 'false' }}, REDES_FULL={{ 'true' if redes_full else 'false' }};
+const TEMAS={{ temas|tojson }}, PALETA={{ paleta|tojson }};
+const ORDEN=["gratis","tienda","pro","escala"], rank=p=>ORDEN.indexOf(p);
+const TEMA_PREV={aurora:'linear-gradient(135deg,#8b5cf6,#6d5dfb)',minimal:'#fff',bold:'#222642',boutique:'#f7f2ec',vibrante:'linear-gradient(125deg,#6d5dfb,#ff6ec4,#ffb45e)'};
+const $=s=>document.querySelector(s);
+const est={tema:{{ t.tema|tojson }}, color:{{ t.color|tojson }}, color_2:{{ (t.color_2 or '#222642')|tojson }}, logo:{{ (t.logo or '')|tojson }}, hero:{{ (t.hero_imagen or '')|tojson }}, hero_tocado:false};
+
+// Plantillas
+function pintarTemas(){
+  $('#temas').innerHTML=Object.entries(TEMAS).map(([id,t])=>{
+    const bloq=rank(PLAN)<rank(t.plan);
+    return `<div class="tema-op ${id===est.tema?'on':''} ${bloq?'lock':''}" data-id="${id}" data-lock="${bloq?1:0}">
+      ${bloq?`<span class="candado">🔒 ${t.plan==='tienda'?'Tienda':'Pro'}</span>`:''}
+      <span class="prev" style="background:${TEMA_PREV[id]||'#eee'}"></span>
+      <div class="meta"><b>${t.nombre}</b><span>${t.desc}</span></div></div>`;
+  }).join('');
+  $('#temas').querySelectorAll('.tema-op').forEach(el=>el.onclick=()=>{
+    if(el.dataset.lock==='1'){ if(confirm('Plantilla del plan '+TEMAS[el.dataset.id].plan+'. ¿Mejorar tu plan?')) location.href='/facturacion'; return; }
+    est.tema=el.dataset.id; pintarTemas();
+  });
+}
+pintarTemas();
+
+// Colores
+function setColor(c){ est.color=c; const p=$('#color'); if(p)p.value=c;
+  document.querySelectorAll('#swatches .sw').forEach(s=>s.classList.toggle('on', s.dataset.c===c)); }
+$('#swatches').innerHTML=PALETA.map(c=>`<span class="sw" data-c="${c}" style="background:${c}"></span>`).join('');
+$('#swatches').querySelectorAll('.sw').forEach(s=>s.onclick=()=>setColor(s.dataset.c));
+setColor(est.color);
+if(COLORES_FULL){ $('#color').oninput=e=>setColor(e.target.value); $('#color2').oninput=e=>est.color_2=e.target.value; }
+
+// Logo / hero upload
+async function subir(file, endpoint){ const fd=new FormData(); fd.append('archivo',file);
+  const r=await fetch(endpoint,{method:'POST',body:fd}); return r.json(); }
+$('#logoFile').onchange=async e=>{ const f=e.target.files[0]; if(!f)return; const d=await subir(f,'/api/upload-logo');
+  if(d.url){ est.logo=d.url; $('#logoPrev').innerHTML=`<img src="${d.url}">`; } else alert(d.error||'Error'); };
+$('#heroFile').onchange=async e=>{ const f=e.target.files[0]; if(!f)return; const d=await subir(f,'/api/upload-imagen');
+  if(d.url){ est.hero=d.url; est.hero_tocado=true; $('#heroPrev').innerHTML=`<img src="${d.url}">`; } else alert(d.error||'Error'); };
+const qh=$('#quitarHero'); if(qh) qh.onclick=e=>{ e.preventDefault(); est.hero=''; est.hero_tocado=true; $('#heroPrev').innerHTML='Sin imagen'; };
+
+// Guardar
+$('#guardar').onclick=async()=>{
+  const b={nombre:$('#f-nombre').value,eslogan:$('#f-eslogan').value,giro:$('#f-giro').value,
+    ciudad:$('#f-ciudad').value,whatsapp:$('#f-whatsapp').value,correo:$('#f-correo').value,sobre_nosotros:$('#f-sobre').value,
+    tema:est.tema,color:est.color};
+  if(COLORES_FULL) b.color_2=est.color_2;
+  if(REDES_FULL){ b.redes={}; ['instagram','facebook','tiktok','youtube','x','sitio','maps','google_review'].forEach(n=>{ const el=$('#r-'+n); if(el) b.redes[n]=el.value; });
+    b.pagos={titular:$('#pg-titular').value,banco:$('#pg-banco').value,clabe:$('#pg-clabe').value,instrucciones:$('#pg-instrucciones').value,mercadopago_token:$('#pg-mp').value,
+      spei_activo:!!($('#pg-clabe').value||'').trim(), mp_activo:!!($('#pg-mp').value||'').trim()}; }
+  if(est.logo) b.logo=est.logo;
+  if(est.hero_tocado) b.hero_imagen=est.hero;
+  if(!b.nombre.trim()){ alert('El nombre no puede quedar vacío.'); return; }
+  const btn=$('#guardar'); btn.disabled=true; btn.textContent='Guardando…';
+  try{
+    const r=await fetch(`/api/tienda/${SLUG}?k=${encodeURIComponent(K)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});
+    const d=await r.json();
+    if(d.ok){ const f=$('#flash'); f.style.display='inline'; setTimeout(()=>f.style.display='none',2500); }
+    else alert(d.detail||'No se pudo guardar.');
+  }catch(_){ alert('Error de conexión.'); }
+  btn.disabled=false; btn.textContent='Guardar cambios';
+};
+</script>
+</body>
+</html>

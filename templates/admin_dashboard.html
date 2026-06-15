@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin · Outlet Momatt México</title>
+    <meta name="robots" content="noindex">
+    <link rel="icon" type="image/png" href="/static/img/favicon.png">
+    <link rel="stylesheet" href="/static/estilos.css">
+    {% include "partials/_ga.html" %}
+</head>
+<body>
+    <header class="topbar">
+        <a href="/" class="logo"><img src="/static/img/logo-texto.png" alt="Outlet Momatt México"></a>
+        <nav class="topbar-nav">
+            <a href="/admin" class="topbar-link active">⚙️ Admin</a>
+            <a href="/admin/pedidos" class="topbar-link">Pedidos</a>
+            <a href="/admin/usuarios" class="topbar-link">Usuarios</a>
+            <a href="/perfil" class="topbar-link">👤 {{ usuario.nombre.split()[0] }}</a>
+        </nav>
+    </header>
+
+    <main class="admin-page">
+        <h1>Dashboard</h1>
+        <p class="auth-sub">Estado del negocio en vivo. Datos al momento.</p>
+
+        <div class="stats-grid">
+            <div class="stat-card stat-amarillo">
+                <span class="stat-label">Pendientes de pago</span>
+                <span class="stat-num">{{ stats.pendientes_pago }}</span>
+            </div>
+            <div class="stat-card stat-azul">
+                <span class="stat-label">Por validar comprobante</span>
+                <span class="stat-num">{{ stats.por_validar }}</span>
+            </div>
+            <div class="stat-card stat-verde">
+                <span class="stat-label">Pagados (listos para envío)</span>
+                <span class="stat-num">{{ stats.pagados }}</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Enviados</span>
+                <span class="stat-num">{{ stats.enviados }}</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Entregados</span>
+                <span class="stat-num">{{ stats.entregados }}</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Ventas 30 días</span>
+                <span class="stat-num">${{ "{:,.0f}".format(stats.ventas_30d) }}</span>
+                <small>MXN, solo cobrados</small>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Ventas totales</span>
+                <span class="stat-num">${{ "{:,.0f}".format(stats.ventas_total) }}</span>
+                <small>MXN, histórico</small>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Pedidos totales</span>
+                <span class="stat-num">{{ stats.total_pedidos }}</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Usuarios registrados</span>
+                <span class="stat-num">{{ stats.total_usuarios }}</span>
+                <small>+{{ stats.usuarios_30d }} en 30 días</small>
+            </div>
+        </div>
+
+        <h2 style="margin-top:36px;margin-bottom:16px;">Pedidos recientes</h2>
+        <div class="pedidos-lista">
+            {% for p in recientes %}
+            <a href="/admin/pedido/{{ p.id }}" class="pedido-card">
+                <div class="pedido-card-head">
+                    <strong>{{ p.id }}</strong>
+                    <span class="estado estado-{{ p.estado }}">{{ p.estado.replace('_',' ') }}</span>
+                </div>
+                <div class="pedido-card-body">
+                    <span>{{ p.nombre }} · {{ p.unidades }} pz · {{ p.paqueteria }}</span>
+                    <strong>${{ "{:,.0f}".format(p.total) }} MXN</strong>
+                </div>
+                <small>{{ p.created_at.strftime("%d %b %Y · %H:%M") }} · {{ p.email }}</small>
+            </a>
+            {% else %}
+            <p class="auth-sub">Aún no hay pedidos.</p>
+            {% endfor %}
+        </div>
+        <p style="margin-top:16px;"><a href="/admin/pedidos" class="topbar-link" style="color:var(--amarillo);">Ver todos los pedidos →</a></p>
+    </main>
+
+    <footer class="footer"><p class="footer-bottom">© Outlet Momatt México · Admin</p></footer>
+</body>
+</html>

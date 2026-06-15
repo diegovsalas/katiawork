@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel de ventas · katia</title>
+<link rel="icon" type="image/svg+xml" href="/static/img/katia-favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{--brand:#6d5dfb;--brand-2:#8b5cf6;--violeta:#a78bfa;--mint:#63d9ae;--ink:#222642;--tenue:#6b6a83;--linea:#ece8f7;--lav:#f4f1fd;--bg:#f6f5fb}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased}
+  a{text-decoration:none;color:inherit}
+  .top{background:#fff;border-bottom:1px solid var(--linea);height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 24px}
+  .top .logo img{height:32px;display:block} .top a.s{font-size:14px;color:var(--tenue)}
+  .wrap{max-width:760px;margin:0 auto;padding:50px 24px;text-align:center}
+  .ic{width:84px;height:84px;border-radius:24px;background:linear-gradient(135deg,var(--brand-2),var(--brand));display:grid;place-items:center;font-size:40px;margin:0 auto 22px;box-shadow:0 18px 40px -14px rgba(109,93,251,.5)}
+  h1{font-size:30px;font-weight:900;letter-spacing:-1.2px;line-height:1.1}
+  .sub{color:var(--tenue);font-size:17px;margin:12px auto 28px;max-width:520px}
+  .card{background:#fff;border:1px solid var(--linea);border-radius:20px;padding:28px;text-align:left;max-width:520px;margin:0 auto}
+  .card h3{font-size:15px;font-weight:800;margin-bottom:14px}
+  .feat{display:flex;gap:11px;align-items:flex-start;font-size:15px;margin-bottom:12px}
+  .feat .ck{color:var(--mint);font-weight:800;flex-shrink:0}
+  .btn{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(120deg,var(--brand-2),var(--brand));color:#fff;border:none;font-weight:700;font-size:16px;padding:15px 32px;border-radius:14px;cursor:pointer;margin-top:26px;box-shadow:0 12px 28px -8px rgba(109,93,251,.5)}
+  .plan-actual{font-size:13.5px;color:var(--tenue);margin-top:16px}
+</style>
+</head>
+<body>
+<div class="top">
+  <a class="logo" href="/"><img src="/static/img/katia-logo.svg" alt="katia.work"></a>
+  <a class="s" href="/mis-tiendas">← Mis tiendas</a>
+</div>
+<div class="wrap">
+  <div class="ic">🗂️</div>
+  <h1>El panel de ventas es parte de Ventas Pro</h1>
+  <p class="sub">Tu tienda <b>{{ t.nombre }}</b> ya recibe pedidos y reservas por WhatsApp. Mejora a <b>Ventas Pro</b> para gestionarlos como un profesional.</p>
+  <div class="card">
+    <h3>Con Ventas Pro desbloqueas:</h3>
+    <div class="feat"><span class="ck">✓</span> <b>CRM de leads</b>: pipeline visual, no se te escapa ningún cliente</div>
+    <div class="feat"><span class="ck">✓</span> <b>Recordatorios automáticos</b> de seguimiento</div>
+    <div class="feat"><span class="ck">✓</span> <b>Caja y reportes</b>: ingresos, comisiones y estado de resultados</div>
+    <div class="feat"><span class="ck">✓</span> <b>Paquetes / bonos</b> por sesiones</div>
+    <div class="feat"><span class="ck">✓</span> Descarga de reportes en Excel/CSV</div>
+  </div>
+  <a class="btn" href="/facturacion">Mejorar a Ventas Pro →</a>
+  <div class="plan-actual">Tu plan actual: <b>{{ plan_label }}</b></div>
+</div>
+</body>
+</html>

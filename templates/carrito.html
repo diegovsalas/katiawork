@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tu carrito | Outlet Momatt México</title>
+    <meta name="robots" content="noindex">
+    <link rel="icon" type="image/png" href="/static/img/favicon.png">
+    <link rel="stylesheet" href="/static/estilos.css">
+    <meta name="x-whatsapp" content="{{ sitio.whatsapp }}">
+    <script src="/static/chatbot.js" defer></script>
+    {% include "partials/_ga.html" %}
+</head>
+<body>
+    <header class="topbar">
+        <a href="/" class="logo"><img src="/static/img/logo-texto.png" alt="Outlet Momatt México"></a>
+        <nav class="topbar-nav">
+            {% if usuario %}
+            <a href="/perfil" class="topbar-link">👤 {{ usuario.nombre.split()[0] }}</a>
+            {% else %}
+            <a href="/login" class="topbar-link">Iniciar sesión</a>
+            {% endif %}
+            <a href="/carrito" class="cart-link active">🛒 Carrito</a>
+        </nav>
+    </header>
+
+    <main class="carrito-page">
+        <h1>Tu carrito</h1>
+
+        {% if items %}
+        <table class="carrito-tabla">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Precio</th>
+                    <th>Cantidad</th>
+                    <th>Subtotal</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>
+                        <strong>{{ item.producto.nombre }}</strong>
+                        <div class="mini">{{ item.producto.marca }} · {{ item.producto.capacidad }}</div>
+                    </td>
+                    <td>${{ "{:,.0f}".format(item.producto.precio) }}</td>
+                    <td>
+                        <div class="qty-controls">
+                            <form action="/actualizar" method="post">
+                                <input type="hidden" name="producto_id" value="{{ item.producto.id }}">
+                                <input type="hidden" name="cantidad" value="{{ item.cantidad - 1 }}">
+                                <button type="submit" class="qty-btn" aria-label="Quitar uno">−</button>
+                            </form>
+                            <span class="qty-num">{{ item.cantidad }}</span>
+                            <form action="/actualizar" method="post">
+                                <input type="hidden" name="producto_id" value="{{ item.producto.id }}">
+                                <input type="hidden" name="cantidad" value="{{ item.cantidad + 1 }}">
+                                <button type="submit" class="qty-btn" aria-label="Agregar uno">+</button>
+                            </form>
+                        </div>
+                    </td>
+                    <td>${{ "{:,.0f}".format(item.subtotal) }} MXN</td>
+                    <td>
+                        <form action="/eliminar" method="post">
+                            <input type="hidden" name="producto_id" value="{{ item.producto.id }}">
+                            <button type="submit" class="btn-eliminar" title="Quitar">✕</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% if envio is none %}
+        <div class="aviso-cotizacion">
+            <h2>📦 Tu pedido necesita cotización de envío</h2>
+            <p>Tienes <strong>{{ unidades }} patines</strong> en el carrito. Para pedidos de <strong>11 o más unidades</strong> el costo de envío se cotiza directamente con el asesor para darte el mejor precio según destino y paquetería.</p>
+            <a href="https://wa.me/{{ sitio.whatsapp }}?text=Hola,%20tengo%20{{ unidades }}%20patines%20en%20mi%20carrito%20por%20${{ '{:,.0f}'.format(subtotal_prod) }}%20MXN.%20Necesito%20cotizaci%C3%B3n%20de%20env%C3%ADo,%20por%20favor."
+               class="btn-pagar btn-pagar-wa" target="_blank" rel="noopener">💬 Cotizar envío por WhatsApp</a>
+        </div>
+        {% else %}
+        <div class="resumen">
+            <div class="resumen-desglose">
+                <div class="resumen-linea"><span>Subtotal productos ({{ unidades }} pz)</span><strong>${{ "{:,.0f}".format(subtotal_prod) }} MXN</strong></div>
+                <div class="resumen-linea"><span>Envío "ocurre" (Castores o Autolínea Villarreal)</span><strong>${{ "{:,.0f}".format(envio) }} MXN</strong></div>
+                <div class="resumen-linea"><span>IVA (16%)</span><strong>${{ "{:,.0f}".format(iva) }} MXN</strong></div>
+                <div class="resumen-linea resumen-total-linea"><span>Total</span><strong>${{ "{:,.0f}".format(total) }} MXN</strong></div>
+            </div>
+            <a href="/checkout" class="btn-pagar">Continuar al pago</a>
+        </div>
+        {% endif %}
+        {% else %}
+        <p class="vacio">Tu carrito está vacío. <a href="/">Ver productos</a></p>
+        {% endif %}
+    </main>
+
+    <footer class="footer"><p class="footer-bottom">© Outlet Momatt México · Patines hidráulicos industriales</p></footer>
+
+    <a href="https://wa.me/{{ sitio.whatsapp }}?text=Hola,%20tengo%20una%20duda%20sobre%20mi%20carrito."
+       class="whatsapp-float" target="_blank" rel="noopener" aria-label="Contactar por WhatsApp">
+        <span>💬</span>
+        <strong>¿Dudas? Asesor</strong>
+    </a>
+
+    {% if items %}
+    <!-- GA4: view_cart -->
+    <script>
+      if (typeof gtag === 'function') {
+        gtag('event', 'view_cart', {
+          currency: 'MXN',
+          value: {{ subtotal_prod }},
+          items: [
+            {% for item in items %}
+            {
+              item_id:    {{ item.producto.id | tojson }},
+              item_name:  {{ item.producto.nombre | tojson }},
+              item_brand: {{ item.producto.marca | tojson }},
+              price:      {{ item.producto.precio }},
+              quantity:   {{ item.cantidad }}
+            }{% if not loop.last %},{% endif %}
+            {% endfor %}
+          ]
+        });
+      }
+    </script>
+    {% endif %}
+</body>
+</html>

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi caja · {{ t.nombre }}</title>
+<link rel="icon" type="image/svg+xml" href="/static/img/katia-favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{--brand:#6d5dfb;--brand-2:#8b5cf6;--mint:#63d9ae;--ink:#222642;--tenue:#6b6a83;--linea:#e9e6f3;--lav:#f4f1fd;--bg:#f6f5fb;--verde:#16a34a;--rojo:#dc2626}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased}
+  a{text-decoration:none;color:inherit}
+  .top{background:#fff;border-bottom:1px solid var(--linea);height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;position:sticky;top:0;z-index:10}
+  .top .l{display:flex;align-items:center;gap:10px}
+  .top .l img{height:28px}
+  .top .tn{font-weight:800;font-size:14px;line-height:1.1}.top .tn small{display:block;font-weight:600;font-size:11px;color:var(--tenue)}
+  .top a.salir{font-size:13px;font-weight:600;color:var(--tenue)}
+  .wrap{max-width:560px;margin:0 auto;padding:18px}
+  .hola{font-size:20px;font-weight:800;letter-spacing:-.4px;margin-bottom:14px}
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}
+  .stat{background:#fff;border:1px solid var(--linea);border-radius:16px;padding:16px}
+  .stat .n{font-size:24px;font-weight:900;letter-spacing:-1px}
+  .stat .l{font-size:12.5px;color:var(--tenue);font-weight:600}
+  .stat.com .n{color:var(--mint)}
+  .card{background:#fff;border:1px solid var(--linea);border-radius:18px;padding:20px;margin-bottom:16px}
+  .card h2{font-size:16px;font-weight:800;margin-bottom:6px}
+  label{display:block;font-weight:600;font-size:13px;margin:12px 0 5px}
+  input,select{width:100%;padding:13px 14px;border:1.5px solid var(--linea);border-radius:12px;font:inherit;background:#fcfbff}
+  input:focus,select:focus{outline:none;border-color:var(--brand);background:#fff}
+  .g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .btn{width:100%;margin-top:16px;background:linear-gradient(120deg,var(--brand-2),var(--brand));color:#fff;border:none;font-weight:700;font-size:15px;padding:15px;border-radius:13px;cursor:pointer}
+  .li{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid #f1eefb;font-size:14px}
+  .li:last-child{border-bottom:none}
+  .li .a{flex:1}.li .a b{font-weight:700}.li .a span{display:block;color:var(--tenue);font-size:12px}
+  .li .m{font-weight:800;color:var(--brand)}
+  .vacia{color:var(--tenue);font-size:13px;text-align:center;padding:18px 0}
+  .ok-flash{background:#ecfdf5;border:1px solid #a7f3d0;color:#047857;font-size:13.5px;padding:10px 14px;border-radius:11px;margin-top:12px;display:none}
+  .mtabs{display:flex;gap:8px;margin-bottom:16px}
+  .mtab{flex:1;padding:11px;border-radius:12px;border:1px solid var(--linea);background:#fff;cursor:pointer;font-weight:700;font-size:14px;color:var(--tenue)}
+  .mtab.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+  .hidden{display:none}
+  .leadc{border:1px solid var(--linea);border-radius:14px;padding:14px;margin-bottom:10px}
+  .leadc .lh{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+  .leadc .lh b{font-size:15px;flex:1}
+  .leadc .lh .wa{background:#25D366;color:#fff;font-weight:700;font-size:12px;padding:6px 11px;border-radius:9px}
+  .leadc .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+  .leadc .row2 label{font-size:11px;margin:0 0 3px}
+  .leadc select,.leadc input{padding:9px 10px;font-size:13px}
+  .leadc .nr{display:flex;gap:6px}
+  .leadc .nr input{flex:1}
+  .leadc .nr button{background:var(--lav);border:1px solid #ddd4f7;color:var(--brand);font-weight:700;font-size:12px;padding:0 12px;border-radius:9px;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="l"><img src="/static/img/katia-logo.svg" alt="katia">
+    <div class="tn">{{ t.nombre }}<small>Mi caja</small></div></div>
+  <a class="salir" href="/logout">Salir</a>
+</div>
+
+<div class="wrap">
+  <div class="hola">¡Hola, {{ (miembro.nombre if miembro else u.nombre) or 'especialista' }}! 👋</div>
+
+  <div class="mtabs">
+    <button class="mtab on" data-v="caja">💰 Mi caja</button>
+    <button class="mtab" data-v="leads">👥 Mis leads <span id="leadsCnt"></span></button>
+  </div>
+
+  <div id="vCaja">
+  <div class="stats">
+    <div class="stat"><div class="n" id="sVentas">$0</div><div class="l">Mis ventas de hoy</div></div>
+    <div class="stat com"><div class="n" id="sComision">$0</div><div class="l">Mi comisión de hoy</div></div>
+  </div>
+
+  <div class="card">
+    <h2>Registrar ingreso</h2>
+    <label>Servicio</label>
+    <select id="fServicio"></select>
+    <div class="g2">
+      <div><label>Cliente</label><input id="fCliente" placeholder="Nombre"></div>
+      <div><label>Monto ({{ moneda }})</label><input id="fMonto" type="number" placeholder="0"></div>
+    </div>
+    <div class="g2">
+      <div><label>Método</label><select id="fMetodo"></select></div>
+      <div><label>Estado</label><select id="fEstado"><option value="pagado">Pagado</option><option value="por_cobrar">Por cobrar</option></select></div>
+    </div>
+    <div class="g2">
+      <div><label>Categoría</label><input id="fCategoria" list="cl" placeholder="masaje, facial…"><datalist id="cl"><option>masaje</option><option>facial</option><option>paquete</option><option>brindis</option><option>otro</option></datalist></div>
+      <div><label>¿Próxima cita?</label><select id="fProx"><option value="">—</option><option value="si">Sí</option><option value="no">No</option></select></div>
+    </div>
+    <button class="btn" id="fGuardar">💰 Registrar</button>
+    <div class="ok-flash" id="flash">✓ Ingreso registrado</div>
+  </div>
+
+  <div class="card">
+    <h2>Mis movimientos de hoy</h2>
+    <div id="lista"><div class="vacia">Cargando…</div></div>
+  </div>
+  </div><!-- /vCaja -->
+
+  <div id="vLeads" class="hidden">
+    <div class="card">
+      <h2>Mis leads asignados</h2>
+      <div id="leadsList"><div class="vacia">Cargando…</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SLUG="{{ t.slug }}", MONEDA="{{ moneda }}", HOY="{{ hoy }}";
+const SERVICIOS={{ servicios|tojson }}, METODOS={{ metodos|tojson }}, ETAPAS={{ etapas|tojson }};
+const $=s=>document.querySelector(s);
+const fmt=n=>(n||n===0)?'$'+Number(n).toLocaleString('es-MX',{maximumFractionDigits:2}):'$0';
+$('#fServicio').innerHTML='<option value="">— Servicio —</option>'+SERVICIOS.map(s=>`<option data-precio="${s.precio||''}">${s.nombre}</option>`).join('')+'<option>Otro</option>';
+$('#fMetodo').innerHTML=METODOS.map(m=>`<option>${m}</option>`).join('');
+$('#fServicio').onchange=e=>{const p=e.target.selectedOptions[0]?.dataset.precio; if(p&&!$('#fMonto').value)$('#fMonto').value=p;};
+
+async function cargar(){
+  const d=await fetch('/api/mi-caja/'+SLUG).then(r=>r.json());
+  $('#sVentas').textContent=fmt(d.ventas);
+  $('#sComision').textContent=fmt(d.comision);
+  const movs=d.movimientos||[];
+  $('#lista').innerHTML=movs.length? movs.map(m=>`<div class="li">
+      <div class="a"><b>${m.servicio_nombre}</b><span>${m.cliente_nombre} · ${m.metodo_pago}${m.estado_pago==='por_cobrar'?' · por cobrar':''}</span></div>
+      <div class="m">${fmt(m.monto)}</div></div>`).join('')
+    : '<div class="vacia">Aún no registras ingresos hoy.</div>';
+}
+$('#fGuardar').onclick=async()=>{
+  const so=$('#fServicio').selectedOptions[0];
+  const payload={servicio_nombre:(so?so.textContent:'Servicio'),cliente_nombre:$('#fCliente').value,
+    monto:$('#fMonto').value,metodo_pago:$('#fMetodo').value,estado_pago:$('#fEstado').value,
+    categoria:$('#fCategoria').value,prox_cita:$('#fProx').value,conteo:1};
+  if(!(Number(payload.monto)>0)){ alert('Pon el monto.'); return; }
+  const r=await fetch('/api/mi-caja/'+SLUG,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}).then(r=>r.json());
+  if(r.ok){ ['fCliente','fMonto','fServicio','fCategoria'].forEach(i=>$('#'+i).value=''); $('#fProx').value='';
+    const f=$('#flash'); f.style.display='block'; setTimeout(()=>f.style.display='none',1800); cargar(); }
+  else alert(r.detail||'No se pudo registrar.');
+};
+
+// Tabs Mi caja / Mis leads
+document.querySelectorAll('.mtab').forEach(t=>t.onclick=()=>{
+  document.querySelectorAll('.mtab').forEach(x=>x.classList.remove('on')); t.classList.add('on');
+  $('#vCaja').classList.toggle('hidden',t.dataset.v!=='caja');
+  $('#vLeads').classList.toggle('hidden',t.dataset.v!=='leads');
+  if(t.dataset.v==='leads') cargarLeads();
+});
+
+async function cargarLeads(){
+  const d=await fetch('/api/mis-leads/'+SLUG).then(r=>r.json());
+  const leads=d.leads||[];
+  $('#leadsCnt').textContent=leads.length?`(${leads.length})`:'';
+  const cont=$('#leadsList');
+  if(!leads.length){ cont.innerHTML='<div class="vacia">No tienes leads asignados todavía.</div>'; return; }
+  cont.innerHTML=leads.map(l=>{
+    const tel=(l.telefono||'').replace(/\D/g,'');
+    const venc=l.proximo_contacto && l.proximo_contacto<=HOY && ['Nuevo','Contactado','Interesado'].includes(l.etapa);
+    return `<div class="leadc" data-id="${l.id}">
+      <div class="lh"><b>${l.nombre||'Cliente'}</b>${tel?`<a class="wa" href="https://wa.me/${tel}" target="_blank">WhatsApp</a>`:''}</div>
+      <div style="font-size:12px;color:var(--tenue);margin-bottom:8px">${l.origen||''}${l.valor?' · '+(l.valor?'$'+Number(l.valor).toLocaleString('es-MX'):''):''}${venc?' · <b style="color:#dc2626">⏰ por contactar</b>':''}</div>
+      <div class="row2">
+        <div><label>Etapa</label><select class="le-etapa">${ETAPAS.map(e=>`<option ${e===l.etapa?'selected':''}>${e}</option>`).join('')}</select></div>
+        <div><label>Próximo contacto</label><input class="le-prox" type="date" value="${l.proximo_contacto||''}"></div>
+      </div>
+      <div class="nr"><input class="le-nota" placeholder="Nota de seguimiento…"><button class="le-add">+ Nota</button></div>
+    </div>`;
+  }).join('');
+  cont.querySelectorAll('.leadc').forEach(card=>{
+    const id=card.dataset.id;
+    const patch=(body)=>fetch(`/api/mis-leads/${SLUG}/${id}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json());
+    card.querySelector('.le-etapa').onchange=e=>patch({etapa:e.target.value}).then(()=>cargarLeads());
+    card.querySelector('.le-prox').onchange=e=>patch({proximo_contacto:e.target.value});
+    card.querySelector('.le-add').onclick=async()=>{
+      const inp=card.querySelector('.le-nota'); if(!inp.value.trim())return;
+      await patch({nota_nueva:inp.value.trim()}); inp.value=''; inp.placeholder='✓ Nota guardada';
+    };
+  });
+}
+cargar();
+</script>
+</body>
+</html>

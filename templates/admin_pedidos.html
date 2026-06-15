@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pedidos · Admin Outlet Momatt</title>
+    <meta name="robots" content="noindex">
+    <link rel="icon" type="image/png" href="/static/img/favicon.png">
+    <link rel="stylesheet" href="/static/estilos.css">
+    {% include "partials/_ga.html" %}
+</head>
+<body>
+    <header class="topbar">
+        <a href="/" class="logo"><img src="/static/img/logo-texto.png" alt="Outlet Momatt México"></a>
+        <nav class="topbar-nav">
+            <a href="/admin" class="topbar-link">⚙️ Admin</a>
+            <a href="/admin/pedidos" class="topbar-link active">Pedidos</a>
+            <a href="/admin/usuarios" class="topbar-link">Usuarios</a>
+            <a href="/perfil" class="topbar-link">👤 {{ usuario.nombre.split()[0] }}</a>
+        </nav>
+    </header>
+
+    <main class="admin-page">
+        <h1>Pedidos</h1>
+
+        <form action="/admin/pedidos" method="get" class="admin-filtros">
+            <select name="estado">
+                <option value="todos" {% if estado_filtro == 'todos' %}selected{% endif %}>Todos los estados</option>
+                {% for e in estados %}
+                <option value="{{ e }}" {% if estado_filtro == e %}selected{% endif %}>{{ e.replace('_',' ') }}</option>
+                {% endfor %}
+            </select>
+            <input type="text" name="q" value="{{ busqueda or '' }}" placeholder="Buscar por ID, correo o nombre…">
+            <button type="submit" class="btn-pagar">Filtrar</button>
+        </form>
+
+        <div class="pedidos-lista" style="margin-top:24px;">
+            {% for p in pedidos %}
+            <a href="/admin/pedido/{{ p.id }}" class="pedido-card">
+                <div class="pedido-card-head">
+                    <strong>{{ p.id }}</strong>
+                    <span class="estado estado-{{ p.estado }}">{{ p.estado.replace('_',' ') }}</span>
+                </div>
+                <div class="pedido-card-body">
+                    <span>{{ p.nombre }} · {{ p.unidades }} pz · {{ p.paqueteria }} → {{ p.ciudad_entrega or '—' }}</span>
+                    <strong>${{ "{:,.0f}".format(p.total) }} MXN</strong>
+                </div>
+                <small>{{ p.created_at.strftime("%d %b %Y · %H:%M") }} · {{ p.email }}{% if p.guia %} · guía {{ p.guia }}{% endif %}</small>
+            </a>
+            {% else %}
+            <p class="auth-sub">No hay pedidos que coincidan con el filtro.</p>
+            {% endfor %}
+        </div>
+    </main>
+
+    <footer class="footer"><p class="footer-bottom">© Outlet Momatt México · Admin</p></footer>
+</body>
+</html>

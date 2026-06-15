@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+.venv/
+env/
+.env
+.env.local
+.env.production
+.env.staging
+# .env.example SÍ se sube como plantilla
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+
+# macOS
+.DS_Store
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# Local FastAPI / uvicorn
+*.pid
+_tmp*
+
+# CONSTRUCTOR: datos de tiendas creadas por usuarios y logos generados/subidos.
+# Son datos de runtime, no se versionan.
+data/
+static/tiendas/

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mis tiendas · katia</title>
+<link rel="icon" type="image/svg+xml" href="/static/img/katia-favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{--brand:#6d5dfb;--brand-2:#8b5cf6;--violeta:#a78bfa;--mint:#63d9ae;--ink:#222642;--tenue:#6b6a83;--linea:#ece8f7;--lav:#f4f1fd;--bg:#f6f5fb}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased}
+  a{text-decoration:none;color:inherit}
+  .top{background:#fff;border-bottom:1px solid var(--linea);height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:10}
+  .top .logo img{height:32px;display:block}
+  .top .r{display:flex;align-items:center;gap:14px;font-size:14px}
+  .top .r .u{color:var(--tenue)} .top .r a:hover{color:var(--brand)}
+  .wrap{max-width:1040px;margin:0 auto;padding:32px 24px}
+  .head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:26px;flex-wrap:wrap}
+  .head h1{font-size:28px;font-weight:800;letter-spacing:-1px}
+  .head p{color:var(--tenue);font-size:15px;margin-top:2px}
+  .btn{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(120deg,var(--brand-2),var(--brand));color:#fff;
+       border:none;font-weight:700;font-size:15px;padding:13px 22px;border-radius:13px;cursor:pointer;box-shadow:0 10px 24px -8px rgba(109,93,251,.5)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px}
+  .tienda{background:#fff;border:1px solid var(--linea);border-radius:18px;padding:20px;transition:.16s}
+  .tienda:hover{box-shadow:0 18px 40px -22px rgba(80,60,200,.3);transform:translateY(-3px)}
+  .th{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+  .th .lg{width:48px;height:48px;border-radius:12px;object-fit:contain;background:var(--lav);flex-shrink:0}
+  .th .lg.mono{display:grid;place-items:center;color:#fff;font-weight:800;font-size:20px;background:linear-gradient(135deg,var(--brand),var(--brand-2))}
+  .th b{font-size:17px;font-weight:700}.th small{display:block;color:var(--tenue);font-size:12.5px}
+  .meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+  .chip{background:var(--lav);color:var(--brand);font-size:12px;font-weight:700;padding:4px 11px;border-radius:99px}
+  .acts{display:flex;gap:9px}
+  .acts a{flex:1;text-align:center;font-weight:700;font-size:13.5px;padding:10px;border-radius:11px}
+  .acts .ver{background:#fff;border:1.5px solid var(--linea);color:var(--ink)}
+  .acts .panel{background:var(--brand);color:#fff}
+  .empty{background:#fff;border:1px dashed #d9d0f5;border-radius:20px;padding:56px 24px;text-align:center}
+  .empty h3{font-size:20px;font-weight:800;margin-bottom:8px}.empty p{color:var(--tenue);margin-bottom:22px}
+</style>
+</head>
+<body>
+<div class="top">
+  <a class="logo" href="/"><img src="/static/img/katia-logo.svg" alt="katia.work"></a>
+  <div class="r">
+    {% set planlabel = {'gratis':'Gratis','tienda':'Tienda','pro':'Ventas Pro','escala':'Escala'} %}
+    <a href="/facturacion" style="background:var(--lav);color:var(--brand);font-weight:700;font-size:13px;padding:7px 14px;border-radius:99px">⭐ Plan: {{ planlabel[usuario.plan] or 'Gratis' }}</a>
+    <span class="u">{{ usuario.nombre or usuario.email }}</span>
+    <a href="/logout">Salir</a>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="head">
+    <div>
+      <h1>Mis tiendas</h1>
+      <p>Administra tus tiendas, productos, citas y pipeline de ventas.</p>
+    </div>
+    <a class="btn" href="/crear">+ Crear nueva tienda</a>
+  </div>
+
+  {% if tiendas %}
+  <div class="grid">
+    {% for t in tiendas %}
+    {% set base = ('//' ~ t.slug ~ '.' ~ dominio_base ~ '/') if dominio_base != 'localhost' else ('/t/' ~ t.slug) %}
+    <div class="tienda">
+      <div class="th">
+        {% if t.logo %}<img class="lg" src="{{ t.logo }}" alt="">{% else %}<div class="lg mono">{{ t.nombre[0]|upper }}</div>{% endif %}
+        <div><b>{{ t.nombre }}</b><small>{{ t.slug }}{% if dominio_base != 'localhost' %}.{{ dominio_base }}{% endif %}</small></div>
+      </div>
+      <div class="meta">
+        <span class="chip">{{ t.tipo|capitalize }}</span>
+        {% if t.productos %}<span class="chip">📦 {{ t.productos|length }}</span>{% endif %}
+        {% if t.servicios %}<span class="chip">📅 {{ t.servicios|length }}</span>{% endif %}
+        <span class="chip">👥 {{ t.leads|length }} leads</span>
+      </div>
+      <div class="acts">
+        <a class="ver" href="{{ base }}" target="_blank">Ver</a>
+        <a class="ver" href="{{ '/t/' ~ t.slug ~ '/editar' if dominio_base=='localhost' else ('//' ~ t.slug ~ '.' ~ dominio_base ~ '/editar') }}">Editar</a>
+        <a class="panel" href="{{ '/t/' ~ t.slug ~ '/panel' if dominio_base=='localhost' else ('//' ~ t.slug ~ '.' ~ dominio_base ~ '/panel') }}">Panel</a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty">
+    <h3>Aún no tienes tiendas</h3>
+    <p>Crea tu primera tienda con katia en unos minutos.</p>
+    <a class="btn" href="/crear">+ Crear mi primera tienda</a>
+  </div>
+  {% endif %}
+</div>
+</body>
+</html>

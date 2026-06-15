@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi cuenta | Outlet Momatt México</title>
+    <meta name="robots" content="noindex">
+    <link rel="icon" type="image/png" href="/static/img/favicon.png">
+    <link rel="stylesheet" href="/static/estilos.css">
+    <meta name="x-whatsapp" content="{{ sitio.whatsapp }}">
+    <script src="/static/chatbot.js" defer></script>
+    {% include "partials/_ga.html" %}
+</head>
+<body>
+    <header class="topbar">
+        <a href="/" class="logo"><img src="/static/img/logo-texto.png" alt="Outlet Momatt México"></a>
+        <nav class="topbar-nav">
+            {% if es_admin(usuario) %}
+            <a href="/admin" class="topbar-link" style="color:var(--amarillo);">⚙️ Admin</a>
+            {% endif %}
+            <a href="/perfil" class="topbar-link active">👤 {{ usuario.nombre.split()[0] }}</a>
+            <form action="/logout" method="post" style="display:inline">
+                <button type="submit" class="topbar-link" style="border:none;background:none;cursor:pointer;font:inherit;color:inherit;">Salir</button>
+            </form>
+            <a href="/carrito" class="cart-link">🛒 Carrito</a>
+        </nav>
+    </header>
+
+    <main class="perfil-page">
+        <header class="perfil-head">
+            <h1>Hola, {{ usuario.nombre.split()[0] }}</h1>
+            <p class="auth-sub">{{ usuario.email }}{% if usuario.telefono %} · {{ usuario.telefono }}{% endif %}</p>
+        </header>
+
+        <h2>Mis pedidos</h2>
+        {% if pedidos %}
+        <div class="pedidos-lista">
+            {% for p in pedidos %}
+            <a href="/pedido/{{ p.id }}" class="pedido-card">
+                <div class="pedido-card-head">
+                    <strong>{{ p.id }}</strong>
+                    <span class="estado estado-{{ p.estado }}">{{ p.estado.replace('_',' ') }}</span>
+                </div>
+                <div class="pedido-card-body">
+                    <span>{{ p.unidades }} pz · {{ p.paqueteria }}</span>
+                    <strong>${{ "{:,.0f}".format(p.total) }} MXN</strong>
+                </div>
+                <small>{{ p.created_at.strftime("%d %b %Y · %H:%M") }}</small>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="perfil-vacio">
+            <p>Todavía no tienes pedidos.</p>
+            <a href="/" class="btn-pagar">Ver catálogo</a>
+        </div>
+        {% endif %}
+    </main>
+
+    <footer class="footer"><p class="footer-bottom">© Outlet Momatt México</p></footer>
+
+    <a href="https://wa.me/{{ sitio.whatsapp }}?text=Hola,%20necesito%20ayuda%20con%20mi%20cuenta."
+       class="whatsapp-float" target="_blank" rel="noopener" aria-label="Contactar por WhatsApp">
+        <span>💬</span><strong>¿Dudas? Asesor</strong>
+    </a>
+
+    {% if request.query_params.get('welcome') %}
+    <!-- GA4: sign_up (solo cuando viene del registro recién hecho) -->
+    <script>
+      if (typeof gtag === 'function') {
+        gtag('event', 'sign_up', { method: 'email' });
+      }
+    </script>
+    {% endif %}
+</body>
+</html>

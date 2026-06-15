@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ meta.titulo }}</title>
+    <meta name="description" content="{{ meta.descripcion }}">
+    <link rel="canonical" href="{{ meta.canonical }}">
+    <meta name="robots" content="index, follow">
+    <link rel="icon" type="image/png" href="/static/img/favicon.png">
+
+    <meta property="og:type" content="product">
+    <meta property="og:title" content="{{ p.nombre }} {{ p.capacidad }}">
+    <meta property="og:description" content="{{ meta.descripcion }}">
+    <meta property="og:url" content="{{ meta.canonical }}">
+    <meta property="og:image" content="{{ sitio.dominio }}/static/img/{{ p.imagen }}">
+    {% if p.precio %}<meta property="product:price:amount" content="{{ p.precio }}">
+    <meta property="product:price:currency" content="MXN">{% endif %}
+
+    <!-- Rich snippets: producto + migas de pan -->
+    <script type="application/ld+json">{{ schema_producto | safe }}</script>
+    <script type="application/ld+json">{{ schema_breadcrumb | safe }}</script>
+
+    <link rel="stylesheet" href="/static/estilos.css">
+    <meta name="x-whatsapp" content="{{ sitio.whatsapp }}">
+    <script src="/static/chatbot.js" defer></script>
+    {% include "partials/_ga.html" %}
+</head>
+<body>
+    <header class="topbar">
+        <a href="/" class="logo"><img src="/static/img/logo-texto.png" alt="Outlet Momatt México - Patines Hidráulicos Industriales"></a>
+        <nav class="topbar-nav">
+            {% if usuario %}
+            <a href="/perfil" class="topbar-link">👤 {{ usuario.nombre.split()[0] }}</a>
+            {% else %}
+            <a href="/login" class="topbar-link">Iniciar sesión</a>
+            {% endif %}
+            <a href="/carrito" class="cart-link">🛒 Carrito
+                {% if total_items > 0 %}<span class="badge">{{ total_items }}</span>{% endif %}
+            </a>
+        </nav>
+    </header>
+
+    <!-- Migas de pan (ayudan a SEO y navegación) -->
+    <nav class="breadcrumb">
+        <a href="/">Inicio</a> <span>›</span>
+        <span>{{ p.categoria }}</span> <span>›</span>
+        <strong>{{ p.nombre }}</strong>
+    </nav>
+
+    <main class="producto-page">
+        <div class="producto-grid">
+            <!-- Imagen -->
+            <div class="producto-img">
+                <img src="/static/img/{{ p.imagen }}" alt="{{ p.nombre }} — Patín hidráulico {{ p.capacidad }}">
+            </div>
+
+            <!-- Info y compra -->
+            <div class="producto-info">
+                <span class="marca">{{ p.marca }} · {{ p.capacidad }}</span>
+                <h1>{{ p.nombre }} — Patín Hidráulico {{ p.capacidad }}</h1>
+                <p class="producto-desc">{{ p.descripcion }}</p>
+
+                {% if p.precio is not none %}
+                {% if p.precio_anterior %}
+                <div class="producto-precio-bloque">
+                    <span class="precio-old grande">${{ "{:,.0f}".format(p.precio_anterior) }}</span>
+                    <span class="precio-off grande">-{{ ((p.precio_anterior - p.precio) / p.precio_anterior * 100) | round | int }}% OFF</span>
+                </div>
+                {% endif %}
+                <div class="producto-precio">${{ "{:,.0f}".format(p.precio) }} <span>MXN + IVA</span></div>
+                {% if p.precio_anterior %}<p class="ahorro">Ahorras ${{ "{:,.0f}".format(p.precio_anterior - p.precio) }} MXN</p>{% endif %}
+                <form action="/agregar" method="post" class="compra-form">
+                    <input type="hidden" name="producto_id" value="{{ p.id }}">
+                    <label class="cantidad-label">
+                        Cantidad
+                        <input type="number" name="cantidad" value="1" min="1" max="99" class="cantidad-input">
+                    </label>
+                    <button type="submit" class="btn-agregar grande">Agregar al carrito</button>
+                </form>
+                {% else %}
+                <div class="producto-precio cotizar">Precio sujeto a cotización</div>
+                <a href="https://wa.me/{{ sitio.whatsapp }}?text=Hola,%20me%20interesa%20cotizar%20el%20{{ p.nombre | urlencode }}%20({{ p.capacidad | urlencode }}).%20%C2%BFMe%20pueden%20enviar%20precio,%20disponibilidad%20y%20tiempo%20de%20entrega?"
+                   class="btn-cotizar grande" target="_blank" rel="noopener">
+                    💬 Cotizar por WhatsApp
+                </a>
+                <a href="mailto:{{ sitio.email }}?subject=Cotización {{ p.nombre }}" class="btn-cotizar-email">
+                    ✉️ O escríbenos a {{ sitio.email }}
+                </a>
+                {% endif %}
+
+                {% if p.ficha %}
+                <a href="/static/fichas/{{ p.ficha }}" class="btn-ficha" target="_blank" rel="noopener" download>
+                    <span class="ficha-ico">📄</span>
+                    <span>
+                        <strong>Descargar ficha técnica</strong>
+                        <small>PDF con especificaciones del fabricante</small>
+                    </span>
+                </a>
+                {% endif %}
+
+                <!-- Señales de confianza (suben la conversión) -->
+                <ul class="confianza">
+                    <li>🚚 Envío a todo México · Salida 24-48 hrs</li>
+                    <li>🧾 Facturación SAT (CFDI 4.0) para tu empresa</li>
+                    <li>🔒 Pago seguro: SPEI Openpay y Banregio</li>
+                    <li>🏭 {{ sitio.anios_experiencia }} surtiendo a la industria mexicana</li>
+                    <li>💬 Asesoría real por WhatsApp: {{ sitio.whatsapp_visible }}</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Bloque de texto SEO (keywords naturales) -->
+        <section class="producto-detalle">
+            <h2>Características del {{ p.nombre }}</h2>
+            <p>
+                El <strong>{{ p.nombre }}</strong> es un patín hidráulico para tarima
+                con capacidad de <strong>{{ p.capacidad }}</strong>, ideal para el
+                movimiento de carga en almacenes, centros de distribución e industria.
+                {{ p.descripcion }} Forma parte de nuestra línea de
+                <strong>{{ p.categoria }}</strong>.
+            </p>
+            <ul class="specs">
+                <li><span>Marca</span><strong>{{ p.marca }}</strong></li>
+                <li><span>Capacidad de carga</span><strong>{{ p.capacidad }}</strong></li>
+                <li><span>Categoría</span><strong>{{ p.categoria }}</strong></li>
+                <li><span>Envío</span><strong>A todo México</strong></li>
+            </ul>
+            {% if keywords_cat %}
+            <p class="tags">También buscado como:
+                {% for k in keywords_cat %}<span class="tag">{{ k }}</span>{% endfor %}
+            </p>
+            {% endif %}
+        </section>
+
+        <!-- Productos relacionados (más páginas vistas + enlaces internos SEO) -->
+        {% if relacionados %}
+        <section class="relacionados">
+            <h2>Productos relacionados</h2>
+            <div class="grid">
+                {% for r in relacionados %}
+                <article class="card">
+                    <a href="/producto/{{ r.id }}" class="card-img">
+                        <img src="/static/img/{{ r.imagen }}" alt="{{ r.nombre }}" loading="lazy">
+                    </a>
+                    <div class="card-body">
+                        <span class="marca">{{ r.marca }} · {{ r.capacidad }}</span>
+                        <h3><a href="/producto/{{ r.id }}" class="card-titulo">{{ r.nombre }}</a></h3>
+                        {% if r.precio is not none %}
+                        {% if r.precio_anterior %}
+                        <div class="precio-bloque">
+                            <span class="precio-old">${{ "{:,.0f}".format(r.precio_anterior) }}</span>
+                            <span class="precio-off">-{{ ((r.precio_anterior - r.precio) / r.precio_anterior * 100) | round | int }}%</span>
+                        </div>
+                        {% endif %}
+                        <div class="precio">${{ "{:,.0f}".format(r.precio) }} <small class="precio-iva">MXN + IVA</small></div>
+                        {% else %}
+                        <div class="precio cotizar">Cotización</div>
+                        {% endif %}
+                        <a href="/producto/{{ r.id }}" class="btn-ver">Ver detalles</a>
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+    </main>
+
+    <footer class="footer">
+        <div class="footer-grid">
+            <div>
+                <strong>{{ sitio.nombre }}</strong>
+                <p>{{ sitio.descripcion_corta }}</p>
+            </div>
+            <div>
+                <strong>Contacto</strong>
+                <p>📞 <a href="tel:{{ sitio.telefono }}">{{ sitio.telefono }}</a></p>
+                <p>✉️ <a href="mailto:{{ sitio.email }}">{{ sitio.email }}</a></p>
+                <p>📍 {{ sitio.ciudad }}, {{ sitio.estado }}</p>
+                <p>🕒 {{ sitio.horario }}</p>
+            </div>
+            <div>
+                <strong>Confianza</strong>
+                <p>🧾 Facturamos CFDI 4.0</p>
+                <p>🏭 {{ sitio.anios_experiencia }} surtiendo industria</p>
+                <p>🔒 Pago SPEI (Openpay) y Banregio</p>
+                <p>🚚 Envío asegurado a todo México</p>
+            </div>
+        </div>
+        <p class="footer-bottom">© Outlet Momatt México · Todos los derechos reservados</p>
+    </footer>
+
+    <a href="https://wa.me/{{ sitio.whatsapp }}?text=Hola,%20me%20interesa%20el%20{{ p.nombre }}%20({{ p.capacidad }})."
+       class="whatsapp-float" target="_blank" rel="noopener" aria-label="Contactar por WhatsApp">
+        <span>💬</span>
+        <strong>Pregunta por este modelo</strong>
+    </a>
+
+    <!-- GA4: view_item -->
+    <script>
+      if (typeof gtag === 'function') {
+        gtag('event', 'view_item', {
+          currency: 'MXN',
+          value: {{ p.precio if p.precio else 0 }},
+          items: [{
+            item_id:       {{ p.id | tojson }},
+            item_name:     {{ p.nombre | tojson }},
+            item_brand:    {{ p.marca | tojson }},
+            item_category: {{ p.categoria | tojson }},
+            price:         {{ p.precio if p.precio else 0 }},
+            quantity:      1
+          }]
+        });
+      }
+    </script>
+</body>
+</html>

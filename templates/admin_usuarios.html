@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Usuarios · Admin Outlet Momatt</title>
+    <meta name="robots" content="noindex">
+    <link rel="icon" type="image/png" href="/static/img/favicon.png">
+    <link rel="stylesheet" href="/static/estilos.css">
+    {% include "partials/_ga.html" %}
+</head>
+<body>
+    <header class="topbar">
+        <a href="/" class="logo"><img src="/static/img/logo-texto.png" alt="Outlet Momatt México"></a>
+        <nav class="topbar-nav">
+            <a href="/admin" class="topbar-link">⚙️ Admin</a>
+            <a href="/admin/pedidos" class="topbar-link">Pedidos</a>
+            <a href="/admin/usuarios" class="topbar-link active">Usuarios</a>
+            <a href="/perfil" class="topbar-link">👤 {{ usuario.nombre.split()[0] }}</a>
+        </nav>
+    </header>
+
+    <main class="admin-page">
+        <h1>Usuarios registrados</h1>
+        <p class="auth-sub">{{ usuarios|length }} {% if usuarios|length == 1 %}usuario{% else %}usuarios{% endif %} en la base.</p>
+
+        <form action="/admin/usuarios" method="get" class="admin-filtros" style="grid-template-columns:1fr auto;">
+            <input type="text" name="q" value="{{ busqueda or '' }}" placeholder="Buscar por correo, nombre o teléfono…">
+            <button type="submit" class="btn-pagar">Buscar</button>
+        </form>
+
+        <div class="pedidos-lista" style="margin-top:24px;">
+            {% for u in usuarios %}
+            <article class="pedido-card" style="cursor:default;">
+                <div class="pedido-card-head">
+                    <strong>{{ u.nombre }}</strong>
+                    <span class="auth-sub" style="font-size:0.78rem;">
+                        {{ u.num_pedidos }} pedido{{ '' if u.num_pedidos == 1 else 's' }} ·
+                        ${{ "{:,.0f}".format(u.total_gastado) }} MXN cobrado
+                    </span>
+                </div>
+                <div class="pedido-card-body">
+                    <span>
+                        ✉️ <a href="mailto:{{ u.email }}" style="color:var(--amarillo);text-decoration:none;">{{ u.email }}</a>
+                        {% if u.telefono %} · 📞 {{ u.telefono }}{% endif %}
+                    </span>
+                    {% if u.num_pedidos > 0 %}
+                    <a href="/admin/pedidos?q={{ u.email }}" style="color:var(--amarillo);text-decoration:none;font-size:0.85rem;">
+                        Ver pedidos →
+                    </a>
+                    {% endif %}
+                </div>
+                <small>
+                    Registrado el {{ u.created_at.strftime("%d %b %Y · %H:%M") }}
+                    {% if u.ultimo_pedido %} · Último pedido: {{ u.ultimo_pedido.strftime("%d %b %Y") }}{% endif %}
+                </small>
+            </article>
+            {% else %}
+            <p class="auth-sub">No hay usuarios que coincidan con la búsqueda.</p>
+            {% endfor %}
+        </div>
+    </main>
+
+    <footer class="footer"><p class="footer-bottom">© Outlet Momatt México · Admin</p></footer>
+</body>
+</html>

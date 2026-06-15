@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="es">
+{% set wanum = (t.whatsapp or '') | replace('+','') | replace(' ','') | replace('-','') %}
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reservar {{ s.nombre }} · {{ t.nombre }}</title>
+<meta name="description" content="Agenda tu cita de {{ s.nombre }} en {{ t.nombre }}. Reserva en línea, elige día y hora.">
+{% if t.logo %}<link rel="icon" href="{{ t.logo }}">{% else %}<link rel="icon" type="image/svg+xml" href="/static/img/katia-favicon.svg">{% endif %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --brand:{{ t.color or '#6d5dfb' }};
+    --brand-2:{{ t.color_2 or '#222642' }};
+    --tinta:#1c1c26; --tenue:#6b7280; --linea:#eceaf0; --bg:#ffffff; --panel:#f7f6fa;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--tinta);background:var(--panel);
+       line-height:1.55;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .topbar{display:flex;justify-content:space-between;align-items:center;padding:13px 24px;background:#fff;
+          border-bottom:1px solid var(--linea)}
+  .brand{display:flex;align-items:center;gap:12px;font-weight:800;font-size:20px}
+  .brand img{height:42px;width:42px;border-radius:11px;object-fit:contain}
+  .wrap{max-width:760px;margin:28px auto 60px;padding:0 20px}
+  .crumb{font-size:13.5px;color:var(--tenue);margin-bottom:16px}
+  .crumb a:hover{color:var(--brand)}
+  .card{background:#fff;border:1px solid var(--linea);border-radius:22px;padding:30px;box-shadow:0 20px 50px -30px rgba(34,38,66,.25)}
+  /* Cabecera del servicio */
+  .svc{display:flex;gap:16px;align-items:center;border-bottom:1px solid var(--linea);padding-bottom:22px;margin-bottom:24px}
+  .svc .ph{width:64px;height:64px;border-radius:16px;flex-shrink:0;overflow:hidden;background:var(--panel)}
+  .svc .ph img{width:100%;height:100%;object-fit:cover}
+  .svc .ph .m{width:100%;height:100%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:28px;
+        background:linear-gradient(135deg,var(--brand),var(--brand-2))}
+  .svc h1{font-size:23px;font-weight:800;letter-spacing:-.6px}
+  .svc .meta{color:var(--tenue);font-size:14.5px;margin-top:4px}
+  .svc .meta b{color:var(--brand)}
+  .step-t{font-weight:700;font-size:15px;margin:6px 0 12px;display:flex;align-items:center;gap:8px}
+  .step-t .num{width:24px;height:24px;border-radius:50%;background:var(--brand);color:#fff;font-size:13px;
+        display:grid;place-items:center;font-weight:800}
+  /* Días */
+  .dias{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px}
+  .dia{flex:0 0 auto;min-width:66px;text-align:center;padding:11px 6px;border-radius:14px;border:1.5px solid var(--linea);
+       background:#fff;cursor:pointer;transition:.15s}
+  .dia:hover{border-color:var(--brand)}
+  .dia.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+  .dia .dow{font-size:11.5px;text-transform:uppercase;letter-spacing:.4px;opacity:.8}
+  .dia .dnum{font-size:20px;font-weight:800;line-height:1.1}
+  .dia .dmon{font-size:11px;opacity:.8}
+  .dia.cerrado{opacity:.4;cursor:not-allowed}
+  /* Slots */
+  .slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(82px,1fr));gap:10px;margin-top:6px}
+  .slot{padding:11px 6px;border-radius:11px;border:1.5px solid var(--linea);background:#fff;cursor:pointer;
+        font-weight:700;font-size:14px;text-align:center;transition:.15s}
+  .slot:hover{border-color:var(--brand)}
+  .slot.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+  .msg{color:var(--tenue);font-size:14px;padding:14px 0}
+  /* Form */
+  label{display:block;font-weight:600;font-size:14px;margin:16px 0 6px}
+  input{width:100%;padding:13px 15px;border:1.5px solid var(--linea);border-radius:13px;font:inherit;background:#fcfbff}
+  input:focus{outline:none;border-color:var(--brand);background:#fff;box-shadow:0 0 0 4px rgba(0,0,0,.04)}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;width:100%;background:var(--brand);color:#fff;
+       border:none;font-weight:700;font-size:16px;padding:15px;border-radius:14px;cursor:pointer;margin-top:22px;transition:.15s}
+  .btn:hover{filter:brightness(.95)}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .hidden{display:none}
+  .resumen-bar{background:var(--panel);border:1px solid var(--linea);border-radius:14px;padding:13px 16px;
+        margin-top:20px;font-size:14.5px;font-weight:600;display:flex;align-items:center;gap:8px}
+  /* Éxito */
+  .ok-wrap{text-align:center;padding:14px 0}
+  .ok-ic{width:76px;height:76px;border-radius:50%;background:linear-gradient(135deg,#34d399,#63d9ae);color:#fff;
+        font-size:40px;display:grid;place-items:center;margin:0 auto 18px;box-shadow:0 16px 34px -8px rgba(52,211,153,.5)}
+  .ok-wrap h2{font-size:24px;font-weight:800;letter-spacing:-.6px;margin-bottom:8px}
+  .ok-det{background:var(--panel);border:1px solid var(--linea);border-radius:14px;padding:16px;margin:18px 0;text-align:left}
+  .ok-det div{display:flex;justify-content:space-between;padding:5px 0;font-size:14.5px}
+  .ok-det b{font-weight:700}
+  .wa-btn{display:inline-flex;align-items:center;gap:9px;background:#25D366;color:#fff;font-weight:700;
+        padding:14px 26px;border-radius:13px;font-size:15px}
+  .spin{display:inline-block;width:16px;height:16px;border:2px solid #ffffff66;border-top-color:#fff;border-radius:50%;
+        animation:r .7s linear infinite;vertical-align:-3px}
+  @keyframes r{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <a class="brand" href="{{ ruta_base }}/">
+    {% if t.logo %}<img src="{{ t.logo }}" alt="{{ t.nombre }}">{% endif %}
+    <span>{{ t.nombre }}</span>
+  </a>
+  {% if wanum %}<a class="wa-btn" style="padding:9px 16px;font-size:14px" href="https://wa.me/{{ wanum }}" target="_blank">WhatsApp</a>{% endif %}
+</header>
+
+<div class="wrap">
+  <div class="crumb"><a href="{{ ruta_base }}/">← Volver a {{ t.nombre }}</a></div>
+
+  <!-- FORMULARIO DE RESERVA -->
+  <div class="card" id="form">
+    <div class="svc">
+      <div class="ph">{% if s.imagen %}<img src="{{ s.imagen }}" alt="">{% else %}<div class="m">{{ s.nombre[0]|upper }}</div>{% endif %}</div>
+      <div>
+        <h1>{{ s.nombre }}</h1>
+        <div class="meta">⏱ {{ s.duracion }} min{% if s.precio is not none %} · <b>${{ "{:,.2f}".format(s.precio) }} {{ t.moneda }}</b>{% endif %}</div>
+        {% if s.descripcion %}<div class="meta">{{ s.descripcion }}</div>{% endif %}
+      </div>
+    </div>
+
+    <div class="step-t"><span class="num">1</span> Elige el día</div>
+    <div class="dias" id="dias"></div>
+
+    <div id="slotsWrap" class="hidden">
+      <div class="step-t" style="margin-top:22px"><span class="num">2</span> Elige la hora</div>
+      <div id="slots" class="slots"></div>
+      <div class="msg hidden" id="slotsMsg"></div>
+    </div>
+
+    <div id="datos" class="hidden">
+      <div class="step-t" style="margin-top:22px"><span class="num">3</span> Tus datos</div>
+      <div class="resumen-bar" id="resumenBar"></div>
+      <label>Tu nombre *</label>
+      <input id="cl-nombre" placeholder="Nombre y apellido">
+      <label>WhatsApp / teléfono *</label>
+      <input id="cl-tel" placeholder="81 1234 5678" inputmode="tel">
+      <button class="btn" id="confirmar">Confirmar reserva</button>
+    </div>
+  </div>
+
+  <!-- ÉXITO -->
+  <div class="card hidden" id="exito">
+    <div class="ok-wrap">
+      <div class="ok-ic">✓</div>
+      <h2>¡Cita agendada!</h2>
+      <p style="color:var(--tenue)">Te esperamos en {{ t.nombre }}.</p>
+      <div class="ok-det" id="okDet"></div>
+      <div id="okWa"></div>
+      <div style="margin-top:14px"><a href="{{ ruta_base }}/" style="color:var(--brand);font-weight:700">← Volver a la tienda</a></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SLUG="{{ t.slug }}", SERV_ID="{{ s.id }}", SERV_NOM={{ s.nombre|tojson }};
+const RUTA_BASE="{{ ruta_base }}";
+const DOW=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+const MON=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+const $=s=>document.querySelector(s);
+let sel={fecha:null,hora:null};
+
+// Construye los próximos 14 días
+function pintarDias(){
+  const cont=$('#dias'); cont.innerHTML='';
+  const hoy=new Date();
+  for(let i=0;i<14;i++){
+    const d=new Date(hoy); d.setDate(hoy.getDate()+i);
+    const iso=d.toISOString().slice(0,10);
+    const el=document.createElement('div');
+    el.className='dia'; el.dataset.fecha=iso;
+    el.innerHTML=`<div class="dow">${i===0?'Hoy':DOW[d.getDay()]}</div><div class="dnum">${d.getDate()}</div><div class="dmon">${MON[d.getMonth()]}</div>`;
+    el.onclick=()=>elegirDia(el,iso);
+    cont.appendChild(el);
+  }
+}
+async function elegirDia(el,fecha){
+  document.querySelectorAll('.dia').forEach(x=>x.classList.remove('on'));
+  el.classList.add('on');
+  sel.fecha=fecha; sel.hora=null;
+  $('#datos').classList.add('hidden');
+  $('#slotsWrap').classList.remove('hidden');
+  const slots=$('#slots'), msg=$('#slotsMsg');
+  slots.innerHTML='<div class="msg">Buscando horarios…</div>'; msg.classList.add('hidden');
+  try{
+    const r=await fetch(`/api/disponibilidad/${SLUG}?servicio=${SERV_ID}&fecha=${fecha}`);
+    const d=await r.json();
+    slots.innerHTML='';
+    if(d.cerrado){ msg.textContent='Cerrado este día. Elige otro.'; msg.classList.remove('hidden'); return; }
+    if(!d.slots.length){ msg.textContent='No quedan horarios libres este día.'; msg.classList.remove('hidden'); return; }
+    d.slots.forEach(h=>{
+      const b=document.createElement('div'); b.className='slot'; b.textContent=h;
+      b.onclick=()=>elegirHora(b,h); slots.appendChild(b);
+    });
+  }catch(_){ slots.innerHTML='<div class="msg">No se pudo cargar. Intenta de nuevo.</div>'; }
+}
+function elegirHora(b,hora){
+  document.querySelectorAll('.slot').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on'); sel.hora=hora;
+  const f=new Date(sel.fecha+'T00:00:00');
+  $('#resumenBar').innerHTML=`📅 ${SERV_NOM} · ${f.getDate()} ${MON[f.getMonth()]} · ${hora}`;
+  $('#datos').classList.remove('hidden');
+  $('#datos').scrollIntoView({behavior:'smooth',block:'center'});
+}
+$('#confirmar').onclick=async(e)=>{
+  const btn=e.currentTarget;
+  const nombre=$('#cl-nombre').value.trim(), tel=$('#cl-tel').value.trim();
+  if(!nombre||!tel){ alert('Pon tu nombre y teléfono.'); return; }
+  if(!sel.fecha||!sel.hora){ alert('Elige día y hora.'); return; }
+  btn.disabled=true; btn.innerHTML='<span class="spin"></span> Confirmando…';
+  try{
+    const r=await fetch(`/api/reservar/${SLUG}`,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({servicio:SERV_ID,fecha:sel.fecha,hora:sel.hora,nombre,telefono:tel})});
+    const d=await r.json();
+    if(!r.ok||!d.ok){ alert(d.detail||'No se pudo reservar.'); btn.disabled=false; btn.textContent='Confirmar reserva'; return; }
+    const f=new Date(sel.fecha+'T00:00:00');
+    $('#okDet').innerHTML=`
+      <div><span>Servicio</span><b>${SERV_NOM}</b></div>
+      <div><span>Fecha</span><b>${f.getDate()} ${MON[f.getMonth()]} ${f.getFullYear()}</b></div>
+      <div><span>Hora</span><b>${sel.hora}</b></div>
+      <div><span>A nombre de</span><b>${nombre}</b></div>`;
+    if(d.wa_url){ $('#okWa').innerHTML=`<a class="wa-btn" href="${d.wa_url}" target="_blank">Confirmar por WhatsApp</a>`; }
+    $('#form').classList.add('hidden'); $('#exito').classList.remove('hidden');
+    window.scrollTo({top:0,behavior:'smooth'});
+  }catch(_){ alert('Error de conexión. Intenta de nuevo.'); btn.disabled=false; btn.textContent='Confirmar reserva'; }
+};
+pintarDias();
+</script>
+</body>
+</html>

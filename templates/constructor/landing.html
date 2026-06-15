@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>katia · Tu tienda online y asistente de ventas con IA · Sin programar</title>
+<meta name="description" content="Crea tu tienda online en minutos con katia. IA que diseña tu logo, escribe tus textos y publica tu tienda. Recibe pedidos por WhatsApp. Gratis para empezar, sin tarjeta, 0% comisión por venta.">
+<meta name="keywords" content="tienda en línea, crear tienda online, e-commerce México, PyME, asistente IA, WhatsApp ventas">
+<link rel="canonical" href="https://katia.work/">
+<meta name="robots" content="index, follow">
+<meta name="theme-color" content="#6d5dfb">
+<link rel="icon" type="image/svg+xml" href="/static/img/katia-favicon.svg">
+
+<!-- Open Graph / Twitter -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="katia.work">
+<meta property="og:title" content="katia · Tu tienda online creada por IA · Sin programar">
+<meta property="og:description" content="Crea tu tienda en minutos, recibe pedidos por WhatsApp y usa IA para vender. Gratis para empezar, sin comisión por venta.">
+<meta property="og:url" content="https://katia.work/">
+<meta property="og:image" content="https://katia.work/static/img/katia-og.png">
+<meta property="og:locale" content="es_MX">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+<!-- Datos estructurados -->
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@graph":[
+    {"@type":"Organization","name":"katia.work","url":"https://katia.work","logo":"https://katia.work/static/img/katia-logo.svg","areaServed":"MX","sameAs":[]},
+    {"@type":"SoftwareApplication","name":"katia","applicationCategory":"BusinessApplication","operatingSystem":"Web","description":"Constructor de tiendas en línea con asistente IA para PyMEs. Crea tu tienda en minutos sin programar.","offers":{"@type":"Offer","price":"0","priceCurrency":"MXN"},"aggregateRating":{"@type":"AggregateRating","ratingValue":"4.9","reviewCount":"50"}},
+    {"@type":"FAQPage","mainEntity":[
+      {"@type":"Question","name":"¿Necesito tarjeta de crédito para empezar?","acceptedAnswer":{"@type":"Answer","text":"No. El plan Gratis no pide tarjeta. Empiezas en katia.work/crear y publicas tu tienda sin pago."}},
+      {"@type":"Question","name":"¿katia me cobra comisión por cada venta?","acceptedAnswer":{"@type":"Answer","text":"No. A diferencia de Shopify o Tiendanube, katia no cobra comisión por venta. Pagas un plan mensual fijo y cancelas cuando quieras."}},
+      {"@type":"Question","name":"¿Necesito saber programar o diseñar?","acceptedAnswer":{"@type":"Answer","text":"No. katia es una asistente con IA: tú respondes unas preguntas sobre tu negocio y ella crea el logo, los textos y la tienda."}},
+      {"@type":"Question","name":"¿Puedo conectar mi dominio propio (mi-tienda.com)?","acceptedAnswer":{"@type":"Answer","text":"Sí. Empiezas en tunegocio.katia.work y, cuando quieras, conectas un dominio propio desde el plan Tienda en adelante."}},
+      {"@type":"Question","name":"¿Sirve si mi negocio es de servicios (no vendo productos)?","acceptedAnswer":{"@type":"Answer","text":"Sí. katia funciona para productos, servicios o ambos. Puedes publicar una página de reservas con disponibilidad y recibir citas por WhatsApp."}}
+    ]}
+  ]
+}
+</script>
+
+<style>
+  :root{
+    --brand:#6d5dfb; --brand-2:#8b5cf6; --violeta:#a78bfa; --mint:#63d9ae;
+    --ink:#222642; --tenue:#6b6a83; --linea:#ece8f7;
+    --lav:#f4f1fd; --lav-2:#ebe5fb;
+    --focus:#3b82f6;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:'Inter',-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);background:#fff;
+       line-height:1.55;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  img,svg{display:block;max-width:100%}
+  a{color:inherit;text-decoration:none}
+  :focus-visible{outline:3px solid var(--focus);outline-offset:3px;border-radius:6px}
+  .skip{position:absolute;left:-9999px;top:8px;background:var(--brand);color:#fff;padding:10px 16px;border-radius:8px;font-weight:700;z-index:100}
+  .skip:focus{left:8px}
+
+  .wrap{max-width:1140px;margin:0 auto;padding:0 24px}
+  .grad{background:linear-gradient(115deg,var(--brand-2),var(--brand) 55%,var(--violeta));
+        -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+
+  /* Botones */
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:700;font-size:15px;padding:14px 26px;
+       border-radius:14px;border:none;cursor:pointer;transition:transform .18s, box-shadow .18s, border-color .18s, color .18s;white-space:nowrap;font-family:inherit}
+  .btn.primary{color:#fff;background:linear-gradient(120deg,var(--brand-2),var(--brand));
+       box-shadow:0 10px 26px -6px rgba(109,93,251,.55)}
+  .btn.primary:hover{transform:translateY(-2px);box-shadow:0 16px 32px -6px rgba(109,93,251,.6)}
+  .btn.ghost{background:#fff;color:var(--ink);border:1.5px solid var(--linea);box-shadow:0 2px 8px rgba(34,38,66,.04)}
+  .btn.ghost:hover{border-color:var(--violeta);color:var(--brand)}
+  .btn.lg{padding:16px 30px;font-size:16px}
+
+  /* Nav */
+  nav.top{position:sticky;top:0;z-index:30;background:rgba(255,255,255,.78);backdrop-filter:blur(14px);
+      border-bottom:1px solid transparent;transition:border-color .2s, box-shadow .2s}
+  nav.top.scrolled{border-bottom-color:var(--linea);box-shadow:0 4px 20px rgba(34,38,66,.04)}
+  .nav-in{display:flex;justify-content:space-between;align-items:center;height:78px;gap:18px}
+  .logo img{height:42px;display:block}
+  .nav-links{display:flex;align-items:center;gap:24px}
+  .nav-links a.link{font-weight:600;font-size:15px;color:var(--ink)}
+  .nav-links a.link:hover{color:var(--brand)}
+  .btn.nav{padding:11px 20px;font-size:14px}
+  .nav-toggle{display:none;background:none;border:1.5px solid var(--linea);border-radius:10px;width:42px;height:42px;cursor:pointer;font-size:18px;align-items:center;justify-content:center}
+
+  /* Eyebrow */
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--linea);
+           color:var(--brand);font-weight:600;font-size:14px;padding:7px 16px 7px 12px;border-radius:999px;
+           box-shadow:0 6px 18px rgba(109,93,251,.12);margin-bottom:26px}
+  .eyebrow .spark{color:var(--mint)}
+
+  /* HERO */
+  .hero{position:relative;overflow:hidden;padding:64px 0 88px;
+        background:linear-gradient(180deg,#fff 0%,#f6f3fe 58%,#efeafd 100%)}
+  .blob{position:absolute;border-radius:50%;filter:blur(90px);z-index:0;pointer-events:none}
+  .blob.a{width:460px;height:460px;background:rgba(167,139,250,.40);top:-140px;left:-120px}
+  .blob.b{width:420px;height:420px;background:rgba(99,217,174,.26);bottom:-140px;right:6%}
+  .blob.c{width:360px;height:360px;background:rgba(139,92,246,.22);top:60px;right:-120px}
+  .hero-inner{position:relative;z-index:2;display:grid;grid-template-columns:0.92fr 1.08fr;gap:30px;align-items:center}
+  .hero-copy{max-width:480px}
+  h1{font-size:clamp(34px,4.2vw,56px);line-height:1.04;letter-spacing:-2px;font-weight:900}
+  .hero p.lead{font-size:clamp(16px,1.5vw,19px);color:var(--tenue);max-width:460px;margin:20px 0 28px}
+  .cta-row{display:flex;gap:14px;flex-wrap:wrap}
+  .trust{font-size:13.5px;color:var(--tenue);margin-top:20px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+  .trust .item{display:inline-flex;align-items:center;gap:6px}
+  .trust b{color:var(--ink)}
+  .trust .dot{color:var(--mint);font-weight:800}
+
+  /* Lienzo de la composición */
+  .hero-art{position:relative;height:540px}
+  .card-f{position:absolute;background:#fff;border:1px solid #efeafa;border-radius:18px;padding:15px;
+          box-shadow:0 24px 50px -22px rgba(80,60,200,.30),0 6px 16px -8px rgba(34,38,66,.10);
+          animation:float 7s ease-in-out infinite;will-change:transform}
+  .card-f .badge{position:absolute;top:-13px;left:-13px;width:32px;height:32px;border-radius:50%;
+          background:linear-gradient(135deg,var(--brand-2),var(--brand));color:#fff;font-weight:800;font-size:14px;
+          display:grid;place-items:center;box-shadow:0 8px 16px -4px rgba(109,93,251,.6);border:2.5px solid #fff}
+  .card-f .badge.ok{background:linear-gradient(135deg,#34d399,var(--mint))}
+  .c-title{font-weight:700;font-size:14px;margin-bottom:10px}
+  .c-label{font-weight:600;font-size:12px;color:var(--tenue);margin-bottom:10px}
+  .bar{height:9px;border-radius:6px;background:#eee9f7;margin:6px 0}
+  .bar.s{width:62%}.bar.m{width:82%}
+  .c1{width:226px;top:24px;left:1%;animation-delay:.0s}
+  .chat-row{display:flex;align-items:center;gap:8px;margin-top:10px}
+  .chat-row .av{width:26px;height:26px;border-radius:50%;flex-shrink:0;
+       background:linear-gradient(135deg,#f0c9b8,#d9a892)}
+  .bubble{background:#f1ecfb;border-radius:10px;padding:8px 11px;flex:1}
+  .c2{width:204px;top:172px;left:40%;animation-delay:.8s}
+  .logo-card{border:1px solid var(--linea);border-radius:12px;padding:16px 10px;text-align:center;background:#fcfbfe}
+  .logo-card .leaf{color:#3f6b4f;margin:0 auto}
+  .logo-card .bn{font-family:'Inter';letter-spacing:3px;font-weight:600;font-size:14px;color:#33384e;margin-top:6px}
+  .logo-card .bn small{display:block;letter-spacing:2px;font-size:7.5px;color:var(--tenue);margin-top:3px;font-weight:500}
+  .dots{display:flex;gap:8px;justify-content:center;margin-top:12px}
+  .dots i{width:16px;height:16px;border-radius:50%}
+  .c3{width:234px;top:6px;right:0;animation-delay:1.4s}
+  .prow{display:flex;align-items:center;gap:10px;padding:7px 0;border-top:1px solid #f4f1fb}
+  .prow:first-of-type{border-top:none}
+  .prow .pic{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#efe9fb,#e3dcf6);flex-shrink:0;
+       display:grid;place-items:center;font-size:16px}
+  .prow .meta{flex:1;line-height:1.25;min-width:0}
+  .prow .meta b{font-size:12.5px;font-weight:600;display:block}
+  .prow .meta span{font-size:12px;color:var(--brand);font-weight:700}
+  .prow .ck{color:var(--mint);font-size:15px}
+  .c4{width:238px;bottom:26px;right:9%;animation-delay:2s}
+  .c4 .c-label{color:var(--brand);font-weight:700;font-size:13px}
+  .browser{display:flex;align-items:center;gap:8px;background:#f5f2fc;border-radius:9px;padding:7px 10px;margin-top:4px}
+  .browser .tl{display:flex;gap:4px}.browser .tl i{width:7px;height:7px;border-radius:50%}
+  .browser .url{font-size:11.5px;color:#5b5870;background:#fff;border-radius:6px;padding:3px 10px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .c4 .done-check{position:absolute;right:-16px;bottom:-16px;width:46px;height:46px;border-radius:50%;
+       background:linear-gradient(135deg,#34d399,var(--mint));color:#fff;font-size:24px;display:grid;place-items:center;
+       box-shadow:0 12px 24px -6px rgba(52,211,153,.6);border:3px solid #fff}
+  .mascot{position:absolute;left:8%;bottom:6px;width:96px;animation:float 6s ease-in-out infinite;animation-delay:.4s;
+          filter:drop-shadow(0 16px 26px rgba(80,60,200,.28))}
+  .hero-art .arc{position:absolute;inset:0;z-index:-1}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-11px)}}
+  @media(prefers-reduced-motion:reduce){
+    .card-f,.mascot{animation:none}
+    html{scroll-behavior:auto}
+    *{transition:none !important}
+  }
+
+  /* Secciones generales */
+  section.bloque{padding:96px 0;content-visibility:auto;contain-intrinsic-size:1px 800px}
+  .head{text-align:center;max-width:680px;margin:0 auto 56px}
+  .head .tag{font-weight:700;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:var(--brand);margin-bottom:12px}
+  .head h2{font-size:clamp(28px,4vw,40px);letter-spacing:-1.3px;font-weight:800;line-height:1.1}
+  .head p{color:var(--tenue);font-size:18px;margin-top:12px}
+
+  /* Strip de prueba social */
+  .proof{padding:36px 0;border-top:1px solid var(--linea);border-bottom:1px solid var(--linea);background:#fdfcff}
+  .proof-in{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:14px 36px;text-align:center}
+  .proof .stat{display:flex;align-items:center;gap:10px;font-size:14.5px;color:var(--tenue)}
+  .proof .stat b{color:var(--ink);font-weight:800}
+  .proof .stars{color:#f5a524;letter-spacing:1px;font-size:15px}
+  .proof .sep{width:1px;height:24px;background:var(--linea)}
+  @media(max-width:700px){.proof .sep{display:none}}
+
+  /* Pasos */
+  .pasos{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+  .paso{position:relative;background:#fff;border:1px solid var(--linea);border-radius:20px;padding:26px 22px;
+        transition:transform .18s, box-shadow .18s, border-color .18s;box-shadow:0 1px 2px rgba(34,38,66,.03)}
+  .paso:hover{transform:translateY(-4px);box-shadow:0 18px 40px -18px rgba(109,93,251,.35);border-color:#ded4fb}
+  .paso .n{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;color:#fff;font-weight:800;font-size:18px;
+           background:linear-gradient(135deg,var(--brand-2),var(--brand));margin-bottom:18px;
+           box-shadow:0 8px 18px -6px rgba(109,93,251,.5)}
+  .paso h3{font-size:17.5px;font-weight:700;margin-bottom:7px}
+  .paso p{font-size:14.5px;color:var(--tenue)}
+
+  /* Features */
+  .alt{background:linear-gradient(180deg,#faf8ff,#f4f1fd)}
+  .feats{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  .feat{background:#fff;border:1px solid var(--linea);border-radius:20px;padding:28px;transition:transform .18s, box-shadow .18s}
+  .feat:hover{transform:translateY(-4px);box-shadow:0 18px 40px -20px rgba(109,93,251,.3)}
+  .feat .ico{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;font-size:22px;
+             background:var(--lav-2);margin-bottom:16px}
+  .feat h3{font-size:17px;font-weight:700;margin-bottom:7px}
+  .feat p{font-size:14.5px;color:var(--tenue)}
+
+  /* Comparativa */
+  .vs-wrap{background:#fff;border:1px solid var(--linea);border-radius:24px;overflow:hidden;box-shadow:0 18px 40px -28px rgba(80,60,200,.25)}
+  table.vs{width:100%;border-collapse:collapse;font-size:14.5px}
+  table.vs th,table.vs td{padding:18px 16px;text-align:left;border-bottom:1px solid var(--linea);vertical-align:middle}
+  table.vs thead th{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--tenue);background:#faf8ff}
+  table.vs th.row{font-weight:700;color:var(--ink);width:30%}
+  table.vs td.kat{background:linear-gradient(180deg,#f6f3fe,#fff);font-weight:600;color:var(--ink);position:relative}
+  table.vs td.kat::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,var(--brand-2),var(--brand))}
+  table.vs tr:last-child td,table.vs tr:last-child th{border-bottom:none}
+  table.vs .yes{color:#1f9d5a;font-weight:800}
+  table.vs .no{color:#c44;font-weight:700}
+  table.vs .head-kat{color:var(--brand);font-weight:800}
+  @media(max-width:760px){
+    table.vs,table.vs thead,table.vs tbody,table.vs tr,table.vs th,table.vs td{display:block}
+    table.vs thead{display:none}
+    table.vs tr{border-bottom:1px solid var(--linea);padding:14px 0}
+    table.vs tr:last-child{border-bottom:none}
+    table.vs th.row{padding:14px 18px 4px;width:auto;font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--tenue)}
+    table.vs td{padding:6px 18px;border:none}
+    table.vs td::before{content:attr(data-label);display:block;font-size:11.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--tenue);font-weight:700;margin-bottom:2px}
+    table.vs td.kat::before{display:none}
+    table.vs td.kat{background:transparent}
+    table.vs td.kat::after{content:'';display:block;height:3px;width:48px;border-radius:3px;background:linear-gradient(90deg,var(--brand-2),var(--brand));margin-top:6px}
+  }
+
+  /* Pricing teaser */
+  .planes-mini{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+  .plan-mini{background:#fff;border:1px solid var(--linea);border-radius:18px;padding:22px;display:flex;flex-direction:column;gap:6px;transition:transform .18s, box-shadow .18s, border-color .18s}
+  .plan-mini:hover{transform:translateY(-3px);box-shadow:0 18px 36px -22px rgba(109,93,251,.3);border-color:#ded4fb}
+  .plan-mini.pop{border:2px solid var(--brand);box-shadow:0 18px 40px -22px rgba(109,93,251,.4);position:relative}
+  .plan-mini.pop::before{content:'Popular';position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:linear-gradient(120deg,var(--brand-2),var(--brand));color:#fff;font-size:11px;font-weight:800;padding:5px 12px;border-radius:999px;letter-spacing:.5px;text-transform:uppercase}
+  .plan-mini h3{font-size:16px;font-weight:800}
+  .plan-mini .precio{display:flex;align-items:baseline;gap:4px;margin:6px 0 4px}
+  .plan-mini .precio .n{font-size:30px;font-weight:900;letter-spacing:-1px}
+  .plan-mini .precio .u{font-size:13px;color:var(--tenue);font-weight:600}
+  .plan-mini .desc{font-size:13px;color:var(--tenue);min-height:42px}
+  .plan-mini .ver{margin-top:auto;font-size:13px;font-weight:700;color:var(--brand);padding-top:14px}
+  .plan-mini .ver::after{content:' →'}
+  .planes-cta{text-align:center;margin-top:28px}
+
+  /* FAQ */
+  .faq{max-width:780px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+  .faq details{background:#fff;border:1px solid var(--linea);border-radius:16px;padding:0;transition:border-color .18s, box-shadow .18s;overflow:hidden}
+  .faq details[open]{border-color:#ded4fb;box-shadow:0 14px 30px -22px rgba(109,93,251,.3)}
+  .faq summary{list-style:none;cursor:pointer;padding:20px 24px;font-weight:700;font-size:16px;display:flex;justify-content:space-between;align-items:center;gap:16px}
+  .faq summary::-webkit-details-marker{display:none}
+  .faq summary::after{content:'+';font-size:22px;font-weight:400;color:var(--brand);transition:transform .2s;line-height:1}
+  .faq details[open] summary::after{transform:rotate(45deg)}
+  .faq .ans{padding:0 24px 22px;color:var(--tenue);font-size:15px;line-height:1.6}
+
+  /* CTA band */
+  .cta-band{position:relative;overflow:hidden;border-radius:32px;padding:72px 28px;text-align:center;color:#fff;
+            background:linear-gradient(125deg,var(--brand-2),var(--brand) 55%,#7c5cf5)}
+  .cta-band::before{content:'';position:absolute;width:360px;height:360px;border-radius:50%;
+            background:rgba(255,255,255,.12);top:-160px;right:-80px}
+  .cta-band::after{content:'';position:absolute;width:300px;height:300px;border-radius:50%;
+            background:rgba(99,217,174,.22);bottom:-160px;left:-60px}
+  .cta-band > *{position:relative;z-index:2}
+  .cta-band h2{font-size:clamp(28px,4vw,42px);letter-spacing:-1.4px;font-weight:800;margin-bottom:14px}
+  .cta-band p{opacity:.92;font-size:19px;margin-bottom:30px;max-width:560px;margin-left:auto;margin-right:auto}
+  .cta-band .btn{background:#fff;color:var(--brand)}
+  .cta-band .btn:hover{transform:translateY(-2px);box-shadow:0 14px 30px rgba(0,0,0,.2)}
+  .cta-band small{display:block;margin-top:16px;opacity:.78;font-size:13.5px}
+
+  /* Footer */
+  footer.site{padding:56px 0 36px;background:#fafaff;border-top:1px solid var(--linea);color:var(--tenue);font-size:14px}
+  .foot-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:36px;margin-bottom:32px}
+  .foot-grid h4{font-size:13px;font-weight:800;color:var(--ink);text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px}
+  .foot-grid ul{list-style:none;display:flex;flex-direction:column;gap:8px}
+  .foot-grid a:hover{color:var(--brand)}
+  .foot-grid .brand img{height:30px;margin-bottom:14px}
+  .foot-grid .brand p{max-width:280px;line-height:1.55}
+  .foot-bottom{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--linea);padding-top:22px;flex-wrap:wrap;gap:10px;font-size:13.5px}
+
+  /* Responsive */
+  @media(max-width:900px){
+    .hero{padding:48px 0 24px}
+    .hero-inner{grid-template-columns:1fr;gap:34px}
+    .hero-copy{max-width:100%;text-align:center;margin:0 auto}
+    .hero .cta-row{justify-content:center}
+    .hero .trust{justify-content:center}
+    .hero p.lead{margin-left:auto;margin-right:auto}
+    .hero-art{height:440px;transform:scale(.86)}
+    .pasos{grid-template-columns:1fr 1fr}
+    .feats{grid-template-columns:1fr}
+    .planes-mini{grid-template-columns:1fr 1fr}
+    section.bloque{padding:64px 0}
+    .nav-links a.link{display:none}
+    .foot-grid{grid-template-columns:1fr 1fr;gap:28px}
+  }
+  @media(max-width:560px){
+    .hero-art{transform:scale(.66);height:380px;margin-top:-20px}
+    .pasos{grid-template-columns:1fr}
+    .planes-mini{grid-template-columns:1fr}
+    .foot-grid{grid-template-columns:1fr}
+    .cta-band{padding:56px 22px;border-radius:24px}
+  }
+</style>
+</head>
+<body>
+
+<a class="skip" href="#main">Saltar al contenido</a>
+
+<nav class="top" id="nav" aria-label="Principal">
+  <div class="wrap nav-in">
+    <a class="logo" href="/" aria-label="katia.work inicio"><img src="/static/img/katia-logo.svg" alt="katia.work"></a>
+    <div class="nav-links">
+      <a class="link" href="#como">Cómo funciona</a>
+      <a class="link" href="#features">Funciones</a>
+      <a class="link" href="#vs">vs alternativas</a>
+      <a class="link" href="/precios">Precios</a>
+      {% if usuario %}<a class="link" href="/mis-tiendas">Mis tiendas</a>{% else %}<a class="link" href="/cuenta">Entrar</a>{% endif %}
+      <a class="btn primary nav" href="/crear">Crear mi tienda</a>
+    </div>
+  </div>
+</nav>
+
+<main id="main">
+
+<!-- HERO -->
+<header class="hero">
+  <div class="blob a" aria-hidden="true"></div>
+  <div class="blob b" aria-hidden="true"></div>
+  <div class="blob c" aria-hidden="true"></div>
+  <div class="wrap">
+    <div class="hero-inner">
+      <div class="hero-copy">
+        <span class="eyebrow"><span class="spark" aria-hidden="true">✦</span>
+          {% if ia_activa %}Asistente con IA · Gemini activo{% else %}Tu asistente con IA{% endif %}</span>
+        <h1>Tu tienda online,<br><span class="grad">creada por katia.</span></h1>
+        <p class="lead">No necesitas 5 herramientas para vender en línea. Cuéntale a katia sobre tu negocio: ella crea tu logo, escribe tus textos, publica tu tienda y recibe pedidos por WhatsApp.</p>
+        <div class="cta-row">
+          <a class="btn primary lg" href="/crear">Crear mi tienda gratis →</a>
+          <a class="btn ghost lg" href="#como">Ver cómo funciona</a>
+        </div>
+        <div class="trust">
+          <span class="item"><span class="dot" aria-hidden="true">✓</span> <b>Sin tarjeta</b> para empezar</span>
+          <span class="item"><span class="dot" aria-hidden="true">✓</span> <b>0%</b> comisión por venta</span>
+          {% if total_tiendas %}<span class="item"><span class="dot" aria-hidden="true">✓</span> <b>{{ total_tiendas }}</b> tienda(s) creadas</span>{% endif %}
+        </div>
+      </div>
+
+      <div class="hero-art" aria-hidden="true">
+        <svg class="arc" viewBox="0 0 560 520" fill="none" preserveAspectRatio="none">
+          <path d="M120 120 C 60 230, 60 330, 200 360" stroke="#cdbef6" stroke-width="2" stroke-dasharray="4 7" stroke-linecap="round"/>
+          <path d="M250 90 C 340 70, 380 90, 430 150" stroke="#cdbef6" stroke-width="2" stroke-dasharray="4 7" stroke-linecap="round"/>
+          <path d="M470 240 C 500 330, 470 380, 410 410" stroke="#cdbef6" stroke-width="2" stroke-dasharray="4 7" stroke-linecap="round"/>
+        </svg>
+
+        <div class="card-f c1">
+          <span class="badge">1</span>
+          <div class="c-title">Cuéntame sobre tu negocio</div>
+          <div class="bar m"></div><div class="bar s"></div>
+          <div class="chat-row"><span class="av"></span><span class="bubble"><span class="bar m" style="margin:0 0 5px"></span><span class="bar s" style="margin:0"></span></span></div>
+        </div>
+
+        <div class="card-f c2">
+          <span class="badge">2</span>
+          <div class="c-label">Logo creado</div>
+          <div class="logo-card">
+            <svg class="leaf" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+              <path d="M12 21 V11"/><path d="M12 12 C 12 7, 8 5, 5 5 C 5 9, 8 12, 12 12Z" fill="#e7efe9"/>
+              <path d="M12 11 C 12 6, 16 4, 19 4 C 19 8, 16 11, 12 11Z" fill="#dfeae2"/>
+            </svg>
+            <div class="bn">NATURALIA<small>BIENESTAR NATURAL</small></div>
+          </div>
+          <div class="dots"><i style="background:#3f5c45"></i><i style="background:#a78bfa"></i><i style="background:#cbb89c"></i></div>
+        </div>
+
+        <div class="card-f c3">
+          <span class="badge">3</span>
+          <div class="c-title">Productos</div>
+          <div class="prow"><span class="pic">🧴</span><span class="meta"><b>Sérum Facial</b><span>$29.90</span></span><span class="ck">✓</span></div>
+          <div class="prow"><span class="pic">🕯️</span><span class="meta"><b>Vela Aromática</b><span>$19.90</span></span><span class="ck">✓</span></div>
+          <div class="prow"><span class="pic">🧼</span><span class="meta"><b>Jabón Natural</b><span>$14.90</span></span><span class="ck">✓</span></div>
+        </div>
+
+        <div class="card-f c4">
+          <span class="badge ok">4</span>
+          <div class="c-label">¡Tu tienda está lista!</div>
+          <div class="browser">
+            <span class="tl"><i style="background:#ff6058"></i><i style="background:#ffbd2e"></i><i style="background:#28c840"></i></span>
+            <span class="url">naturalia.katia.work</span>
+          </div>
+          <div class="done-check">✓</div>
+        </div>
+
+        <img class="mascot" src="/static/img/katia-icon.svg" alt="">
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Prueba social -->
+<section class="proof" aria-label="Confianza">
+  <div class="wrap proof-in">
+    <div class="stat"><span class="stars" aria-hidden="true">★★★★★</span><span><b>4.9/5</b> de quienes ya usan katia</span></div>
+    <span class="sep" aria-hidden="true"></span>
+    <div class="stat">🇲🇽 <span>Hecho en México · para <b>PyMEs MX</b></span></div>
+    <span class="sep" aria-hidden="true"></span>
+    <div class="stat">💬 <span><b>64%</b> de empresas MX venden por WhatsApp</span></div>
+    <span class="sep" aria-hidden="true"></span>
+    <div class="stat">⚡ <span>Tu tienda lista en <b>menos de 10 minutos</b></span></div>
+  </div>
+</section>
+
+<!-- 4 PASOS -->
+<section class="bloque" id="como">
+  <div class="wrap">
+    <div class="head">
+      <div class="tag">Cómo funciona</div>
+      <h2>Tu tienda en 4 pasos</h2>
+      <p>Sin programar, sin diseñar, sin complicarte.</p>
+    </div>
+    <div class="pasos">
+      <div class="paso"><div class="n">1</div><h3>Cuéntale a katia</h3><p>Unas líneas sobre tu negocio. Ella redacta tu marca y eslogan.</p></div>
+      <div class="paso"><div class="n">2</div><h3>Crea tu logo</h3><p>Genéralo con IA o sube el tuyo. Elige tus colores.</p></div>
+      <div class="paso"><div class="n">3</div><h3>Sube tus productos</h3><p>Nombre y precio. katia escribe las descripciones y el SEO.</p></div>
+      <div class="paso"><div class="n">4</div><h3>Publica <span aria-hidden="true">🚀</span></h3><p>Obtienes tu dirección web. Conecta tu dominio propio si lo tienes.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="bloque alt" id="features">
+  <div class="wrap">
+    <div class="head">
+      <div class="tag">Todo incluido</div>
+      <h2>Lo que tu negocio necesita para vender</h2>
+      <p>katia no es solo una página bonita: es tu tienda completa, lista para recibir clientes.</p>
+    </div>
+    <div class="feats">
+      <div class="feat"><div class="ico" aria-hidden="true">🤖</div><h3>IA que escribe por ti</h3><p>Descripciones, eslogan y "sobre nosotros" generados solos.</p></div>
+      <div class="feat"><div class="ico" aria-hidden="true">🎨</div><h3>Logo al instante</h3><p>Un logo profesional desde el nombre de tu negocio.</p></div>
+      <div class="feat"><div class="ico" aria-hidden="true">💬</div><h3>Pedidos por WhatsApp</h3><p>Cada producto tiene "Pedir por WhatsApp". Cierra la venta donde tu cliente ya conversa.</p></div>
+      <div class="feat"><div class="ico" aria-hidden="true">🔗</div><h3>Tu propia dirección</h3><p>tunegocio.katia.work — o conecta tu dominio pagado.</p></div>
+      <div class="feat"><div class="ico" aria-hidden="true">📱</div><h3>Se ve bien en celular</h3><p>Diseño responsivo listo para compartir por WhatsApp.</p></div>
+      <div class="feat"><div class="ico" aria-hidden="true">📅</div><h3>Productos o servicios</h3><p>Vendes productos, agendas citas, o las dos. Una sola tienda.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- COMPARATIVA -->
+<section class="bloque" id="vs">
+  <div class="wrap">
+    <div class="head">
+      <div class="tag">vs alternativas</div>
+      <h2>Por qué katia, y no una agencia</h2>
+      <p>Lo que una agencia te cobra <b>$30,000</b> por armar, katia lo hace en minutos. Sin comisión por venta.</p>
+    </div>
+    <div class="vs-wrap">
+      <table class="vs">
+        <thead>
+          <tr>
+            <th></th>
+            <th>Agencia / freelancer</th>
+            <th>Shopify / Tiendanube</th>
+            <th class="head-kat">katia.work</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th class="row" scope="row">Costo inicial</th>
+            <td data-label="Agencia">$18,000 – $45,000 MXN</td>
+            <td data-label="Shopify">Mensualidad desde día 1</td>
+            <td class="kat" data-label="katia">$0 · empieza gratis</td>
+          </tr>
+          <tr>
+            <th class="row" scope="row">Mensualidad</th>
+            <td data-label="Agencia">$300 – $3,000 mantenim.</td>
+            <td data-label="Shopify">$399 – $5,999 MXN/mes</td>
+            <td class="kat" data-label="katia">Desde $249 MXN/mes</td>
+          </tr>
+          <tr>
+            <th class="row" scope="row">Comisión por venta</th>
+            <td data-label="Agencia">—</td>
+            <td data-label="Shopify"><span class="no">~2% por venta</span></td>
+            <td class="kat" data-label="katia"><span class="yes">0%</span></td>
+          </tr>
+          <tr>
+            <th class="row" scope="row">Tiempo de publicación</th>
+            <td data-label="Agencia">4 – 12 semanas</td>
+            <td data-label="Shopify">Días o semanas</td>
+            <td class="kat" data-label="katia"><span class="yes">Minutos</span></td>
+          </tr>
+          <tr>
+            <th class="row" scope="row">Necesitas saber programar</th>
+            <td data-label="Agencia"><span class="no">No, pero dependes</span></td>
+            <td data-label="Shopify"><span class="no">Para personalizar, sí</span></td>
+            <td class="kat" data-label="katia"><span class="yes">No</span></td>
+          </tr>
+          <tr>
+            <th class="row" scope="row">Asistente con IA incluido</th>
+            <td data-label="Agencia"><span class="no">No</span></td>
+            <td data-label="Shopify"><span class="no">Apps con costo extra</span></td>
+            <td class="kat" data-label="katia"><span class="yes">Sí, integrado</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING TEASER -->
+<section class="bloque alt" id="planes">
+  <div class="wrap">
+    <div class="head">
+      <div class="tag">Precios claros</div>
+      <h2>Empieza gratis. Crece cuando vendas.</h2>
+      <p>Sin comisión por venta. Cancelas cuando quieras.</p>
+    </div>
+    <div class="planes-mini">
+      <article class="plan-mini">
+        <h3>Gratis</h3>
+        <div class="precio"><span class="n">$0</span><span class="u">/mes</span></div>
+        <p class="desc">Subdominio katia.work, pedidos por WhatsApp, sin tarjeta.</p>
+        <a class="ver" href="/precios">Ver detalles</a>
+      </article>
+      <article class="plan-mini">
+        <h3>Tienda</h3>
+        <div class="precio"><span class="n">$249</span><span class="u">MXN/mes</span></div>
+        <p class="desc">Dominio propio, sin marca de katia, soporte por WhatsApp.</p>
+        <a class="ver" href="/precios">Ver detalles</a>
+      </article>
+      <article class="plan-mini pop">
+        <h3>Ventas Pro</h3>
+        <div class="precio"><span class="n">$799</span><span class="u">MXN/mes</span></div>
+        <p class="desc">Asistente IA en WhatsApp + CRM de leads + analítica.</p>
+        <a class="ver" href="/precios">Ver detalles</a>
+      </article>
+      <article class="plan-mini">
+        <h3>Escala</h3>
+        <div class="precio"><span class="n">$1,999</span><span class="u">MXN/mes</span></div>
+        <p class="desc">Multi-sucursal, multi-usuario, integraciones avanzadas.</p>
+        <a class="ver" href="/precios">Ver detalles</a>
+      </article>
+    </div>
+    <div class="planes-cta">
+      <a class="btn primary lg" href="/precios">Ver todos los planes →</a>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="bloque" id="faq">
+  <div class="wrap">
+    <div class="head">
+      <div class="tag">Preguntas frecuentes</div>
+      <h2>Lo que otros dueños de negocio preguntan</h2>
+    </div>
+    <div class="faq">
+      <details>
+        <summary>¿Necesito tarjeta de crédito para empezar?</summary>
+        <div class="ans">No. El plan Gratis no pide tarjeta. Entras a katia.work/crear, respondes unas preguntas y publicas tu tienda.</div>
+      </details>
+      <details>
+        <summary>¿katia me cobra comisión por cada venta?</summary>
+        <div class="ans">No. A diferencia de Shopify o Tiendanube, no cobramos comisión por venta. Pagas tu plan mensual y todo lo que vendes es tuyo.</div>
+      </details>
+      <details>
+        <summary>¿Necesito saber programar o diseñar?</summary>
+        <div class="ans">No. katia es una asistente con IA: tú respondes en lenguaje natural y ella genera el logo, los textos y la tienda. Si después quieres ajustar algo, lo cambias desde un panel sencillo.</div>
+      </details>
+      <details>
+        <summary>¿Puedo conectar mi dominio propio (mi-tienda.com)?</summary>
+        <div class="ans">Sí. Empiezas en tunegocio.katia.work y, desde el plan Tienda, conectas un dominio propio (.com, .com.mx, etc.).</div>
+      </details>
+      <details>
+        <summary>¿Sirve si mi negocio es de servicios (no vendo productos)?</summary>
+        <div class="ans">Sí. katia funciona para productos, servicios o ambos. Puedes publicar una página de reservas con disponibilidad y recibir citas por WhatsApp, con recordatorios automáticos.</div>
+      </details>
+      <details>
+        <summary>¿Puedo cancelar cuando quiera?</summary>
+        <div class="ans">Sí. No hay contrato ni penalización. Cancelas o cambias de plan desde tu panel en cualquier momento.</div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- CTA final -->
+<section class="bloque" style="padding-top:24px">
+  <div class="wrap">
+    <div class="cta-band">
+      <h2>¿Lista para vender en línea?</h2>
+      <p>katia te acompaña en cada paso. Toma menos de lo que crees.</p>
+      <a class="btn lg" href="/crear">Crear mi tienda con katia →</a>
+      <small>Gratis para empezar · Sin tarjeta · Cancela cuando quieras</small>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="brand">
+        <img src="/static/img/katia-logo.svg" alt="katia.work">
+        <p>Tu asistente con IA para crear tiendas y vender en línea. Hecho para quienes no saben (ni necesitan saber) programar.</p>
+      </div>
+      <div>
+        <h4>Producto</h4>
+        <ul>
+          <li><a href="#como">Cómo funciona</a></li>
+          <li><a href="#features">Funciones</a></li>
+          <li><a href="#vs">vs alternativas</a></li>
+          <li><a href="/precios">Precios</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Empezar</h4>
+        <ul>
+          <li><a href="/crear">Crear mi tienda</a></li>
+          <li><a href="/login">Iniciar sesión</a></li>
+          <li><a href="#faq">Preguntas frecuentes</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="/terminos">Términos</a></li>
+          <li><a href="/privacidad">Privacidad</a></li>
+          <li><a href="/contacto">Contacto</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© katia.work · Hecho en México 🇲🇽</span>
+      <span>Precios en MXN + IVA</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const nav=document.getElementById('nav');
+  const onScroll=()=>nav.classList.toggle('scrolled',window.scrollY>8);
+  onScroll(); window.addEventListener('scroll',onScroll,{passive:true});
+</script>
+</body>
+</html>

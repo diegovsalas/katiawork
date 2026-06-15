@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear cuenta | Outlet Momatt México</title>
+    <meta name="robots" content="noindex">
+    <link rel="icon" type="image/png" href="/static/img/favicon.png">
+    <link rel="stylesheet" href="/static/estilos.css">
+    {% include "partials/_ga.html" %}
+</head>
+<body>
+    <header class="topbar">
+        <a href="/" class="logo"><img src="/static/img/logo-texto.png" alt="Outlet Momatt México"></a>
+        <a href="/login" class="topbar-link">Iniciar sesión</a>
+    </header>
+
+    <main class="auth-page">
+        <div class="auth-box">
+            <h1>Crear cuenta</h1>
+            <p class="auth-sub">Para guardar tus pedidos y ver el estado de tus envíos.</p>
+
+            {% if error %}<div class="auth-error">{{ error }}</div>{% endif %}
+
+            <form action="/registro" method="post">
+                <label>Nombre completo
+                    <input type="text" name="nombre" value="{{ valores.nombre or '' }}" required>
+                </label>
+                <label>Correo electrónico
+                    <input type="email" name="email" value="{{ valores.email or '' }}" required>
+                </label>
+                <label>Teléfono (opcional)
+                    <input type="tel" name="telefono" value="{{ valores.telefono or '' }}">
+                </label>
+                <label>Contraseña (mínimo 8 caracteres)
+                    <input type="password" name="password" minlength="8" required>
+                </label>
+                <button type="submit" class="btn-pagar">Crear cuenta</button>
+            </form>
+
+            <p class="auth-foot">¿Ya tienes cuenta? <a href="/login">Inicia sesión</a></p>
+        </div>
+    </main>
+</body>
+</html>

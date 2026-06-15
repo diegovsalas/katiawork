@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es">
+{% set wanum = (t.whatsapp or '') | replace('+','') | replace(' ','') | replace('-','') %}
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Comprar {{ p.nombre }} · {{ t.nombre }}</title>
+<meta name="robots" content="noindex">
+{% if t.logo %}<link rel="icon" href="{{ t.logo }}">{% else %}<link rel="icon" type="image/svg+xml" href="/static/img/katia-favicon.svg">{% endif %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --brand:{{ t.color or '#6d5dfb' }};
+    --brand-2:{{ t.color_2 or '#222642' }};
+    --tinta:#1c1c26; --tenue:#6b7280; --linea:#eceaf0; --bg:#ffffff; --panel:#f7f6fa;
+    --ok:#0f9d58;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--tinta);background:var(--panel);
+       line-height:1.55;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .topbar{display:flex;justify-content:space-between;align-items:center;padding:13px 24px;background:#fff;
+          border-bottom:1px solid var(--linea)}
+  .brand{display:flex;align-items:center;gap:12px;font-weight:800;font-size:20px}
+  .brand img{height:42px;width:42px;border-radius:11px;object-fit:contain}
+  .wrap{max-width:680px;margin:28px auto 60px;padding:0 20px}
+  .crumb{font-size:13.5px;color:var(--tenue);margin-bottom:16px}
+  .crumb a:hover{color:var(--brand)}
+  .card{background:#fff;border:1px solid var(--linea);border-radius:22px;padding:30px;
+        box-shadow:0 20px 50px -30px rgba(34,38,66,.25)}
+  .prod{display:flex;gap:16px;align-items:center;border-bottom:1px solid var(--linea);padding-bottom:22px;margin-bottom:24px}
+  .prod .ph{width:72px;height:72px;border-radius:16px;flex-shrink:0;overflow:hidden;background:var(--panel)}
+  .prod .ph img{width:100%;height:100%;object-fit:cover}
+  .prod .ph .m{width:100%;height:100%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:30px;
+        background:linear-gradient(135deg,var(--brand),var(--brand-2))}
+  .prod h1{font-size:22px;font-weight:800;letter-spacing:-.5px}
+  .prod .precio{color:var(--brand);font-weight:800;font-size:19px;margin-top:4px}
+  .step-t{font-weight:700;font-size:15px;margin:18px 0 12px;display:flex;align-items:center;gap:8px}
+  label{display:block;font-size:13px;font-weight:600;color:var(--tenue);margin:0 0 5px}
+  input,select{width:100%;padding:12px 14px;border:1.5px solid var(--linea);border-radius:12px;font-size:15px;
+        font-family:inherit;background:#fff;color:var(--tinta)}
+  input:focus,select:focus{outline:none;border-color:var(--brand)}
+  .row{display:grid;grid-template-columns:1fr 110px;gap:12px}
+  .pays{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+  .pay{display:flex;align-items:center;gap:12px;border:1.5px solid var(--linea);border-radius:14px;padding:14px 16px;cursor:pointer}
+  .pay.sel{border-color:var(--brand);background:color-mix(in srgb,var(--brand) 6%,#fff)}
+  .pay input{width:auto}
+  .pay .ico{font-size:22px}
+  .pay b{font-size:15px}
+  .pay span{display:block;color:var(--tenue);font-size:13px;font-weight:500}
+  .total{display:flex;justify-content:space-between;align-items:center;margin:22px 0 4px;
+        padding:16px 18px;background:var(--panel);border-radius:14px}
+  .total b{font-size:22px;color:var(--brand)}
+  .btn{display:block;width:100%;text-align:center;background:var(--brand);color:#fff;border:none;
+        padding:16px;border-radius:14px;font-size:16px;font-weight:800;cursor:pointer;margin-top:16px}
+  .btn:disabled{opacity:.55;cursor:default}
+  .seguro{text-align:center;color:var(--tenue);font-size:12.5px;margin-top:14px}
+  /* Confirmación SPEI */
+  #ok{display:none}
+  .ok-ico{width:64px;height:64px;border-radius:50%;background:var(--ok);color:#fff;display:grid;place-items:center;
+        font-size:34px;margin:0 auto 14px}
+  .ok h1{text-align:center;font-size:22px;font-weight:800;margin-bottom:6px}
+  .ok .sub{text-align:center;color:var(--tenue);margin-bottom:22px}
+  .datos{background:var(--panel);border-radius:14px;padding:18px;font-size:14.5px}
+  .datos .l{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px dashed var(--linea)}
+  .datos .l:last-child{border-bottom:none}
+  .datos .l span{color:var(--tenue)}
+  .datos .l b{font-weight:700;text-align:right}
+  .copia{font-family:ui-monospace,Menlo,monospace;letter-spacing:.5px}
+  .note{font-size:13px;color:var(--tenue);margin-top:14px;line-height:1.5}
+  .err{background:#fde8e8;color:#b91c1c;border-radius:12px;padding:12px 14px;font-size:14px;margin-top:14px;display:none}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <a class="brand" href="{{ ruta_base or '/' }}">
+    {% if t.logo %}<img src="{{ t.logo }}" alt="{{ t.nombre }}">{% endif %}
+    {{ t.nombre }}
+  </a>
+</div>
+<div class="wrap">
+  <div class="crumb"><a href="{{ ruta_base or '/' }}">← Seguir comprando</a></div>
+
+  <!-- Formulario de compra -->
+  <div class="card" id="form">
+    <div class="prod">
+      <div class="ph">
+        {% if p.imagen %}<img src="{{ p.imagen }}" alt="{{ p.nombre }}">
+        {% else %}<div class="m">{{ p.nombre[0]|upper }}</div>{% endif %}
+      </div>
+      <div>
+        <h1>{{ p.nombre }}</h1>
+        <div class="precio">${{ '{:,.2f}'.format(p.precio) }} <small style="color:var(--tenue);font-weight:600">{{ moneda }}</small></div>
+      </div>
+    </div>
+
+    <div class="step-t">1 · Tus datos</div>
+    <div style="margin-bottom:12px"><label>Nombre completo</label><input id="nombre" placeholder="Tu nombre"></div>
+    <div class="row">
+      <div><label>WhatsApp</label><input id="telefono" inputmode="tel" placeholder="55 1234 5678"></div>
+      <div><label>Cantidad</label><input id="cantidad" type="number" min="1" value="1"></div>
+    </div>
+
+    <div class="step-t">2 · Forma de pago</div>
+    <div class="pays">
+      {% if mp %}
+      <label class="pay" data-m="mp">
+        <input type="radio" name="metodo" value="mp">
+        <span class="ico">💳</span>
+        <span><b>Tarjeta de crédito/débito</b><span>Pago seguro con MercadoPago</span></span>
+      </label>
+      {% endif %}
+      {% if spei %}
+      <label class="pay" data-m="spei">
+        <input type="radio" name="metodo" value="spei">
+        <span class="ico">🏦</span>
+        <span><b>Transferencia / SPEI</b><span>Recibe los datos bancarios al confirmar</span></span>
+      </label>
+      {% endif %}
+    </div>
+
+    <div class="total"><span>Total a pagar</span><b id="tTotal">${{ '{:,.2f}'.format(p.precio) }}</b></div>
+    <div class="err" id="err"></div>
+    <button class="btn" id="pagar">Confirmar pedido</button>
+    <div class="seguro">🔒 Tus datos van directo al negocio. Katia no cobra comisión.</div>
+  </div>
+
+  <!-- Confirmación SPEI -->
+  <div class="card ok" id="ok">
+    <div class="ok-ico">✓</div>
+    <h1>¡Pedido registrado!</h1>
+    <div class="sub">Realiza tu transferencia y envía el comprobante por WhatsApp.</div>
+    <div class="datos" id="datos"></div>
+    <div class="note">Tu pedido queda <b>por cobrar</b> hasta que el negocio confirme tu pago. Usa la referencia al transferir.</div>
+    <a class="btn" id="waBtn" href="#" target="_blank" style="margin-top:18px">📲 Enviar comprobante por WhatsApp</a>
+  </div>
+</div>
+
+<script>
+const SLUG = {{ t.slug|tojson }};
+const PRECIO = {{ p.precio }};
+const PID = {{ p.id|tojson }};
+const RUTA = {{ (ruta_base or '')|tojson }};
+const $ = s => document.querySelector(s);
+
+// Selección de método de pago
+let metodo = null;
+document.querySelectorAll('.pay').forEach(el=>{
+  el.addEventListener('click', ()=>{
+    document.querySelectorAll('.pay').forEach(p=>p.classList.remove('sel'));
+    el.classList.add('sel');
+    el.querySelector('input').checked = true;
+    metodo = el.dataset.m;
+  });
+});
+// Preselecciona el primero
+const first = document.querySelector('.pay');
+if(first){ first.click(); }
+
+// Total dinámico
+const cantEl = $('#cantidad');
+cantEl.addEventListener('input', ()=>{
+  const c = Math.max(1, parseInt(cantEl.value)||1);
+  $('#tTotal').textContent = '$' + (PRECIO*c).toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2});
+});
+
+function showErr(m){ const e=$('#err'); e.textContent=m; e.style.display='block'; }
+
+$('#pagar').addEventListener('click', async ()=>{
+  const nombre = $('#nombre').value.trim();
+  const telefono = $('#telefono').value.trim();
+  const cantidad = Math.max(1, parseInt(cantEl.value)||1);
+  $('#err').style.display='none';
+  if(!nombre || !telefono){ showErr('Pon tu nombre y tu WhatsApp.'); return; }
+  if(!metodo){ showErr('Elige una forma de pago.'); return; }
+  const btn = $('#pagar'); btn.disabled=true; btn.textContent='Procesando…';
+  try{
+    const r = await fetch(`/api/pedido/${SLUG}`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({producto_id:PID, cantidad, nombre, telefono, metodo})
+    });
+    const d = await r.json();
+    if(!r.ok){ showErr(d.detail || 'No se pudo registrar el pedido.'); btn.disabled=false; btn.textContent='Confirmar pedido'; return; }
+    if(d.tipo === 'mp' && d.url){ window.location.href = d.url; return; }
+    // SPEI → confirmación
+    const pg = d.pagos || {};
+    let rows = '';
+    if(pg.titular) rows += `<div class="l"><span>Titular</span><b>${pg.titular}</b></div>`;
+    if(pg.banco) rows += `<div class="l"><span>Banco</span><b>${pg.banco}</b></div>`;
+    if(pg.clabe) rows += `<div class="l"><span>CLABE</span><b class="copia">${pg.clabe}</b></div>`;
+    rows += `<div class="l"><span>Monto</span><b>$${d.total.toLocaleString('es-MX',{minimumFractionDigits:2})}</b></div>`;
+    rows += `<div class="l"><span>Referencia</span><b class="copia">${d.referencia}</b></div>`;
+    if(pg.instrucciones) rows += `<div class="l" style="display:block"><span>Indicaciones</span><div style="margin-top:6px">${pg.instrucciones}</div></div>`;
+    $('#datos').innerHTML = rows;
+    if(d.wa_url){ $('#waBtn').href = d.wa_url; } else { $('#waBtn').style.display='none'; }
+    $('#form').style.display='none';
+    $('#ok').style.display='block';
+    window.scrollTo({top:0,behavior:'smooth'});
+  }catch(e){
+    showErr('Error de conexión. Intenta de nuevo.');
+    btn.disabled=false; btn.textContent='Confirmar pedido';
+  }
+});
+</script>
+</body>
+</html>

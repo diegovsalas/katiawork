@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pedido {{ pedido.id }} | Outlet Momatt México</title>
+    <meta name="robots" content="noindex">
+    <link rel="icon" type="image/png" href="/static/img/favicon.png">
+    <link rel="stylesheet" href="/static/estilos.css">
+    <meta name="x-whatsapp" content="{{ sitio.whatsapp }}">
+    <script src="/static/chatbot.js" defer></script>
+    {% include "partials/_ga.html" %}
+</head>
+<body>
+    <header class="topbar no-print">
+        <a href="/" class="logo"><img src="/static/img/logo-texto.png" alt="Outlet Momatt México"></a>
+        <nav class="topbar-nav">
+            {% if usuario %}
+            <a href="/perfil" class="topbar-link">👤 {{ usuario.nombre.split()[0] }}</a>
+            {% endif %}
+            <a href="/carrito" class="cart-link">🛒 Carrito</a>
+        </nav>
+    </header>
+
+    <main class="pago-page pedido-page">
+
+        <!-- Encabezado del documento (solo visible al imprimir / PDF) -->
+        <div class="pedido-print-header print-only">
+            <img src="/static/img/logo-momatt.png" alt="Outlet Momatt México">
+            <div>
+                <strong>Outlet Momatt México</strong><br>
+                <small>{{ sitio.descripcion_corta }}</small><br>
+                <small>{{ sitio.ciudad }}, {{ sitio.estado }} · {{ sitio.telefono }} · {{ sitio.email }}</small>
+            </div>
+        </div>
+
+        <div class="pedido-titulo">
+            <div>
+                <h1>Pedido {{ pedido.id }}</h1>
+                <p>Hecho el {{ pedido.created_at.strftime("%d %b %Y · %H:%M") }}
+                   · <span class="estado estado-{{ pedido.estado }}">{{ pedido.estado.replace('_',' ') }}</span></p>
+            </div>
+            <div class="pedido-acciones no-print">
+                <button type="button" class="btn-imprimir" onclick="window.print()">📄 Descargar PDF / Imprimir</button>
+            </div>
+        </div>
+
+        <div class="datos-pago">
+            <h3 style="padding:8px 0;color:var(--amarillo);">Cliente</h3>
+            <div class="dato"><span>Nombre</span><strong>{{ pedido.nombre }}</strong></div>
+            <div class="dato"><span>Correo</span><strong>{{ pedido.email }}</strong></div>
+            {% if pedido.telefono %}<div class="dato"><span>Teléfono</span><strong>{{ pedido.telefono }}</strong></div>{% endif %}
+        </div>
+
+        {% if pedido.guia %}
+        <div class="datos-pago" style="border-color:#60a5fa;">
+            <h3 style="padding:8px 0;color:#60a5fa;">🚚 Tu pedido va en camino</h3>
+            <div class="dato"><span>Guía de envío</span><strong style="font-family:monospace;font-size:1.05rem;">{{ pedido.guia }}</strong></div>
+            <div class="dato"><span>Paquetería</span><strong>{{ pedido.paqueteria }}</strong></div>
+            {% if pedido.paqueteria == 'Castores' %}
+            <a href="https://www.castores.com.mx/rastreo" target="_blank" rel="noopener" class="btn-pagar no-print" style="background:#60a5fa;color:#fff;margin-top:10px;">
+                📍 Rastrear con Castores
+            </a>
+            {% elif pedido.paqueteria == 'Autolínea Villarreal' %}
+            <a href="https://www.autolineasvillarreal.com.mx" target="_blank" rel="noopener" class="btn-pagar no-print" style="background:#60a5fa;color:#fff;margin-top:10px;">
+                📍 Rastrear con Autolínea Villarreal
+            </a>
+            {% endif %}
+            <p class="no-print" style="margin-top:10px;color:var(--texto-tenue);font-size:0.85rem;">
+                Copia tu número de guía y pégalo en la página de rastreo de la paquetería para ver el avance.
+            </p>
+        </div>
+        {% endif %}
+
+        <div class="datos-pago">
+            <h3 style="padding:8px 0;color:var(--amarillo);">📦 Recoger en sucursal</h3>
+            <div class="dato"><span>Paquetería</span><strong>{{ pedido.paqueteria }}</strong></div>
+            {% if pedido.ciudad_entrega %}
+            <div class="dato"><span>Ciudad</span><strong>{{ pedido.ciudad_entrega }}{% if pedido.estado_entrega %}, {{ pedido.estado_entrega }}{% endif %}</strong></div>
+            {% endif %}
+            {% if pedido.sucursal %}
+            <div class="dato"><span>Sucursal</span><strong>{{ pedido.sucursal }}</strong></div>
+            {% endif %}
+            {% if pedido.paqueteria == 'Castores' %}
+            <p class="no-print" style="padding:10px 0 4px;color:var(--texto-tenue);font-size:0.88rem;">
+                Sucursal Castores más cercana →
+                <a href="https://www.castores.com.mx/sucursales.html" target="_blank" rel="noopener" style="color:var(--amarillo);">castores.com.mx/sucursales ↗</a>
+            </p>
+            {% elif pedido.paqueteria == 'Autolínea Villarreal' %}
+            <p class="no-print" style="padding:10px 0 4px;color:var(--texto-tenue);font-size:0.88rem;">
+                Sucursal Autolínea Villarreal más cercana →
+                <a href="https://www.autolineasvillarreal.com.mx" target="_blank" rel="noopener" style="color:var(--amarillo);">autolineasvillarreal.com.mx ↗</a>
+            </p>
+            {% endif %}
+        </div>
+
+        {% if pedido.razon_social or pedido.rfc %}
+        <div class="datos-pago">
+            <h3 style="padding:8px 0;color:var(--amarillo);">🧾 Datos de facturación</h3>
+            {% if pedido.razon_social %}<div class="dato"><span>Razón social</span><strong>{{ pedido.razon_social }}</strong></div>{% endif %}
+            {% if pedido.rfc %}<div class="dato"><span>RFC</span><strong>{{ pedido.rfc }}</strong></div>{% endif %}
+            {% if pedido.cp_fiscal %}<div class="dato"><span>CP fiscal</span><strong>{{ pedido.cp_fiscal }}</strong></div>{% endif %}
+        </div>
+        {% endif %}
+
+        <div class="datos-pago">
+            <h3 style="padding:8px 0;color:var(--amarillo);">Productos</h3>
+            {% for it in items %}
+            <div class="dato">
+                <span>{{ it.cantidad }} × {{ it.nombre }}</span>
+                <strong>${{ "{:,.0f}".format(it.subtotal) }}</strong>
+            </div>
+            {% endfor %}
+            <div class="dato"><span>Subtotal productos</span><strong>${{ "{:,.0f}".format(pedido.subtotal_prod) }}</strong></div>
+            <div class="dato"><span>Envío ({{ pedido.unidades }} pz · {{ pedido.paqueteria }})</span><strong>${{ "{:,.0f}".format(pedido.envio) }}</strong></div>
+            <div class="dato"><span>IVA (16%)</span><strong>${{ "{:,.0f}".format(pedido.iva) }}</strong></div>
+            <div class="dato total-pago"><span>Total</span><strong>${{ "{:,.0f}".format(pedido.total) }} MXN</strong></div>
+        </div>
+
+        {% if pedido.estado == 'pendiente_pago' %}
+        <div class="datos-pago">
+            <h3 style="padding:8px 0;color:var(--amarillo);">💳 Datos para tu transferencia (Banregio)</h3>
+            <div class="dato"><span>Titular</span><strong>{{ banregio.titular }}</strong></div>
+            <div class="dato"><span>Banco</span><strong>{{ banregio.banco }}</strong></div>
+            <div class="dato"><span>CLABE</span><strong class="copiable">{{ banregio.clabe }}</strong></div>
+            <div class="dato"><span>Referencia</span><strong>{{ pedido.id }}</strong></div>
+        </div>
+        <a href="https://wa.me/{{ sitio.whatsapp }}?text=Hola,%20realic%C3%A9%20mi%20pago%20del%20pedido%20{{ pedido.id }}%20por%20${{ '{:,.0f}'.format(pedido.total) }}%20MXN.%20Adjunto%20comprobante."
+           class="btn-pagar btn-pagar-wa no-print" target="_blank" rel="noopener">
+            💬 Mandar comprobante por WhatsApp
+        </a>
+        <form action="/pedido/{{ pedido.id }}/marcar-pagado" method="post" class="no-print" style="margin-top:10px;">
+            <button type="submit" class="btn-volver" style="width:100%;cursor:pointer;font:inherit;">
+                ✓ Ya pagué y mandé comprobante (detener recordatorios)
+            </button>
+        </form>
+        {% elif pedido.estado == 'comprobante_enviado' %}
+        <div class="datos-pago no-print" style="background:rgba(34,197,94,0.06);border-color:var(--verde);">
+            <p style="padding:10px 0;color:var(--verde);font-weight:700;">
+                ✓ Marcaste este pedido como pagado. Te confirmaremos por WhatsApp en cuanto validemos el depósito.
+            </p>
+        </div>
+        {% endif %}
+        <a href="{% if usuario %}/perfil{% else %}/{% endif %}" class="btn-volver no-print">← Volver</a>
+
+        <!-- Pie del documento (solo visible al imprimir) -->
+        <p class="pedido-print-foot print-only">
+            Documento generado el {{ pedido.created_at.strftime("%d/%m/%Y") }} por Outlet Momatt México.
+            Para soporte: {{ sitio.whatsapp_visible }} · {{ sitio.email }}
+        </p>
+    </main>
+
+    <footer class="footer no-print"><p class="footer-bottom">© Outlet Momatt México</p></footer>
+</body>
+</html>

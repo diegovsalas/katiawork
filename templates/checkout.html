@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finalizar compra | Outlet Momatt México</title>
+    <meta name="robots" content="noindex">
+    <link rel="icon" type="image/png" href="/static/img/favicon.png">
+    <link rel="stylesheet" href="/static/estilos.css">
+    <meta name="x-whatsapp" content="{{ sitio.whatsapp }}">
+    <script src="/static/chatbot.js" defer></script>
+    {% include "partials/_ga.html" %}
+</head>
+<body>
+    <header class="topbar">
+        <a href="/" class="logo"><img src="/static/img/logo-texto.png" alt="Outlet Momatt México"></a>
+        <nav class="topbar-nav">
+            {% if usuario %}
+            <a href="/perfil" class="topbar-link">👤 {{ usuario.nombre.split()[0] }}</a>
+            {% else %}
+            <a href="/login" class="topbar-link">Iniciar sesión</a>
+            {% endif %}
+            <a href="/carrito" class="cart-link">🛒 Carrito</a>
+        </nav>
+    </header>
+
+    <main class="checkout-page">
+        <h1>Finalizar compra</h1>
+        <div class="checkout-grid">
+
+            <!-- Resumen del pedido -->
+            <div class="resumen-box">
+                <h2>Tu pedido</h2>
+                {% for item in items %}
+                <div class="resumen-linea">
+                    <span>{{ item.cantidad }} × {{ item.producto.nombre }}</span>
+                    <strong>${{ "{:,.0f}".format(item.subtotal) }}</strong>
+                </div>
+                {% endfor %}
+                <div class="resumen-linea" style="margin-top:10px;padding-top:10px;border-top:1px solid var(--gris-claro);">
+                    <span>Subtotal productos</span><strong>${{ "{:,.0f}".format(subtotal_prod) }} MXN</strong>
+                </div>
+                <div class="resumen-linea">
+                    <span>Envío "ocurre" ({{ unidades }} pz)</span><strong>${{ "{:,.0f}".format(envio) }} MXN</strong>
+                </div>
+                <div class="resumen-linea">
+                    <span>IVA (16%)</span><strong>${{ "{:,.0f}".format(iva) }} MXN</strong>
+                </div>
+                <div class="resumen-total">
+                    <span>Total a pagar</span>
+                    <strong>${{ "{:,.0f}".format(total) }} MXN</strong>
+                </div>
+            </div>
+
+            <!-- Datos del cliente + método de pago -->
+            <div class="form-box">
+                <h2>Tus datos</h2>
+                {% if not usuario %}
+                <p class="checkout-cuenta">
+                    ¿Ya tienes cuenta? <a href="/login">Inicia sesión</a> para usar tus datos guardados,
+                    o continúa como invitado.
+                </p>
+                {% endif %}
+                <form action="/pagar" method="post">
+                    <label>Nombre completo
+                        <input type="text" name="nombre" value="{{ usuario.nombre if usuario else '' }}" required>
+                    </label>
+                    <label>Correo electrónico
+                        <input type="email" name="correo" value="{{ usuario.email if usuario else '' }}" required>
+                    </label>
+                    <label>Teléfono (opcional)
+                        <input type="tel" name="telefono" value="{{ usuario.telefono if usuario else '' }}">
+                    </label>
+
+                    <h3>Ciudad y estado de entrega</h3>
+                    <p class="paqueteria-nota">Necesitamos saber dónde recoges para confirmar disponibilidad en la sucursal más cercana.</p>
+                    <div class="fila-2">
+                        <label>Ciudad
+                            <input type="text" name="ciudad_entrega" placeholder="Ej. Monterrey" required>
+                        </label>
+                        <label>Estado
+                            <input type="text" name="estado_entrega" placeholder="Ej. Nuevo León" required>
+                        </label>
+                    </div>
+
+                    <h3>Paquetería (envío "ocurre")</h3>
+                    <p class="paqueteria-nota">Recoges tu pedido en la terminal de la paquetería que elijas.</p>
+                    {% for paq in paqueterias %}
+                    <label class="metodo">
+                        <input type="radio" name="paqueteria" value="{{ paq }}" {% if loop.first %}checked{% endif %} required>
+                        <span>
+                            <strong>Ocurre vía {{ paq }}</strong>
+                            {% if paq == 'Castores' %}
+                            <small><a href="https://www.castores.com.mx/sucursales.html" target="_blank" rel="noopener">Ver sucursales Castores ↗</a></small>
+                            {% elif paq == 'Autolínea Villarreal' %}
+                            <small><a href="https://www.autolineasvillarreal.com.mx" target="_blank" rel="noopener">Ver sucursales Autolínea Villarreal ↗</a></small>
+                            {% endif %}
+                        </span>
+                    </label>
+                    {% endfor %}
+
+                    <label>Sucursal específica donde recoger (opcional)
+                        <input type="text" name="sucursal" placeholder="Ej. Castores Monterrey - Av. Cd. de los Ángeles 1234">
+                        <small style="color:var(--texto-tenue);font-size:0.78rem;display:block;margin-top:4px;">
+                            Si ya sabes a qué sucursal quieres que llegue, ponla aquí. Si no, la confirmamos contigo por WhatsApp.
+                        </small>
+                    </label>
+
+                    <details class="datos-fiscales">
+                        <summary>¿Necesitas factura? Llena tus datos fiscales (opcional)</summary>
+                        <p class="paqueteria-nota">Si dejas estos campos en blanco te enviaremos solo el ticket de compra.</p>
+                        <label>RFC
+                            <input type="text" name="rfc" placeholder="Ej. ABC123456XYZ" maxlength="13">
+                        </label>
+                        <label>Razón social
+                            <input type="text" name="razon_social" placeholder="Ej. Mi Empresa S.A. de C.V.">
+                        </label>
+                        <label>Código postal fiscal
+                            <input type="text" name="cp_fiscal" placeholder="Ej. 64000" maxlength="5">
+                        </label>
+                    </details>
+
+                    <h3>Método de pago</h3>
+
+                    {# Banregio: siempre disponible (no requiere gateway). #}
+                    <label class="metodo">
+                        <input type="radio" name="metodo" value="banregio" checked required>
+                        <span class="metodo-ico">🏦</span>
+                        <span>
+                            <strong>Transferencia bancaria directa a Banregio</strong>
+                            <small>Sin comisión. Al confirmar te mostramos los datos; mandas comprobante por WhatsApp.</small>
+                        </span>
+                    </label>
+
+                    {% if pagos_stripe_on %}
+                    <label class="metodo">
+                        <input type="radio" name="metodo" value="stripe" required>
+                        <span class="metodo-ico">💳</span>
+                        <span>
+                            <strong>Tarjeta u OXXO (Stripe)</strong>
+                            <small>Pagas en la página segura de Stripe. Confirmación instantánea con tarjeta.</small>
+                        </span>
+                    </label>
+                    {% endif %}
+
+                    {% if pagos_mercadopago_on %}
+                    <label class="metodo">
+                        <input type="radio" name="metodo" value="mercadopago" required>
+                        <span class="metodo-ico">💳</span>
+                        <span>
+                            <strong>Tarjeta, OXXO o MSI (Mercado Pago)</strong>
+                            <small>Hasta 12 meses sin intereses con tarjetas participantes.</small>
+                        </span>
+                    </label>
+                    {% endif %}
+
+                    {% if pagos_openpay_on %}
+                    <label class="metodo">
+                        <input type="radio" name="metodo" value="openpay" required>
+                        <span class="metodo-ico">🏦</span>
+                        <span>
+                            <strong>Transferencia SPEI automática (Openpay)</strong>
+                            <small>Te damos una CLABE única para tu pedido. Funciona con cualquier banco.</small>
+                        </span>
+                    </label>
+                    {% endif %}
+
+                    <button type="submit" class="btn-pagar">Confirmar pedido</button>
+                    <p class="checkout-nota">🔒 Pago 100% seguro · Tu información no se guarda en nuestros servidores.</p>
+                </form>
+            </div>
+
+        </div>
+    </main>
+
+    <footer class="footer"><p class="footer-bottom">© Outlet Momatt México · Pago seguro por transferencia</p></footer>
+
+    <a href="https://wa.me/{{ sitio.whatsapp }}?text=Hola,%20tengo%20una%20duda%20sobre%20mi%20pedido."
+       class="whatsapp-float" target="_blank" rel="noopener" aria-label="Contactar por WhatsApp">
+        <span>💬</span>
+        <strong>¿Dudas? Asesor</strong>
+    </a>
+
+    <!-- GA4: begin_checkout -->
+    <script>
+      if (typeof gtag === 'function') {
+        gtag('event', 'begin_checkout', {
+          currency: 'MXN',
+          value: {{ total }},
+          items: [
+            {% for item in items %}
+            {
+              item_id:    {{ item.producto.id | tojson }},
+              item_name:  {{ item.producto.nombre | tojson }},
+              item_brand: {{ item.producto.marca | tojson }},
+              price:      {{ item.producto.precio }},
+              quantity:   {{ item.cantidad }}
+            }{% if not loop.last %},{% endif %}
+            {% endfor %}
+          ]
+        });
+      }
+    </script>
+</body>
+</html>
