@@ -289,6 +289,10 @@ def registro(request: Request, nombre: str = Form(""), email: str = Form(...),
         return templates.TemplateResponse(request, "constructor/cuenta.html",
             {"modo": "registro", "error": error, "next": next, "email": email, "nombre": nombre})
     request.session["uid"] = u["email"]
+    try:
+        emails.enviar_bienvenida(u["email"], u.get("nombre", ""), "gratis")
+    except Exception as e:  # noqa: BLE001 — el correo nunca debe romper el registro
+        print(f"⚠  Bienvenida no enviada: {e}")
     return RedirectResponse(url=next or "/mis-tiendas", status_code=303)
 
 
@@ -353,6 +357,10 @@ async def api_sub_checkout(request: Request):
 
     # Modo demo (sin Stripe configurado): activa el plan al instante.
     usuarios.actualizar(u["email"], {"plan": plan, "sub_estado": "active_demo"})
+    try:
+        emails.enviar_bienvenida(u["email"], u.get("nombre", ""), plan)
+    except Exception as e:  # noqa: BLE001
+        print(f"⚠  Bienvenida (demo) no enviada: {e}")
     return JSONResponse({"ok": True, "demo": True, "url": "/facturacion?ok=demo"})
 
 
@@ -395,9 +403,16 @@ async def webhook_suscripcion(request: Request):
         plan = PRICE_TO_PLAN.get(price)
         if email and plan:
             estado_final = "active" if estado in ("active", "trialing") else estado
+            antes = usuarios.buscar(email) or {}
             usuarios.actualizar(email, {"plan": plan if estado_final == "active" else "gratis",
                                         "sub_estado": estado_final,
                                         "stripe_customer_id": obj.get("customer", "")})
+            # Bienvenida solo al activarse por primera vez (no en cada actualización)
+            if estado_final == "active" and antes.get("sub_estado") != "active":
+                try:
+                    emails.enviar_bienvenida(email, antes.get("nombre", ""), plan)
+                except Exception as e:  # noqa: BLE001
+                    print(f"⚠  Bienvenida (Stripe) no enviada: {e}")
     elif tipo == "customer.subscription.deleted" and email:
         usuarios.actualizar(email, {"plan": "gratis", "sub_estado": "canceled"})
 
@@ -2166,6 +2181,30 @@ def admin_eliminar_usuario(request: Request, email: str):
     if email.lower().strip() != (request.session.get("uid") or "").lower().strip():
         usuarios.eliminar(email)
     return RedirectResponse(url="/admin", status_code=303)
+
+
+@app.get("/admin/email-preview", response_class=HTMLResponse)
+def admin_email_preview(request: Request, plan: str = "gratis", nombre: str = "Diego"):
+    """Vista previa del correo de bienvenida (sin enviar nada)."""
+    _guard_admin(request)
+    if plan not in PLANES:
+        plan = "gratis"
+    return HTMLResponse(emails._html_bienvenida(nombre, plan))
+
+
+@app.get("/admin/enviar-prueba")
+def admin_enviar_prueba(request: Request, plan: str = "pro", email: str = "", nombre: str = "Diego"):
+    """Envía un correo de bienvenida de prueba al correo indicado (super-admin)."""
+    _guard_admin(request)
+    dest = (email or request.session.get("uid") or "").strip()
+    planes_a_probar = list(PLANES.keys()) if plan == "todos" else [plan if plan in PLANES else "pro"]
+    resultados = {p: emails.enviar_bienvenida(dest, nombre, p) for p in planes_a_probar}
+    return JSONResponse({
+        "destino": dest,
+        "resend_activo": emails.disponible(),
+        "enviados": resultados,
+        "nota": "" if emails.disponible() else "RESEND_API_KEY no está configurada; no se envió nada.",
+    })
 
 
 # ------------------- A) Checkout online (storefront) -------------------
