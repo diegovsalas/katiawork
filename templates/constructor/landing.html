@@ -218,7 +218,7 @@
     table.vs th.row{padding:14px 18px 4px;width:auto;font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--tenue)}
     table.vs td{padding:6px 18px;border:none}
     table.vs td::before{content:attr(data-label);display:block;font-size:11.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--tenue);font-weight:700;margin-bottom:2px}
-    table.vs td.kat::before{display:none}
+    table.vs td.kat::before{display:block;color:var(--brand);font-weight:800}
     table.vs td.kat{background:transparent}
     table.vs td.kat::after{content:'';display:block;height:3px;width:48px;border-radius:3px;background:linear-gradient(90deg,var(--brand-2),var(--brand));margin-top:6px}
   }
@@ -280,7 +280,13 @@
     .hero .cta-row{justify-content:center}
     .hero .trust{justify-content:center}
     .hero p.lead{margin-left:auto;margin-right:auto}
-    .hero-art{height:440px;transform:scale(.86)}
+    /* En móvil/tablet las tarjetas flotantes se apilan 1·2·3·4 (sin empalmarse) */
+    .hero-art{position:relative;height:auto;transform:none;display:flex;flex-direction:column;
+              gap:20px;max-width:330px;margin:6px auto 0;overflow:visible}
+    .card-f{position:static!important;width:100%!important;
+            top:auto;left:auto;right:auto;bottom:auto;animation:none}
+    .mascot,.hero-art .arc{display:none}
+    .c4 .done-check{right:-8px;bottom:-8px}
     .pasos{grid-template-columns:1fr 1fr}
     .feats{grid-template-columns:1fr}
     .planes-mini{grid-template-columns:1fr 1fr}
@@ -289,7 +295,6 @@
     .foot-grid{grid-template-columns:1fr 1fr;gap:28px}
   }
   @media(max-width:560px){
-    .hero-art{transform:scale(.66);height:380px;margin-top:-20px}
     .pasos{grid-template-columns:1fr}
     .planes-mini{grid-template-columns:1fr}
     .foot-grid{grid-template-columns:1fr}
@@ -463,37 +468,37 @@
             <th class="row" scope="row">Costo inicial</th>
             <td data-label="Agencia">$18,000 – $45,000 MXN</td>
             <td data-label="Shopify">Mensualidad desde día 1</td>
-            <td class="kat" data-label="katia">$0 · empieza gratis</td>
+            <td class="kat" data-label="katia.work">$0 · empieza gratis</td>
           </tr>
           <tr>
             <th class="row" scope="row">Mensualidad</th>
             <td data-label="Agencia">$300 – $3,000 mantenim.</td>
             <td data-label="Shopify">$399 – $5,999 MXN/mes</td>
-            <td class="kat" data-label="katia">Desde $249 MXN/mes</td>
+            <td class="kat" data-label="katia.work">Desde $249 MXN/mes</td>
           </tr>
           <tr>
             <th class="row" scope="row">Comisión por venta</th>
             <td data-label="Agencia">—</td>
             <td data-label="Shopify"><span class="no">~2% por venta</span></td>
-            <td class="kat" data-label="katia"><span class="yes">0%</span></td>
+            <td class="kat" data-label="katia.work"><span class="yes">0%</span></td>
           </tr>
           <tr>
             <th class="row" scope="row">Tiempo de publicación</th>
             <td data-label="Agencia">4 – 12 semanas</td>
             <td data-label="Shopify">Días o semanas</td>
-            <td class="kat" data-label="katia"><span class="yes">Minutos</span></td>
+            <td class="kat" data-label="katia.work"><span class="yes">Minutos</span></td>
           </tr>
           <tr>
             <th class="row" scope="row">Necesitas saber programar</th>
             <td data-label="Agencia"><span class="no">No, pero dependes</span></td>
             <td data-label="Shopify"><span class="no">Para personalizar, sí</span></td>
-            <td class="kat" data-label="katia"><span class="yes">No</span></td>
+            <td class="kat" data-label="katia.work"><span class="yes">No</span></td>
           </tr>
           <tr>
             <th class="row" scope="row">Asistente con IA incluido</th>
             <td data-label="Agencia"><span class="no">No</span></td>
             <td data-label="Shopify"><span class="no">Apps con costo extra</span></td>
-            <td class="kat" data-label="katia"><span class="yes">Sí, integrado</span></td>
+            <td class="kat" data-label="katia.work"><span class="yes">Sí, integrado</span></td>
           </tr>
         </tbody>
       </table>
@@ -597,6 +602,7 @@
       <div class="brand">
         <img src="/static/img/katia-logo.svg" alt="katia.work">
         <p>Tu asistente con IA para crear tiendas y vender en línea. Hecho para quienes no saben (ni necesitan saber) programar.</p>
+        <p style="margin-top:10px">¿Dudas? Escríbenos: <a href="mailto:hola@katia.work" style="color:var(--brand);font-weight:700">hola@katia.work</a></p>
       </div>
       <div>
         <h4>Producto</h4>
@@ -620,7 +626,7 @@
         <ul>
           <li><a href="/terminos">Términos</a></li>
           <li><a href="/privacidad">Privacidad</a></li>
-          <li><a href="/contacto">Contacto</a></li>
+          <li><a href="mailto:hola@katia.work">Contacto</a></li>
         </ul>
       </div>
     </div>
