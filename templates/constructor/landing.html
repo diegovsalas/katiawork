@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>katia · Tu tienda online y asistente de ventas con IA · Sin programar</title>
-<meta name="description" content="Crea tu tienda online en minutos con katia. IA que diseña tu logo, escribe tus textos y publica tu tienda. Recibe pedidos por WhatsApp. Gratis para empezar, sin tarjeta, 0% comisión por venta.">
+<title>katia · Vende, agenda citas y administra tu negocio con IA · Sin programar</title>
+<meta name="description" content="katia es el sistema todo-en-uno con IA para PyMEs: crea tu tienda o página de citas, recibe pedidos y reservas por WhatsApp, y administra clientes (CRM), ventas y caja. Gratis para empezar, sin tarjeta, 0% comisión por venta.">
 <meta name="keywords" content="tienda en línea, crear tienda online, e-commerce México, PyME, asistente IA, WhatsApp ventas">
 <link rel="canonical" href="https://katia.work/">
 <meta name="robots" content="index, follow">
@@ -14,8 +14,8 @@
 <!-- Open Graph / Twitter -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="katia.work">
-<meta property="og:title" content="katia · Tu tienda online creada por IA · Sin programar">
-<meta property="og:description" content="Crea tu tienda en minutos, recibe pedidos por WhatsApp y usa IA para vender. Gratis para empezar, sin comisión por venta.">
+<meta property="og:title" content="katia · Vende, agenda citas y administra tu negocio con IA">
+<meta property="og:description" content="El todo-en-uno con IA para PyMEs: tienda, agenda de citas, CRM, caja y reportes. Recibe pedidos y reservas por WhatsApp. Gratis para empezar, sin comisión por venta.">
 <meta property="og:url" content="https://katia.work/">
 <meta property="og:image" content="https://katia.work/static/img/katia-og.png">
 <meta property="og:locale" content="es_MX">
@@ -31,7 +31,7 @@
   "@context":"https://schema.org",
   "@graph":[
     {"@type":"Organization","name":"katia.work","url":"https://katia.work","logo":"https://katia.work/static/img/katia-logo.svg","areaServed":"MX","sameAs":[]},
-    {"@type":"SoftwareApplication","name":"katia","applicationCategory":"BusinessApplication","operatingSystem":"Web","description":"Constructor de tiendas en línea con asistente IA para PyMEs. Crea tu tienda en minutos sin programar.","offers":{"@type":"Offer","price":"0","priceCurrency":"MXN"},"aggregateRating":{"@type":"AggregateRating","ratingValue":"4.9","reviewCount":"50"}},
+    {"@type":"SoftwareApplication","name":"katia","applicationCategory":"BusinessApplication","operatingSystem":"Web","description":"Sistema todo-en-uno con IA para PyMEs: tienda en línea, agenda de citas, CRM, caja y reportes. Crea tu negocio en minutos sin programar.","offers":{"@type":"Offer","price":"0","priceCurrency":"MXN"},"aggregateRating":{"@type":"AggregateRating","ratingValue":"4.9","reviewCount":"50"}},
     {"@type":"FAQPage","mainEntity":[
       {"@type":"Question","name":"¿Necesito tarjeta de crédito para empezar?","acceptedAnswer":{"@type":"Answer","text":"No. El plan Gratis no pide tarjeta. Empiezas en katia.work/crear y publicas tu tienda sin pago."}},
       {"@type":"Question","name":"¿katia me cobra comisión por cada venta?","acceptedAnswer":{"@type":"Answer","text":"No. A diferencia de Shopify o Tiendanube, katia no cobra comisión por venta. Pagas un plan mensual fijo y cancelas cuando quieras."}},
@@ -345,8 +345,8 @@
       <div class="hero-copy">
         <span class="eyebrow"><span class="spark" aria-hidden="true">✦</span>
           {% if ia_activa %}Asistente con IA · Gemini activo{% else %}Tu asistente con IA{% endif %}</span>
-        <h1>Tu tienda online,<br><span class="grad">creada por katia.</span></h1>
-        <p class="lead">No necesitas 5 herramientas para vender en línea. Cuéntale a katia sobre tu negocio: ella crea tu logo, escribe tus textos, publica tu tienda y recibe pedidos por WhatsApp.</p>
+        <h1>Vende, agenda citas y<br><span class="grad">administra tu negocio con IA.</span></h1>
+        <p class="lead">katia es tu asistente todo-en-uno para PyMEs: crea tu tienda o página de citas, recibe pedidos y reservas por WhatsApp, y lleva el control de tus clientes, ventas y caja. Sin programar.</p>
         <div class="cta-row">
           <a class="btn primary lg" href="/crear">Crear mi tienda gratis →</a>
           <a class="btn ghost lg" href="#como">Ver cómo funciona</a>
@@ -418,7 +418,24 @@
     <span class="sep" aria-hidden="true"></span>
     <div class="stat">💬 <span><b>64%</b> de empresas MX venden por WhatsApp</span></div>
     <span class="sep" aria-hidden="true"></span>
-    <div class="stat">⚡ <span>Tu tienda lista en <b>menos de 10 minutos</b></span></div>
+    <div class="stat">⚡ <span>Tu negocio en línea en <b>menos de 10 minutos</b></span></div>
+  </div>
+</section>
+
+<!-- PARA QUIÉN -->
+<section style="padding:36px 0;background:#fff;border-bottom:1px solid var(--linea)">
+  <div class="wrap" style="text-align:center">
+    <p style="font-size:12.5px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--tenue);margin-bottom:16px">Hecho para tu tipo de negocio</p>
+    <div style="display:flex;flex-wrap:wrap;gap:11px;justify-content:center">
+      {% set publicos = [
+        '🛍️ Tiendas y productos', '💆 Spa y bienestar', '✂️ Barbería y estética',
+        '📅 Servicios con cita', '🩺 Consultorios', '🍽️ Comida y restaurantes', '🎓 Talleres y clases'
+      ] %}
+      {% for p in publicos %}
+      <span style="display:inline-flex;align-items:center;gap:7px;background:var(--lav);color:var(--ink);
+        border:1px solid #e4dbfb;border-radius:99px;padding:9px 16px;font-size:14.5px;font-weight:600">{{ p }}</span>
+      {% endfor %}
+    </div>
   </div>
 </section>
 
@@ -427,14 +444,14 @@
   <div class="wrap">
     <div class="head">
       <div class="tag">Cómo funciona</div>
-      <h2>Tu tienda en 4 pasos</h2>
+      <h2>Tu negocio en línea en 4 pasos</h2>
       <p>Sin programar, sin diseñar, sin complicarte.</p>
     </div>
     <div class="pasos">
       <div class="paso"><div class="n">1</div><h3>Cuéntale a katia</h3><p>Unas líneas sobre tu negocio. Ella redacta tu marca y eslogan.</p></div>
       <div class="paso"><div class="n">2</div><h3>Crea tu logo</h3><p>Genéralo con IA o sube el tuyo. Elige tus colores.</p></div>
-      <div class="paso"><div class="n">3</div><h3>Sube tus productos</h3><p>Nombre y precio. katia escribe las descripciones y el SEO.</p></div>
-      <div class="paso"><div class="n">4</div><h3>Publica <span aria-hidden="true">🚀</span></h3><p>Obtienes tu dirección web. Conecta tu dominio propio si lo tienes.</p></div>
+      <div class="paso"><div class="n">3</div><h3>Productos o servicios</h3><p>Sube lo que vendes o los servicios que agendas. katia escribe textos y SEO.</p></div>
+      <div class="paso"><div class="n">4</div><h3>Publica y administra <span aria-hidden="true">🚀</span></h3><p>Recibe pedidos, citas y clientes — y contrólalos desde tu panel.</p></div>
     </div>
   </div>
 </section>
@@ -443,18 +460,46 @@
 <section class="bloque alt" id="features">
   <div class="wrap">
     <div class="head">
-      <div class="tag">Todo incluido</div>
-      <h2>Lo que tu negocio necesita para vender</h2>
-      <p>katia no es solo una página bonita: es tu tienda completa, lista para recibir clientes.</p>
+      <div class="tag">Todo-en-uno</div>
+      <h2>Más que una tienda: tu negocio completo</h2>
+      <p>Vender, agendar y administrar en un solo lugar — con IA que trabaja por ti. Olvídate de pagar 5 herramientas distintas.</p>
     </div>
+    {% set pilares = [
+      {'ico':'🛒','t':'Vende','items':[
+        'Tienda con catálogo de productos y/o servicios',
+        'Pedidos por WhatsApp con un toque',
+        'Cobros en línea: SPEI/transferencia y MercadoPago',
+        'Punto de venta (POS) para cobrar en mostrador']},
+      {'ico':'📅','t':'Agenda citas','items':[
+        'Página de reservas con tu disponibilidad',
+        'Tus clientes agendan solos, 24/7',
+        'Confirmación y seguimiento por WhatsApp',
+        'Agenda por especialista o sucursal']},
+      {'ico':'📈','t':'Administra','items':[
+        'CRM con pipeline para no perder clientes',
+        'Caja e ingresos al día',
+        'Reportes automáticos de tu negocio',
+        'Equipo: cada quien registra sus ventas y citas']}
+    ] %}
     <div class="feats">
-      <div class="feat"><div class="ico" aria-hidden="true">🤖</div><h3>IA que escribe por ti</h3><p>Descripciones, eslogan y "sobre nosotros" generados solos.</p></div>
-      <div class="feat"><div class="ico" aria-hidden="true">🎨</div><h3>Logo al instante</h3><p>Un logo profesional desde el nombre de tu negocio.</p></div>
-      <div class="feat"><div class="ico" aria-hidden="true">💬</div><h3>Pedidos por WhatsApp</h3><p>Cada producto tiene "Pedir por WhatsApp". Cierra la venta donde tu cliente ya conversa.</p></div>
-      <div class="feat"><div class="ico" aria-hidden="true">🔗</div><h3>Tu propia dirección</h3><p>tunegocio.katia.work — o conecta tu dominio pagado.</p></div>
-      <div class="feat"><div class="ico" aria-hidden="true">📱</div><h3>Se ve bien en celular</h3><p>Diseño responsivo listo para compartir por WhatsApp.</p></div>
-      <div class="feat"><div class="ico" aria-hidden="true">📅</div><h3>Productos o servicios</h3><p>Vendes productos, agendas citas, o las dos. Una sola tienda.</p></div>
+      {% for p in pilares %}
+      <div class="feat">
+        <div class="ico" aria-hidden="true">{{ p.ico }}</div>
+        <h3>{{ p.t }}</h3>
+        <ul style="list-style:none;margin:10px 0 0;padding:0">
+          {% for it in p['items'] %}
+          <li style="display:flex;gap:9px;align-items:flex-start;font-size:14.5px;color:var(--tenue);margin:9px 0">
+            <span style="color:var(--brand);font-weight:800;flex-shrink:0">✓</span><span>{{ it }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endfor %}
     </div>
+    <p style="text-align:center;margin-top:22px;font-size:14px;color:var(--tenue)">
+      Y además: <b style="color:var(--ink)">IA que escribe tus textos y crea tu logo</b>, dominio propio,
+      redes sociales y SEO. <a href="/precios" style="color:var(--brand);font-weight:700">Ver qué incluye cada plan →</a>
+    </p>
   </div>
 </section>
 
@@ -599,9 +644,9 @@
 <section class="bloque" style="padding-top:24px">
   <div class="wrap">
     <div class="cta-band">
-      <h2>¿Lista para vender en línea?</h2>
-      <p>katia te acompaña en cada paso. Toma menos de lo que crees.</p>
-      <a class="btn lg" href="/crear">Crear mi tienda con katia →</a>
+      <h2>¿Listo para llevar tu negocio en línea?</h2>
+      <p>Vende, agenda citas y administra a tus clientes con katia. Toma menos de lo que crees.</p>
+      <a class="btn lg" href="/crear">Empezar gratis con katia →</a>
       <small>Gratis para empezar · Sin tarjeta · Cancela cuando quieras</small>
     </div>
   </div>
@@ -614,7 +659,7 @@
     <div class="foot-grid">
       <div class="brand">
         <img src="/static/img/katia-logo.svg" alt="katia.work">
-        <p>Tu asistente con IA para crear tiendas y vender en línea. Hecho para quienes no saben (ni necesitan saber) programar.</p>
+        <p>Tu asistente con IA para vender, agendar citas y administrar tu negocio. Hecho para quienes no saben (ni necesitan saber) programar.</p>
         <p style="margin-top:10px">¿Dudas? Escríbenos: <a href="mailto:hola@katia.work" style="color:var(--brand);font-weight:700">hola@katia.work</a></p>
       </div>
       <div>
