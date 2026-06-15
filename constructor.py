@@ -181,6 +181,8 @@ app.add_middleware(SessionMiddleware, secret_key=_SECRET, max_age=60 * 60 * 24 *
 app.mount("/static", StaticFiles(directory="static"), name="static")          # assets del repo
 app.mount("/u", StaticFiles(directory=UPLOADS_DIR), name="uploads")            # imágenes subidas (disco)
 templates = Jinja2Templates(directory="templates")
+# ID de Google Analytics (gtag). Configurable por env; disponible en todas las plantillas.
+templates.env.globals["GA_ID"] = os.getenv("GA_MEASUREMENT_ID", "G-B4E71MQFQT")
 
 
 # ------------------- Sesión / usuario actual -------------------

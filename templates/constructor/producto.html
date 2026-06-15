@@ -3,6 +3,7 @@
 {% set wanum = (t.whatsapp or '') | replace('+','') | replace(' ','') | replace('-','') %}
 {% set url_prod = base_url ~ ruta_base ~ '/producto/' ~ p.id %}
 <head>
+{% include "constructor/_ga.html" %}
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{{ p.seo_titulo or p.nombre }} · {{ t.nombre }}</title>

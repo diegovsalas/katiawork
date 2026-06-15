@@ -2,6 +2,7 @@
 <html lang="es">
 {% set wanum = (t.whatsapp or '') | replace('+','') | replace(' ','') | replace('-','') %}
 <head>
+{% include "constructor/_ga.html" %}
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Comprar {{ p.nombre }} · {{ t.nombre }}</title>
