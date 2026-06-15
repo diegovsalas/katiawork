@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Solicitar demo · katia.work</title>
+<meta name="description" content="Solicita una demo de katia.work. Un agente te contacta por correo o WhatsApp para mostrarte cómo vender, agendar citas y administrar tu negocio con IA.">
+<link rel="icon" type="image/svg+xml" href="/static/img/katia-favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{--brand:#6d5dfb;--brand-2:#8b5cf6;--ink:#222642;--tenue:#6b6a83;--linea:#e9e6f3;--bg:#f6f5fb;--lav:#f4f1fd;--ok:#0f9d58}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',-apple-system,sans-serif;color:var(--ink);background:var(--bg);line-height:1.6}
+  a{color:var(--brand);text-decoration:none;font-weight:600}
+  .top{background:#fff;border-bottom:1px solid var(--linea);padding:14px 0}
+  .wrap{max-width:680px;margin:0 auto;padding:0 22px}
+  .top .wrap{display:flex;align-items:center;justify-content:space-between}
+  .top img{height:28px}
+  .grid{display:grid;grid-template-columns:1fr;gap:0;margin:32px auto 60px}
+  .card{background:#fff;border:1px solid var(--linea);border-radius:22px;padding:34px 30px;
+        box-shadow:0 24px 56px -36px rgba(80,60,200,.3)}
+  .eyebrow{display:inline-flex;align-items:center;gap:7px;background:var(--lav);color:var(--brand);
+        font-weight:700;font-size:13px;padding:6px 13px;border-radius:99px;margin-bottom:14px}
+  h1{font-size:27px;font-weight:900;letter-spacing:-.6px;margin-bottom:8px}
+  .sub{color:var(--tenue);font-size:15.5px;margin-bottom:26px}
+  label{display:block;font-weight:600;font-size:13.5px;margin:15px 0 6px}
+  label .req{color:var(--brand)}
+  input,textarea{width:100%;padding:13px 15px;border:1.5px solid var(--linea);border-radius:12px;
+        font:inherit;font-size:16px;background:#fcfbff;color:var(--ink)}
+  input:focus,textarea:focus{outline:none;border-color:var(--brand);background:#fff}
+  textarea{min-height:96px;resize:vertical}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .btn{display:block;width:100%;text-align:center;background:linear-gradient(120deg,var(--brand-2),var(--brand));
+        color:#fff;border:none;font-weight:800;font-size:16px;padding:16px;border-radius:14px;cursor:pointer;
+        margin-top:24px;box-shadow:0 14px 30px -10px rgba(109,93,251,.55)}
+  .btn:disabled{opacity:.6;cursor:default}
+  .nota{text-align:center;color:var(--tenue);font-size:13.5px;margin-top:16px;line-height:1.6}
+  .nota a{font-weight:700}
+  .err{background:#fde8e8;color:#b91c1c;border-radius:12px;padding:12px 14px;font-size:14px;margin-top:14px;display:none}
+  /* éxito */
+  #ok{display:none;text-align:center}
+  .ok-ico{width:72px;height:72px;border-radius:50%;background:var(--ok);color:#fff;display:grid;place-items:center;
+        font-size:38px;margin:6px auto 18px}
+  #ok h1{margin-bottom:10px}
+  #ok p{color:var(--tenue);font-size:15.5px;max-width:440px;margin:0 auto 8px}
+  .volver{display:inline-block;margin-top:22px}
+  @media(max-width:560px){.row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="top"><div class="wrap">
+  <a href="/"><img src="/static/img/katia-logo.svg" alt="katia.work"></a>
+  <a href="/">← Volver al inicio</a>
+</div></div>
+
+<div class="wrap">
+<div class="grid">
+
+  <!-- Formulario -->
+  <div class="card" id="form">
+    <span class="eyebrow">✦ Demo personalizada</span>
+    <h1>Solicita tu demo de katia</h1>
+    <p class="sub">Déjanos tus datos y un agente de katia.work te mostrará cómo vender, agendar
+       citas y administrar tu negocio con IA. Sin costo y sin compromiso.</p>
+
+    <label>Nombre <span class="req">*</span></label>
+    <input id="nombre" placeholder="Tu nombre completo" autocomplete="name">
+
+    <div class="row">
+      <div>
+        <label>WhatsApp <span class="req">*</span></label>
+        <input id="whatsapp" inputmode="tel" placeholder="55 1234 5678" autocomplete="tel">
+      </div>
+      <div>
+        <label>Correo <span class="req">*</span></label>
+        <input id="correo" type="email" placeholder="tu@correo.com" autocomplete="email">
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label>Nombre del negocio</label>
+        <input id="negocio" placeholder="Ej. Spa Naturalia">
+      </div>
+      <div>
+        <label>Giro</label>
+        <input id="giro" placeholder="Ej. Spa, barbería, tienda…">
+      </div>
+    </div>
+
+    <label>Cuéntame un poco del negocio</label>
+    <textarea id="mensaje" placeholder="¿Qué vendes o qué servicios ofreces? ¿Qué te gustaría lograr con katia?"></textarea>
+
+    <div class="err" id="err"></div>
+    <button class="btn" id="enviar">Solicitar demo</button>
+    <p class="nota">Un agente de katia.work se pondrá en contacto contigo a la brevedad
+       vía correo o WhatsApp.<br>Nuestro correo es <a href="mailto:hola@katia.work">hola@katia.work</a></p>
+  </div>
+
+  <!-- Éxito -->
+  <div class="card" id="ok">
+    <div class="ok-ico">✓</div>
+    <h1>¡Solicitud enviada!</h1>
+    <p>Gracias por tu interés en katia. Un agente de katia.work se pondrá en contacto contigo
+       a la brevedad vía correo o WhatsApp.</p>
+    <p>Nuestro correo es <a href="mailto:hola@katia.work">hola@katia.work</a></p>
+    <a class="btn volver" href="/" style="max-width:260px;margin-left:auto;margin-right:auto">Volver al inicio</a>
+  </div>
+
+</div>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+function showErr(m){ const e=$('#err'); e.textContent=m; e.style.display='block'; }
+$('#enviar').addEventListener('click', async ()=>{
+  const data = {
+    nombre: $('#nombre').value.trim(),
+    whatsapp: $('#whatsapp').value.trim(),
+    correo: $('#correo').value.trim(),
+    negocio: $('#negocio').value.trim(),
+    giro: $('#giro').value.trim(),
+    mensaje: $('#mensaje').value.trim(),
+  };
+  $('#err').style.display='none';
+  if(!data.nombre || !data.whatsapp || !data.correo){ showErr('Pon tu nombre, WhatsApp y correo.'); return; }
+  const btn = $('#enviar'); btn.disabled=true; btn.textContent='Enviando…';
+  try{
+    const r = await fetch('/api/demo', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data)});
+    const d = await r.json();
+    if(!r.ok){ showErr(d.detail || 'No se pudo enviar. Intenta de nuevo.'); btn.disabled=false; btn.textContent='Solicitar demo'; return; }
+    $('#form').style.display='none';
+    $('#ok').style.display='block';
+    window.scrollTo({top:0,behavior:'smooth'});
+  }catch(e){
+    showErr('Error de conexión. Intenta de nuevo.');
+    btn.disabled=false; btn.textContent='Solicitar demo';
+  }
+});
+</script>
+</body>
+</html>

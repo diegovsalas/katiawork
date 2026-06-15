@@ -269,6 +269,8 @@
   .cta-band p{opacity:.92;font-size:19px;margin-bottom:30px;max-width:560px;margin-left:auto;margin-right:auto}
   .cta-band .btn{background:#fff;color:var(--brand)}
   .cta-band .btn:hover{transform:translateY(-2px);box-shadow:0 14px 30px rgba(0,0,0,.2)}
+  .cta-band .btn.ghost-band{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.7)}
+  .cta-band .btn.ghost-band:hover{background:rgba(255,255,255,.12);box-shadow:none}
   .cta-band small{display:block;margin-top:16px;opacity:.78;font-size:13.5px}
 
   /* Footer */
@@ -305,6 +307,7 @@
     .planes-mini{grid-template-columns:1fr 1fr}
     section.bloque{padding:64px 0}
     .nav-links a.link{display:none}
+    .nav-links a.btn.ghost{display:none}
     .foot-grid{grid-template-columns:1fr 1fr;gap:28px}
   }
   @media(max-width:560px){
@@ -328,6 +331,7 @@
       <a class="link" href="#vs">vs alternativas</a>
       <a class="link" href="/precios">Precios</a>
       {% if usuario %}<a class="link" href="/mis-tiendas">Mis tiendas</a>{% else %}<a class="link" href="/cuenta">Entrar</a>{% endif %}
+      <a class="btn ghost nav" href="/demo">Solicitar demo</a>
       <a class="btn primary nav" href="/crear">Crear mi tienda</a>
     </div>
   </div>
@@ -646,7 +650,10 @@
     <div class="cta-band">
       <h2>¿Listo para llevar tu negocio en línea?</h2>
       <p>Vende, agenda citas y administra a tus clientes con katia. Toma menos de lo que crees.</p>
-      <a class="btn lg" href="/crear">Empezar gratis con katia →</a>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+        <a class="btn lg" href="/crear">Empezar gratis con katia →</a>
+        <a class="btn lg ghost-band" href="/demo">Solicitar una demo</a>
+      </div>
       <small>Gratis para empezar · Sin tarjeta · Cancela cuando quieras</small>
     </div>
   </div>

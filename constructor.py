@@ -22,6 +22,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 
+import demos
 import emails
 import gemini_ia
 import pagos_suscripcion as subs
@@ -470,6 +471,53 @@ def terminos(request: Request):
 @app.get("/privacidad", response_class=HTMLResponse)
 def privacidad(request: Request):
     return templates.TemplateResponse(request, "constructor/legal.html", {"pagina": "privacidad"})
+
+
+# ------------------- Solicitar demo / contacto -------------------
+
+@app.get("/demo", response_class=HTMLResponse)
+def demo_form(request: Request):
+    return templates.TemplateResponse(request, "constructor/demo.html", {"enviado": False})
+
+
+@app.post("/api/demo")
+async def api_demo(request: Request):
+    """Recibe una solicitud de demo del landing: la guarda y notifica al equipo."""
+    b = await request.json()
+    nombre = (b.get("nombre") or "").strip()
+    whatsapp = (b.get("whatsapp") or "").strip()
+    correo = (b.get("correo") or "").strip()
+    if not nombre or not whatsapp or not correo:
+        raise HTTPException(status_code=400, detail="Pon tu nombre, WhatsApp y correo.")
+    sol = demos.crear({
+        "nombre": nombre, "whatsapp": whatsapp, "correo": correo,
+        "negocio": b.get("negocio", ""), "giro": b.get("giro", ""), "mensaje": b.get("mensaje", ""),
+    })
+    # Notifica al equipo de katia (ADMIN_EMAILS o hola@katia.work)
+    destinatarios = ADMIN_EMAILS or {"hola@katia.work"}
+    html = (
+        f"<h2>Nueva solicitud de demo</h2>"
+        f"<p><b>Nombre:</b> {sol['nombre']}<br>"
+        f"<b>WhatsApp:</b> {sol['whatsapp']}<br>"
+        f"<b>Correo:</b> {sol['correo']}<br>"
+        f"<b>Negocio:</b> {sol['negocio'] or '—'}<br>"
+        f"<b>Giro:</b> {sol['giro'] or '—'}</p>"
+        f"<p><b>Mensaje:</b><br>{(sol['mensaje'] or '—')}</p>"
+    )
+    try:
+        for e in destinatarios:
+            emails.enviar(e, f"🔔 Nueva demo: {sol['negocio'] or sol['nombre']}", html)
+        # Confirmación al solicitante
+        emails.enviar(
+            correo, "Recibimos tu solicitud · katia.work",
+            f"<p>Hola {nombre.split(' ')[0]}, ¡gracias por tu interés en katia! 🎉</p>"
+            f"<p>Un agente de katia.work se pondrá en contacto contigo a la brevedad por "
+            f"correo o WhatsApp.</p><p>¿Dudas? Escríbenos a "
+            f"<a href='mailto:hola@katia.work'>hola@katia.work</a>.</p>",
+        )
+    except Exception as e:  # noqa: BLE001 — el correo nunca debe romper el flujo
+        print(f"⚠  Notificación de demo no enviada: {e}")
+    return JSONResponse({"ok": True})
 
 
 # ------------------- API de IA usada por el wizard -------------------
@@ -2124,6 +2172,9 @@ def _admin_contexto():
     duenos = [u for u in us if u.get("rol") != "especialista"]
     duenos.sort(key=lambda x: x.get("creado", ""), reverse=True)
 
+    solicitudes = demos.listar()
+    demos_pend = sum(1 for s in solicitudes if not s.get("atendido"))
+
     return {
         "total_tiendas": len(ts),
         "total_usuarios": len(us),
@@ -2137,6 +2188,8 @@ def _admin_contexto():
         "tiendas": filas,
         "usuarios": duenos,
         "planes": PLANES,
+        "demos": solicitudes,
+        "demos_pend": demos_pend,
     }
 
 
@@ -2180,6 +2233,20 @@ def admin_eliminar_usuario(request: Request, email: str):
     # No permitir que un super-admin se borre a sí mismo por accidente
     if email.lower().strip() != (request.session.get("uid") or "").lower().strip():
         usuarios.eliminar(email)
+    return RedirectResponse(url="/admin", status_code=303)
+
+
+@app.post("/admin/demo/{id_}/atendido")
+def admin_demo_atendido(request: Request, id_: str):
+    _guard_admin(request)
+    demos.marcar_atendido(id_)
+    return RedirectResponse(url="/admin", status_code=303)
+
+
+@app.post("/admin/demo/{id_}/eliminar")
+def admin_demo_eliminar(request: Request, id_: str):
+    _guard_admin(request)
+    demos.eliminar(id_)
     return RedirectResponse(url="/admin", status_code=303)
 
 

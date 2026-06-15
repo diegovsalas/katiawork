@@ -75,7 +75,7 @@
     <div class="stat"><div class="n">{{ pagando }}</div><div class="l">Suscriptores pagando</div></div>
     <div class="stat"><div class="n">{{ total_tiendas }}</div><div class="l">Tiendas</div></div>
     <div class="stat"><div class="n">{{ total_duenos }}</div><div class="l">Cuentas dueño</div></div>
-    <div class="stat"><div class="n">{{ demo }}</div><div class="l">Planes demo</div></div>
+    <div class="stat"><div class="n">{{ demos_pend }}</div><div class="l">Demos por atender</div></div>
     <div class="stat"><div class="n">{{ suspendidas }}</div><div class="l">Suspendidas</div></div>
   </div>
 
@@ -85,6 +85,41 @@
     <div class="chip">Ventas Pro <b>{{ por_plan.pro }}</b></div>
     <div class="chip">Escala <b>{{ por_plan.escala }}</b></div>
     <div class="chip muted">Especialistas <b>{{ total_especialistas }}</b></div>
+  </div>
+
+  <!-- Solicitudes de demo -->
+  <h2>📨 Solicitudes de demo ({{ demos|length }}{% if demos_pend %} · {{ demos_pend }} por atender{% endif %})</h2>
+  <div class="card">
+    {% if demos %}
+    <table>
+      <thead><tr>
+        <th>Contacto</th><th class="hide-sm">Negocio</th><th class="hide-sm">Mensaje</th>
+        <th class="hide-sm">Fecha</th><th>Estado</th><th>Acciones</th>
+      </tr></thead>
+      <tbody>
+        {% for d in demos %}
+        <tr>
+          <td><b>{{ d.nombre }}</b><br>
+            <span class="muted">📱 <a href="https://wa.me/{{ d.whatsapp|replace('+','')|replace(' ','')|replace('-','') }}" target="_blank">{{ d.whatsapp }}</a></span><br>
+            <span class="muted">✉️ <a href="mailto:{{ d.correo }}">{{ d.correo }}</a></span></td>
+          <td class="hide-sm">{{ d.negocio or '—' }}{% if d.giro %}<br><span class="muted">{{ d.giro }}</span>{% endif %}</td>
+          <td class="hide-sm muted" style="max-width:240px">{{ d.mensaje or '—' }}</td>
+          <td class="hide-sm muted">{{ (d.creado or '')[:10] }}</td>
+          <td>{% if d.atendido %}<span class="ok-dot">● Atendido</span>{% else %}<span class="susp">Pendiente</span>{% endif %}</td>
+          <td><div class="acts">
+            <form class="inline" method="post" action="/admin/demo/{{ d.id }}/atendido">
+              <button class="btn" type="submit">{{ 'Reabrir' if d.atendido else 'Marcar atendido' }}</button>
+            </form>
+            <form class="inline" method="post" action="/admin/demo/{{ d.id }}/eliminar"
+                  onsubmit="return confirm('¿Eliminar esta solicitud de demo?')">
+              <button class="btn danger" type="submit">Eliminar</button>
+            </form>
+          </div></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}<div class="vacio">Aún no hay solicitudes de demo.</div>{% endif %}
   </div>
 
   <!-- Tiendas -->
