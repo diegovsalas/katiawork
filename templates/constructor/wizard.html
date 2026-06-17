@@ -607,6 +607,8 @@ $('#publicar').onclick = async (e)=>{
       $('#verPanel').href=panelUrl;
     }
     mostrar('done');
+    // Conversión Google Ads / GA4: el usuario creó su página en katia
+    try{ if(window.gtag){ gtag('event','sign_up',{method:'wizard'}); } }catch(_){}
   }catch(err){ alert('No se pudo publicar. Intenta de nuevo.'); unspin(btn); }
 };
 </script>

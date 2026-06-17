@@ -133,6 +133,8 @@ $('#enviar').addEventListener('click', async ()=>{
     $('#form').style.display='none';
     $('#ok').style.display='block';
     window.scrollTo({top:0,behavior:'smooth'});
+    // Conversión Google Ads / GA4: solicitud de demo (lead)
+    try{ if(window.gtag){ gtag('event','generate_lead',{value:1,currency:'MXN'}); } }catch(_){}
   }catch(e){
     showErr('Error de conexión. Intenta de nuevo.');
     btn.disabled=false; btn.textContent='Solicitar demo';
