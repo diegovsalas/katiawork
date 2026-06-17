@@ -215,6 +215,22 @@
   <div class="cap">
     <h3>Casi listo 🎉</h3>
     <p id="capSub">Déjanos tus datos y te atendemos por WhatsApp.</p>
+    {% if p.precio is not none %}
+      {% set extras = [] %}
+      {% for r in relacionados %}{% if r.precio is not none %}{% set _ = extras.append(r) %}{% endif %}{% endfor %}
+      {% if extras %}
+      <div class="xsell">
+        <div class="xs-t">✨ ¿Agregar algo más a tu pedido?</div>
+        {% for r in extras[:3] %}
+        <button type="button" class="xsel" data-n="{{ r.nombre }}" data-p="{{ r.precio }}">
+          <span class="xs-chk">+</span>
+          <span class="xs-n">{{ r.nombre }}</span>
+          <span class="xs-p">${{ "{:,.2f}".format(r.precio) }}</span>
+        </button>
+        {% endfor %}
+      </div>
+      {% endif %}
+    {% endif %}
     <label>Tu nombre</label>
     <input id="capNombre" placeholder="Nombre y apellido" autocomplete="name">
     <label>Tu WhatsApp</label>
@@ -236,6 +252,17 @@
   .cap input:focus{outline:none;border-color:var(--brand);background:#fff}
   .cap .go{width:100%;margin-top:18px;background:#25D366;color:#fff;border:none;font-weight:700;font-size:15px;
         padding:14px;border-radius:13px;cursor:pointer}
+  .xsell{margin:4px 0 6px;padding:14px;background:#f7f6fa;border:1px solid var(--linea);border-radius:14px}
+  .xs-t{font-weight:700;font-size:13.5px;margin-bottom:10px}
+  .xsel{display:flex;align-items:center;gap:10px;width:100%;background:#fff;border:1.5px solid var(--linea);
+        border-radius:11px;padding:9px 12px;margin-bottom:8px;cursor:pointer;font:inherit;text-align:left;transition:.12s}
+  .xsel:last-child{margin-bottom:0}
+  .xsel .xs-chk{width:24px;height:24px;border-radius:50%;background:var(--linea);color:#fff;display:grid;
+        place-items:center;font-weight:800;font-size:15px;flex-shrink:0;transition:.12s}
+  .xsel .xs-n{flex:1;font-weight:600;font-size:14px;color:var(--tinta)}
+  .xsel .xs-p{font-weight:800;font-size:14px;color:var(--brand)}
+  .xsel.on{border-color:var(--brand);background:color-mix(in srgb,var(--brand) 7%,#fff)}
+  .xsel.on .xs-chk{background:var(--brand)}
   .cap .skip{display:block;width:100%;text-align:center;margin-top:12px;background:none;border:none;color:var(--tenue);
         font-size:13px;cursor:pointer;text-decoration:underline}
 </style>
@@ -243,7 +270,34 @@
 const SLUG="{{ t.slug }}";
 const capOv=document.getElementById('capOv');
 let waPendiente=null;
-function irWhatsapp(){ if(waPendiente) window.open(waPendiente.url,'_blank'); capOv.classList.remove('open'); }
+
+// --- Venta cruzada: alternar sugerencias ---
+const WANUM={{ wanum|tojson }};
+const TIENDA={{ t.nombre|tojson }};
+const PRINCIPAL={nombre:{{ p.nombre|tojson }}, precio:{{ p.precio if p.precio is not none else 'null' }}};
+const URLPROD={{ url_prod|tojson }};
+const fmtMX=n=>Number(n).toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2});
+document.querySelectorAll('.xsel').forEach(b=>b.addEventListener('click',()=>{
+  b.classList.toggle('on');
+  b.querySelector('.xs-chk').textContent = b.classList.contains('on') ? '✓' : '+';
+}));
+function urlConExtras(){
+  const extras=[...document.querySelectorAll('.xsel.on')];
+  const lineas=['Hola '+TIENDA+', quiero pedir:'];
+  let total=Number(PRINCIPAL.precio)||0;
+  lineas.push('• '+PRINCIPAL.nombre+(PRINCIPAL.precio!=null?(' ($'+fmtMX(PRINCIPAL.precio)+')'):''));
+  extras.forEach(el=>{ const pr=Number(el.dataset.p)||0; total+=pr;
+    lineas.push('• '+el.dataset.n+(pr?(' ($'+fmtMX(pr)+')'):'')); });
+  if(total>0) lineas.push('Total aprox: $'+fmtMX(total));
+  lineas.push('Lo vi aquí: '+URLPROD);
+  return 'https://wa.me/'+WANUM+'?text='+encodeURIComponent(lineas.join('\n'));
+}
+function irWhatsapp(){
+  let url=waPendiente?.url;
+  if(url && document.querySelectorAll('.xsel.on').length) url=urlConExtras();
+  if(url) window.open(url,'_blank');
+  capOv.classList.remove('open');
+}
 document.querySelectorAll('a.js-wa').forEach(a=>a.addEventListener('click',e=>{
   e.preventDefault();
   waPendiente={url:a.getAttribute('href'),prod:a.dataset.prod||'',valor:a.dataset.valor||''};
