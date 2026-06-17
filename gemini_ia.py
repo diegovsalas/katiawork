@@ -182,14 +182,18 @@ def generar_logo(nombre: str, giro: str, color: str, ruta_destino: str) -> str:
             f"simple representativo y, si cabe, el nombre. Sin texto extra ni marca de agua."
         )
         try:
+            # El modelo de imagen requiere pedir explícitamente salida IMAGE;
+            # sin esto devuelve solo texto y no se genera ninguna imagen.
             resp = _client().models.generate_content(
-                model=MODELO_IMAGEN, contents=prompt
+                model=MODELO_IMAGEN, contents=prompt,
+                config=genai_types.GenerateContentConfig(response_modalities=["IMAGE"]),
             )
             for part in resp.candidates[0].content.parts:
                 if getattr(part, "inline_data", None) and part.inline_data.data:
                     with open(ruta_destino, "wb") as f:
                         f.write(part.inline_data.data)
                     return ruta_destino
+            print("⚠  Gemini (logo): la respuesta no trajo imagen; usando monograma SVG.")
         except Exception as e:  # noqa: BLE001
             print(f"⚠  Gemini (logo) falló, usando monograma SVG: {e}")
 
