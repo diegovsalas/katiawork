@@ -50,6 +50,12 @@
   .tab{padding:9px 18px;border-radius:11px;border:1px solid var(--linea);background:#fff;cursor:pointer;
        font-weight:700;font-size:14px;color:var(--tenue)}
   .tab.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+  /* POS destacado (diferenciador clave) */
+  .tab.tab-pos{font-size:15px;font-weight:800;padding:11px 22px;border-color:#9be7c8;
+        color:#0c8a5f;background:#eafaf6}
+  .tab.tab-pos:hover{border-color:var(--mint)}
+  .tab.tab-pos.on{background:linear-gradient(120deg,#16a34a,#0c8a5f);color:#fff;border-color:transparent;
+        box-shadow:0 8px 20px -8px rgba(16,163,74,.55)}
   .tab[data-lock]{color:var(--tenue)}
   .tab[data-lock].on{background:var(--ink);border-color:var(--ink);color:#fff}
   /* Upsell de función bloqueada */
@@ -264,7 +270,7 @@
     <div class="tab on" data-v="pipe">🗂️ Pipeline</div>
     <div class="tab" data-v="hoy">🔔 Por contactar <span id="hoyCnt"></span></div>
     <div class="tab" data-v="agenda">📅 Agenda{% if citas_proximas %} ({{ citas_proximas|length }}){% endif %}</div>
-    <div class="tab" data-v="pos"{% if not puede_pos %} data-lock="Ventas Pro" data-feat="Punto de venta (POS)"{% endif %}>🛒 Vender{% if not puede_pos %} 🔒{% endif %}</div>
+    <div class="tab tab-pos" data-v="pos"{% if not puede_pos %} data-lock="Ventas Pro" data-feat="Punto de venta (POS)"{% endif %}>🛒 Vender{% if not puede_pos %} 🔒{% endif %}</div>
     <div class="tab" data-v="caja">💰 Caja</div>
     <div class="tab" data-v="reportes">📊 Reportes</div>
     <div class="tab" data-v="gastos"{% if not puede_gastos %} data-lock="Escala" data-feat="Control de gastos avanzado"{% endif %}>🧾 Gastos{% if not puede_gastos %} 🔒{% endif %}</div>
