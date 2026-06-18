@@ -110,11 +110,11 @@
   .cal-col{position:relative;border-left:1px solid var(--linea)}
   .cal-col.hoy{background:color-mix(in srgb,var(--brand) 4%,#fff)}
   .cal-line{border-bottom:1px solid #f4f1fb}
-  .cal-ev{position:absolute;left:3px;right:3px;border-radius:8px;padding:3px 7px;font-size:11.5px;line-height:1.25;
+  .cal-ev{position:absolute;left:3px;right:3px;border-radius:8px;padding:3px 7px;font-size:10.8px;line-height:1.2;
         color:#fff;overflow:hidden;cursor:pointer;box-shadow:0 4px 10px -4px rgba(34,38,66,.4);
         background:linear-gradient(135deg,var(--brand-2),var(--brand))}
-  .cal-ev b{font-weight:800;font-size:11px;opacity:.95}
-  .cal-ev .nm{display:block;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cal-ev .t{display:block;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cal-ev .t b{font-weight:800}
   .cal-ev .cl{display:block;opacity:.9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .cal-vacia{padding:30px;text-align:center;color:var(--tenue);font-size:13.5px}
   .hidden{display:none}
@@ -778,7 +778,7 @@ document.getElementById('calNext').onclick=()=>{ CAL.weekStart=_addDays(CAL.week
 document.getElementById('calToday').onclick=()=>{ CAL.weekStart=_lunes(new Date(HOY+'T00:00:00')); cargarAgenda(); };
 const MESC=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
 function pintarCalendario(citas){
-  const ini=CAL.weekStart, HPX=54, span=Math.max(1,CAL.close-CAL.open);
+  const ini=CAL.weekStart, HPX=64, span=Math.max(1,CAL.close-CAL.open);
   const cols=CAL.dias.length;
   $('#calTitulo').textContent=`${ini.getDate()} ${MESC[ini.getMonth()]} – ${_addDays(ini,6).getDate()} ${MESC[_addDays(ini,6).getMonth()]}`;
   $('#calCount').textContent=`${citas.length} cita(s)`;
@@ -799,11 +799,11 @@ function pintarCalendario(citas){
     citas.filter(c=>c.fecha===fiso).forEach(c=>{
       const p=(c.hora||'09:00').split(':'); const min=(+p[0])*60+(+p[1]||0);
       const top=Math.max(0,(min-CAL.open*60)*HPX/60);
-      const dur=Math.max(Number(c.duracion)||30,30); const ht=Math.max(22,dur*HPX/60-3);
+      const dur=Math.max(Number(c.duracion)||30,30); const ht=Math.max(30,dur*HPX/60-3);
       const tel=(c.cliente_telefono||'').replace(/[^0-9]/g,'');
       col+=`<div class="cal-ev" style="top:${top}px;height:${ht}px" data-wa="${tel}"
               data-info="${(c.hora||'')} · ${(c.servicio_nombre||'').replace(/"/g,'')} · ${(c.cliente_nombre||'').replace(/"/g,'')}">
-          <b>${c.hora||''}</b><span class="nm">${c.servicio_nombre||''}</span><span class="cl">${c.cliente_nombre||''}</span></div>`;
+          <span class="t"><b>${c.hora||''}</b> ${c.servicio_nombre||''}</span><span class="cl">${c.cliente_nombre||''}</span></div>`;
     });
     col+='</div>';
     html+=col;
@@ -885,8 +885,8 @@ function gFechas(r){
   if(r==='mespasado'){ return [iso(new Date(d.getFullYear(),d.getMonth()-1,1)), iso(new Date(d.getFullYear(),d.getMonth(),0))]; }
   return [iso(new Date(d.getFullYear(),0,1)),HOY];
 }
-document.querySelectorAll('.gbtn').forEach(b=>b.onclick=()=>{
-  document.querySelectorAll('.gbtn').forEach(x=>x.classList.remove('on')); b.classList.add('on'); GRANGO=b.dataset.r; cargarGastos();
+document.querySelectorAll('#vGastos .gbtn').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#vGastos .gbtn').forEach(x=>x.classList.remove('on')); b.classList.add('on'); GRANGO=b.dataset.r; cargarGastos();
 });
 async function cargarGastos(){
   const [desde,hasta]=gFechas(GRANGO);
