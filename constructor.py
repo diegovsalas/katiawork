@@ -996,6 +996,92 @@ async def api_reservar(slug: str, request: Request):
     return JSONResponse({"ok": True, "cita": cita, "wa_url": wa_url})
 
 
+# ------------------- Siembra de catálogo SPA de ejemplo (admin) -------------------
+
+SPA_SERVICIOS = [
+    {"nombre": "Masaje relajante 60 min", "precio": 650, "duracion": 60, "descripcion": "Masaje corporal de relajación con aceites aromáticos."},
+    {"nombre": "Masaje descontracturante 60 min", "precio": 750, "duracion": 60, "descripcion": "Libera la tensión muscular de espalda y cuello."},
+    {"nombre": "Masaje con piedras calientes 75 min", "precio": 850, "duracion": 75, "descripcion": "Terapia con piedras volcánicas tibias."},
+    {"nombre": "Masaje de pareja 60 min", "precio": 1300, "duracion": 60, "descripcion": "Sesión simultánea de relajación para dos personas."},
+    {"nombre": "Aromaterapia 60 min", "precio": 700, "duracion": 60, "descripcion": "Masaje con aceites esenciales personalizados."},
+    {"nombre": "Reflexología podal 45 min", "precio": 400, "duracion": 45, "descripcion": "Estimulación de puntos de presión en los pies."},
+    {"nombre": "Facial hidratante", "precio": 550, "duracion": 50, "descripcion": "Limpieza e hidratación profunda del rostro."},
+    {"nombre": "Facial anti-edad", "precio": 700, "duracion": 60, "descripcion": "Tratamiento reafirmante con colágeno."},
+    {"nombre": "Limpieza facial profunda", "precio": 600, "duracion": 60, "descripcion": "Extracción y purificación de la piel."},
+    {"nombre": "Exfoliación corporal", "precio": 500, "duracion": 45, "descripcion": "Remueve células muertas y suaviza la piel."},
+    {"nombre": "Envoltura corporal detox", "precio": 650, "duracion": 60, "descripcion": "Envoltura nutritiva desintoxicante."},
+    {"nombre": "Manicure spa", "precio": 250, "duracion": 40, "descripcion": "Cuidado de uñas con tratamiento hidratante."},
+    {"nombre": "Pedicure spa", "precio": 300, "duracion": 50, "descripcion": "Cuidado completo de pies y uñas."},
+    {"nombre": "Manicure + Pedicure", "precio": 500, "duracion": 80, "descripcion": "Paquete completo de manos y pies."},
+    {"nombre": "Depilación con cera (piernas)", "precio": 400, "duracion": 45, "descripcion": "Depilación de piernas completas con cera tibia."},
+    {"nombre": "Depilación facial", "precio": 150, "duracion": 20, "descripcion": "Depilación de ceja, bozo o mentón."},
+    {"nombre": "Sauna / Vapor (sesión)", "precio": 200, "duracion": 30, "descripcion": "Sesión de relajación y desintoxicación."},
+    {"nombre": "Tratamiento capilar", "precio": 450, "duracion": 45, "descripcion": "Hidratación y nutrición intensiva del cabello."},
+    {"nombre": "Maquillaje profesional", "precio": 600, "duracion": 60, "descripcion": "Maquillaje para evento social o sesión."},
+    {"nombre": "Paquete Relax (masaje + facial)", "precio": 1100, "duracion": 120, "descripcion": "Masaje relajante seguido de facial hidratante."},
+]
+
+_SPA_CLIENTES = [
+    ("Ana Torres", "8112345670"), ("Carla Méndez", "8112345671"), ("Sofía Ramírez", "8112345672"),
+    ("Luis Hernández", "8112345673"), ("Daniela Cruz", "8112345674"), ("Mariana López", "8112345675"),
+    ("Jorge Castillo", "8112345676"), ("Paola Núñez", "8112345677"), ("Regina Flores", "8112345678"),
+    ("Andrea Vega", "8112345679"), ("Fernanda Ríos", "8112345680"), ("Valeria Soto", "8112345681"),
+]
+_SPA_HORAS = ["10:00", "11:30", "13:00", "16:00", "17:30"]
+
+
+@app.post("/api/seed-spa/{slug}")
+def api_seed_spa(slug: str, k: str = ""):
+    """Siembra un catálogo SPA genérico + citas de ejemplo. Protegido por el
+    token de admin de la tienda (o sesión del dueño). Idempotente en servicios."""
+    t = _tienda_admin(slug, k)
+    # 1) Servicios (no duplica: salta los que ya existan por nombre)
+    existentes = {(s.get("nombre") or "").lower() for s in t.get("servicios", [])}
+    creados = 0
+    for sv in SPA_SERVICIOS:
+        if sv["nombre"].lower() in existentes:
+            continue
+        tiendas.agregar(slug, "servicios", {
+            "id": secrets.token_hex(4), "nombre": sv["nombre"], "precio": float(sv["precio"]),
+            "duracion": sv["duracion"], "descripcion": sv["descripcion"], "imagen": "",
+        }, al_inicio=False)
+        creados += 1
+    # Asegura que la tienda muestre servicios y tenga horario para agendar
+    cambios = {}
+    if t.get("tipo") not in ("servicios", "ambos"):
+        cambios["tipo"] = "ambos" if t.get("productos") else "servicios"
+    if not t.get("horarios"):
+        cambios["horarios"] = dict(tiendas.HORARIO_DEFAULT)
+    if cambios:
+        tiendas.actualizar_tienda(slug, cambios)
+    # 2) Citas de ejemplo (solo si aún no hay muchas, para no duplicar)
+    t2 = tiendas.obtener_tienda(slug)
+    servs = t2.get("servicios", [])
+    citas_creadas = 0
+    if servs and len(t2.get("citas", [])) < 5:
+        hoy = _date.today()
+        i = 0
+        for dia in range(1, 8):  # próximos 7 días
+            f = hoy + timedelta(days=dia)
+            if f.weekday() == 6:  # domingo, cerrado
+                continue
+            for _ in range(2):   # 2 citas por día
+                sv = servs[i % len(servs)]
+                cli = _SPA_CLIENTES[i % len(_SPA_CLIENTES)]
+                cita = {
+                    "id": secrets.token_hex(6), "servicio_id": sv["id"], "servicio_nombre": sv["nombre"],
+                    "duracion": int(sv.get("duracion") or 60), "fecha": f.isoformat(),
+                    "hora": _SPA_HORAS[i % len(_SPA_HORAS)],
+                    "cliente_nombre": cli[0], "cliente_telefono": cli[1],
+                    "estado": "agendada", "creada": datetime.now().isoformat(),
+                }
+                tiendas.agregar_cita(slug, cita)
+                citas_creadas += 1
+                i += 1
+    return JSONResponse({"ok": True, "servicios_creados": creados, "citas_creadas": citas_creadas,
+                         "servicios_totales": len(servs)})
+
+
 # ------------------- Captura pública de leads (desde la tienda) -------------------
 
 @app.post("/api/lead/{slug}")
