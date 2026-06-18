@@ -1028,6 +1028,7 @@ _SPA_CLIENTES = [
     ("Andrea Vega", "8112345679"), ("Fernanda Ríos", "8112345680"), ("Valeria Soto", "8112345681"),
 ]
 _SPA_HORAS = ["10:00", "11:30", "13:00", "16:00", "17:30"]
+_SPA_TERAPEUTAS = ["Mariana Ríos", "Sofía Herrera", "Daniela Campos", "Regina Ávila"]
 
 
 def _sembrar_spa(slug: str, t: dict) -> dict:
@@ -1044,6 +1045,17 @@ def _sembrar_spa(slug: str, t: dict) -> dict:
             "duracion": sv["duracion"], "descripcion": sv["descripcion"], "imagen": "",
         }, al_inicio=False)
         creados += 1
+    # Terapeutas de ejemplo (idempotente por nombre)
+    equipo_nombres = {(m.get("nombre") or "").lower() for m in t.get("equipo", [])}
+    terapeutas_creados = 0
+    for nombre in _SPA_TERAPEUTAS:
+        if nombre.lower() in equipo_nombres:
+            continue
+        tiendas.agregar(slug, "equipo", {
+            "id": secrets.token_hex(5), "nombre": nombre, "pct_comision": 0.40,
+            "activo": True, "creado": datetime.now().isoformat(),
+        }, al_inicio=False)
+        terapeutas_creados += 1
     # Asegura que la tienda muestre servicios y tenga horario para agendar
     cambios = {}
     if t.get("tipo") not in ("servicios", "ambos"):
@@ -1077,7 +1089,7 @@ def _sembrar_spa(slug: str, t: dict) -> dict:
                 citas_creadas += 1
                 i += 1
     return {"ok": True, "servicios_creados": creados, "citas_creadas": citas_creadas,
-            "servicios_totales": len(servs)}
+            "terapeutas_creados": terapeutas_creados, "servicios_totales": len(servs)}
 
 
 @app.post("/api/seed-spa/{slug}")
