@@ -2356,6 +2356,27 @@ def admin_eliminar_tienda(request: Request, slug: str):
     return RedirectResponse(url="/admin", status_code=303)
 
 
+@app.post("/admin/tienda/{slug}/asignar-dueno")
+def admin_asignar_dueno(request: Request, slug: str,
+                        email: str = Form(...), password: str = Form(""),
+                        nombre: str = Form(""), plan: str = Form("escala")):
+    """Asigna (o crea) la cuenta dueña de una tienda, con plan, para pruebas/transferencias."""
+    _guard_admin(request)
+    t = tiendas.obtener_tienda(slug)
+    if not t:
+        return RedirectResponse(url="/admin", status_code=303)
+    email = (email or "").lower().strip()
+    if not email:
+        return RedirectResponse(url="/admin", status_code=303)
+    if not usuarios.buscar(email):
+        pwd = password if len(password or "") >= 6 else (password + "123456")[:12] or "katia12345"
+        usuarios.crear(email, pwd, nombre=nombre or email.split("@")[0])
+    plan = plan if plan in PLANES else "escala"
+    usuarios.actualizar(email, {"plan": plan, "sub_estado": "active"})
+    tiendas.actualizar_tienda(slug, {"owner_email": email})
+    return RedirectResponse(url="/admin", status_code=303)
+
+
 @app.post("/admin/usuario/{email}/plan")
 def admin_cambiar_plan(request: Request, email: str, plan: str = Form(...)):
     _guard_admin(request)

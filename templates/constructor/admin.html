@@ -150,6 +150,7 @@
                   onsubmit="return confirm('¿Sembrar catálogo SPA de ejemplo (20 servicios + citas) en «{{ t.nombre }}»?')">
               <button class="btn" type="submit">🌱 Sembrar SPA</button>
             </form>
+            <button class="btn" type="button" onclick="asignarDueno('{{ t.slug }}','{{ t.nombre|e }}')">🔑 Dueño</button>
             <form class="inline" method="post" action="/admin/tienda/{{ t.slug }}/eliminar"
                   onsubmit="return confirm('¿Eliminar la tienda «{{ t.nombre }}» y todas sus imágenes? Esto no se puede deshacer.')">
               <button class="btn danger" type="submit">Eliminar</button>
@@ -212,5 +213,20 @@
     suscripciones con estado <b>activa/trialing</b> en planes de pago.
   </p>
 </div>
+<script>
+function asignarDueno(slug, nombre){
+  const email = prompt('Email del dueño para «'+nombre+'»:');
+  if(!email) return;
+  const pwd = prompt('Contraseña para esa cuenta (mín. 6):', 'azuleno2026');
+  if(!pwd || pwd.length < 6){ alert('La contraseña debe tener al menos 6 caracteres.'); return; }
+  if(!confirm('Se asignará «'+nombre+'» a '+email+' con plan Escala. ¿Continuar?')) return;
+  const f = document.createElement('form');
+  f.method = 'post'; f.action = '/admin/tienda/'+slug+'/asignar-dueno';
+  for(const [n,v] of [['email',email],['password',pwd],['plan','escala']]){
+    const i = document.createElement('input'); i.type='hidden'; i.name=n; i.value=v; f.appendChild(i);
+  }
+  document.body.appendChild(f); f.submit();
+}
+</script>
 </body>
 </html>
