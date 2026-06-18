@@ -433,6 +433,7 @@
       <span style="flex:1"></span>
       <b id="gTotal" class="pc-total">$0</b>
     </div>
+    {% if puede_gastos_avanzado %}
     <div class="cajagrid">
       <div class="pcard">
         <h3 class="pc-t">Presupuesto por cuenta</h3>
@@ -450,6 +451,16 @@
         <div id="recLista" class="lista" style="margin-top:12px"></div>
       </div>
     </div>
+    {% else %}
+    <div class="pcard" style="text-align:center;padding:30px 24px">
+      <div style="font-size:30px;margin-bottom:6px">🔒</div>
+      <h3 class="pc-t">Presupuestos y gastos recurrentes</h3>
+      <p style="color:var(--tenue);font-size:14px;margin:8px auto 16px;max-width:440px">
+        Pon <b>topes por cuenta</b> y registra tus gastos fijos (renta, sueldos, internet)
+        de un solo clic cada mes. Disponible en el plan <b>Escala</b>.</p>
+      <a class="btn" href="/facturacion" style="display:inline-flex;text-decoration:none">Mejorar a Escala →</a>
+    </div>
+    {% endif %}
     <div class="pcard" style="margin-top:16px">
       <div class="pc-row"><h3 class="pc-t">Registrar gasto</h3></div>
       <div class="g2">
@@ -811,28 +822,31 @@ async function cargarGastos(){
   $('#gLabel').textContent=desde+' → '+hasta;
   const d=await apk(`gastos-pro/${SLUG}?desde=${desde}&hasta=${hasta}`);
   $('#gTotal').textContent=fmt(d.total)||'$0';
-  $('#recCuenta').innerHTML=d.cuentas.map(c=>`<option value="${c.codigo}">${c.nombre}</option>`).join('');
-  // Presupuestos por cuenta
-  $('#gPresup').innerHTML=d.por_cuenta.map(c=>{
-    const pct=c.presupuesto?Math.min(100,Math.round(c.gastado/c.presupuesto*100)):0;
-    const over=c.presupuesto&&c.gastado>c.presupuesto;
-    return `<div class="pb"><div class="pt"><b>${c.nombre}</b>
-        <span>${fmt(c.gastado)||'$0'}${c.presupuesto?' / '+fmt(c.presupuesto):''} <button class="setp" data-c="${c.codigo}" data-p="${c.presupuesto}">${c.presupuesto?'editar':'+ tope'}</button></span></div>
-      ${c.presupuesto?`<div class="bar"><i class="${over?'over':''}" style="width:${pct}%"></i></div>`:''}</div>`;
-  }).join('');
-  $('#gPresup').querySelectorAll('.setp').forEach(b=>b.onclick=async()=>{
-    const v=prompt('Presupuesto mensual para esta cuenta ('+MONEDA+'):', b.dataset.p||'');
-    if(v===null) return;
-    await apk(`gastos-pro/${SLUG}/presupuesto`,{method:'POST',...J,body:JSON.stringify({cuenta:b.dataset.c,monto:v})});
-    cargarGastos();
-  });
-  // Recurrentes
-  $('#recLista').innerHTML=(d.recurrentes||[]).length? d.recurrentes.map(r=>`<div class="li">
-      <div class="a"><b>${r.concepto}</b><span>${fmt(r.monto)} · ${cuentaNombre(r.cuenta)}</span></div>
-      <button class="inv reg" data-id="${r.id}">Registrar mes</button><button class="x2 rdel" data-id="${r.id}">×</button></div>`).join('')
-    : '<div class="vacia2">Sin recurrentes. Agrega renta, sueldos, etc.</div>';
-  $('#recLista').querySelectorAll('.reg').forEach(b=>b.onclick=async()=>{ await apk(`gastos-pro/${SLUG}/recurrente/${b.dataset.id}/registrar`,{method:'POST'}); cargarGastos(); });
-  $('#recLista').querySelectorAll('.rdel').forEach(b=>b.onclick=async()=>{ if(confirm('¿Quitar este recurrente?')){ await apk(`gastos-pro/${SLUG}/recurrente/${b.dataset.id}`,{method:'DELETE'}); cargarGastos(); }});
+  // --- Presupuestos y recurrentes (solo Escala; en Pro estos nodos no existen) ---
+  if($('#recCuenta')) $('#recCuenta').innerHTML=d.cuentas.map(c=>`<option value="${c.codigo}">${c.nombre}</option>`).join('');
+  if($('#gPresup')){
+    $('#gPresup').innerHTML=d.por_cuenta.map(c=>{
+      const pct=c.presupuesto?Math.min(100,Math.round(c.gastado/c.presupuesto*100)):0;
+      const over=c.presupuesto&&c.gastado>c.presupuesto;
+      return `<div class="pb"><div class="pt"><b>${c.nombre}</b>
+          <span>${fmt(c.gastado)||'$0'}${c.presupuesto?' / '+fmt(c.presupuesto):''} <button class="setp" data-c="${c.codigo}" data-p="${c.presupuesto}">${c.presupuesto?'editar':'+ tope'}</button></span></div>
+        ${c.presupuesto?`<div class="bar"><i class="${over?'over':''}" style="width:${pct}%"></i></div>`:''}</div>`;
+    }).join('');
+    $('#gPresup').querySelectorAll('.setp').forEach(b=>b.onclick=async()=>{
+      const v=prompt('Presupuesto mensual para esta cuenta ('+MONEDA+'):', b.dataset.p||'');
+      if(v===null) return;
+      await apk(`gastos-pro/${SLUG}/presupuesto`,{method:'POST',...J,body:JSON.stringify({cuenta:b.dataset.c,monto:v})});
+      cargarGastos();
+    });
+  }
+  if($('#recLista')){
+    $('#recLista').innerHTML=(d.recurrentes||[]).length? d.recurrentes.map(r=>`<div class="li">
+        <div class="a"><b>${r.concepto}</b><span>${fmt(r.monto)} · ${cuentaNombre(r.cuenta)}</span></div>
+        <button class="inv reg" data-id="${r.id}">Registrar mes</button><button class="x2 rdel" data-id="${r.id}">×</button></div>`).join('')
+      : '<div class="vacia2">Sin recurrentes. Agrega renta, sueldos, etc.</div>';
+    $('#recLista').querySelectorAll('.reg').forEach(b=>b.onclick=async()=>{ await apk(`gastos-pro/${SLUG}/recurrente/${b.dataset.id}/registrar`,{method:'POST'}); cargarGastos(); });
+    $('#recLista').querySelectorAll('.rdel').forEach(b=>b.onclick=async()=>{ if(confirm('¿Quitar este recurrente?')){ await apk(`gastos-pro/${SLUG}/recurrente/${b.dataset.id}`,{method:'DELETE'}); cargarGastos(); }});
+  }
   // Lista de gastos (editable cuenta + borrar)
   $('#gLista2').innerHTML=(d.gastos||[]).length? d.gastos.map(g=>`<div class="li">
       <div class="a"><b>${g.concepto}</b><span>${g.fecha} · ${g.clasificado_por==='llm'?'IA':g.clasificado_por}</span></div>
@@ -843,7 +857,7 @@ async function cargarGastos(){
   $('#gLista2').querySelectorAll('.gc').forEach(s=>s.onchange=async()=>{ await apk(`gastos-pro/${SLUG}/${s.dataset.id}`,{method:'PATCH',...J,body:JSON.stringify({cuenta:s.value})}); cargarGastos(); });
   $('#gLista2').querySelectorAll('.gdel').forEach(b=>b.onclick=async()=>{ await apk(`gastos/${SLUG}/${b.dataset.id}`,{method:'DELETE'}); cargarGastos(); });
 }
-$('#recAdd').onclick=async()=>{
+if($('#recAdd')) $('#recAdd').onclick=async()=>{
   const c=$('#recConcepto').value.trim(), m=$('#recMonto').value;
   if(!c||!(Number(m)>0)){ alert('Pon concepto y monto.'); return; }
   await apk(`gastos-pro/${SLUG}/recurrente`,{method:'POST',...J,body:JSON.stringify({concepto:c,monto:m,cuenta:$('#recCuenta').value})});

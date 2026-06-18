@@ -56,17 +56,17 @@ CAPS = {
                "redes_sociales", "checkout_online"},
     "pro":    {"tienda_basica", "dominio_propio", "sin_marca", "productos_ilimitados",
                "redes_sociales", "checkout_online", "panel", "crm", "caja", "reportes",
-               "recordatorios", "equipo", "pos"},
+               "recordatorios", "equipo", "pos", "gastos"},
     "escala": {"tienda_basica", "dominio_propio", "sin_marca", "productos_ilimitados",
                "redes_sociales", "checkout_online", "panel", "crm", "caja", "reportes",
-               "recordatorios", "equipo", "pos",
+               "recordatorios", "equipo", "pos", "gastos",
                "logins_equipo", "multi_sucursal", "gastos_avanzado"},
 }
 PLAN_LABEL = {"gratis": "Gratis", "tienda": "Tienda", "pro": "Ventas Pro", "escala": "Escala"}
 # Plan mínimo que incluye cada capacidad (para mensajes de upsell).
 PLAN_MINIMO = {"dominio_propio": "tienda", "sin_marca": "tienda", "panel": "pro",
                "crm": "pro", "caja": "pro", "reportes": "pro", "recordatorios": "pro",
-               "equipo": "pro", "logins_equipo": "escala", "multi_sucursal": "escala",
+               "equipo": "pro", "gastos": "pro", "logins_equipo": "escala", "multi_sucursal": "escala",
                "gastos_avanzado": "escala", "redes_sociales": "tienda",
                "checkout_online": "tienda", "pos": "pro"}
 
@@ -1078,7 +1078,8 @@ def _panel_ctx(request, tienda, ruta_base):
         "hoy": _date.today().isoformat(),
         "plan": plan, "plan_label": PLAN_LABEL.get(plan, "Gratis"),
         "puede_logins": permite(plan, "logins_equipo"),
-        "puede_gastos": permite(plan, "gastos_avanzado"),
+        "puede_gastos": permite(plan, "gastos"),                    # Pro+: registrar y clasificar
+        "puede_gastos_avanzado": permite(plan, "gastos_avanzado"),  # Escala: presupuestos y recurrentes
     }
 
 
@@ -1728,7 +1729,7 @@ _CODIGOS_CUENTA = [c["codigo"] for c in tiendas.CUENTAS_CONTABLES]
 
 @app.get("/api/gastos-pro/{slug}")
 def api_gastospro(slug: str, k: str = "", desde: str = "", hasta: str = ""):
-    t = _tienda_admin(slug, k, "gastos_avanzado")
+    t = _tienda_admin(slug, k, "gastos")  # Pro+: ver lista, por cuenta y total
     if not desde:
         hoy = _date.today()
         desde, hasta = hoy.replace(day=1).isoformat(), hoy.isoformat()
@@ -1763,7 +1764,7 @@ async def api_gastospro_presupuesto(slug: str, request: Request, k: str = ""):
 
 @app.patch("/api/gastos-pro/{slug}/{gid}")
 async def api_gastospro_editar(slug: str, gid: str, request: Request, k: str = ""):
-    _tienda_admin(slug, k, "gastos_avanzado")
+    _tienda_admin(slug, k, "gastos")  # Pro+: reclasificar un gasto
     b = await request.json()
     cambios = {}
     if b.get("cuenta") in _CODIGOS_CUENTA:
