@@ -1030,11 +1030,9 @@ _SPA_CLIENTES = [
 _SPA_HORAS = ["10:00", "11:30", "13:00", "16:00", "17:30"]
 
 
-@app.post("/api/seed-spa/{slug}")
-def api_seed_spa(slug: str, k: str = ""):
-    """Siembra un catálogo SPA genérico + citas de ejemplo. Protegido por el
-    token de admin de la tienda (o sesión del dueño). Idempotente en servicios."""
-    t = _tienda_admin(slug, k)
+def _sembrar_spa(slug: str, t: dict) -> dict:
+    """Siembra el catálogo SPA + citas de ejemplo en la tienda `t`. Idempotente
+    en servicios; citas solo si la tienda tiene menos de 5."""
     # 1) Servicios (no duplica: salta los que ya existan por nombre)
     existentes = {(s.get("nombre") or "").lower() for s in t.get("servicios", [])}
     creados = 0
@@ -1078,8 +1076,25 @@ def api_seed_spa(slug: str, k: str = ""):
                 tiendas.agregar_cita(slug, cita)
                 citas_creadas += 1
                 i += 1
-    return JSONResponse({"ok": True, "servicios_creados": creados, "citas_creadas": citas_creadas,
-                         "servicios_totales": len(servs)})
+    return {"ok": True, "servicios_creados": creados, "citas_creadas": citas_creadas,
+            "servicios_totales": len(servs)}
+
+
+@app.post("/api/seed-spa/{slug}")
+def api_seed_spa(slug: str, k: str = ""):
+    """Siembra catálogo SPA vía token de admin de la tienda (o sesión del dueño)."""
+    t = _tienda_admin(slug, k)
+    return JSONResponse(_sembrar_spa(slug, t))
+
+
+@app.post("/admin/tienda/{slug}/seed-spa")
+def admin_seed_spa(request: Request, slug: str):
+    """Botón del panel super-admin: sembrar catálogo SPA de ejemplo en una tienda."""
+    _guard_admin(request)
+    t = tiendas.obtener_tienda(slug)
+    if t:
+        _sembrar_spa(slug, t)
+    return RedirectResponse(url="/admin", status_code=303)
 
 
 # ------------------- Captura pública de leads (desde la tienda) -------------------

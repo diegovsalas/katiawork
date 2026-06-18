@@ -146,6 +146,10 @@
             <form class="inline" method="post" action="/admin/tienda/{{ t.slug }}/suspender">
               <button class="btn warn" type="submit">{{ 'Reactivar' if t.suspendida else 'Suspender' }}</button>
             </form>
+            <form class="inline" method="post" action="/admin/tienda/{{ t.slug }}/seed-spa"
+                  onsubmit="return confirm('¿Sembrar catálogo SPA de ejemplo (20 servicios + citas) en «{{ t.nombre }}»?')">
+              <button class="btn" type="submit">🌱 Sembrar SPA</button>
+            </form>
             <form class="inline" method="post" action="/admin/tienda/{{ t.slug }}/eliminar"
                   onsubmit="return confirm('¿Eliminar la tienda «{{ t.nombre }}» y todas sus imágenes? Esto no se puede deshacer.')">
               <button class="btn danger" type="submit">Eliminar</button>
