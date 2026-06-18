@@ -1045,6 +1045,15 @@ def _sembrar_spa(slug: str, t: dict) -> dict:
             "duracion": sv["duracion"], "descripcion": sv["descripcion"], "imagen": "",
         }, al_inicio=False)
         creados += 1
+    # Rellena descripciones faltantes en servicios existentes (idempotente)
+    giro = t.get("giro", "") or "spa y bienestar"
+    descripciones_creadas = 0
+    for s in tiendas.obtener_tienda(slug).get("servicios", []):
+        if not (s.get("descripcion") or "").strip() and s.get("id"):
+            desc = gemini_ia.describir_servicio(s.get("nombre", ""), giro)
+            if desc:
+                tiendas.actualizar_item(slug, "servicios", s["id"], {"descripcion": desc})
+                descripciones_creadas += 1
     # Terapeutas de ejemplo (idempotente por nombre)
     equipo_nombres = {(m.get("nombre") or "").lower() for m in t.get("equipo", [])}
     terapeutas_creados = 0
@@ -1089,7 +1098,8 @@ def _sembrar_spa(slug: str, t: dict) -> dict:
                 citas_creadas += 1
                 i += 1
     return {"ok": True, "servicios_creados": creados, "citas_creadas": citas_creadas,
-            "terapeutas_creados": terapeutas_creados, "servicios_totales": len(servs)}
+            "terapeutas_creados": terapeutas_creados, "descripciones_creadas": descripciones_creadas,
+            "servicios_totales": len(servs)}
 
 
 @app.post("/api/seed-spa/{slug}")

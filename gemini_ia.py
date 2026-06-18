@@ -167,6 +167,26 @@ def describir_productos(productos: list, giro: str = "") -> list:
     return productos
 
 
+def describir_servicio(nombre: str, giro: str = "") -> str:
+    """Descripción breve y atractiva para un servicio. IA si hay; si no, plantilla."""
+    nombre = (nombre or "").strip()
+    if not nombre:
+        return ""
+    if disponible():
+        prompt = (
+            f"Escribe una descripción breve y atractiva (1 sola oración, máximo 18 palabras) "
+            f"para el servicio '{nombre}' de un negocio de {giro or 'spa y bienestar'} en México. "
+            "Sin precio, sin comillas, devuelve SOLO el texto."
+        )
+        try:
+            txt = (_generar_texto(prompt) or "").strip().strip('"').strip()
+            if txt:
+                return txt[:180]
+        except Exception as e:  # noqa: BLE001
+            print(f"⚠  Gemini (servicio) falló: {e}")
+    return f"{nombre}: atención profesional y personalizada para tu bienestar."
+
+
 # ------------------- 3) Generar logo -------------------
 
 def generar_logo(nombre: str, giro: str, color: str, ruta_destino: str) -> str:
