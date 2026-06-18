@@ -50,6 +50,17 @@
   .tab{padding:9px 18px;border-radius:11px;border:1px solid var(--linea);background:#fff;cursor:pointer;
        font-weight:700;font-size:14px;color:var(--tenue)}
   .tab.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+  .tab[data-lock]{color:var(--tenue)}
+  .tab[data-lock].on{background:var(--ink);border-color:var(--ink);color:#fff}
+  /* Upsell de función bloqueada */
+  .upsell{background:#fff;border:1px solid var(--linea);border-radius:20px;padding:48px 28px;text-align:center;
+          max-width:520px;margin:18px auto;box-shadow:0 20px 50px -34px rgba(34,38,66,.3)}
+  .upsell .up-ico{width:72px;height:72px;border-radius:50%;background:var(--lav);display:grid;place-items:center;
+          font-size:32px;margin:0 auto 18px}
+  .upsell h2{font-size:22px;font-weight:800;letter-spacing:-.4px;margin-bottom:8px}
+  .upsell p{color:var(--tenue);font-size:15px;line-height:1.6;max-width:400px;margin:0 auto 22px}
+  .upsell .btn{display:inline-flex;text-decoration:none}
+  .upsell .up-link{display:block;margin-top:14px;font-size:13.5px;color:var(--brand);font-weight:700}
   .grow{flex:1}
   .btn{display:inline-flex;align-items:center;gap:7px;background:linear-gradient(120deg,var(--brand-2),var(--brand));
        color:#fff;border:none;font-weight:700;font-size:14px;padding:10px 18px;border-radius:11px;cursor:pointer;
@@ -231,13 +242,25 @@
     <div class="tab on" data-v="pipe">🗂️ Pipeline</div>
     <div class="tab" data-v="hoy">🔔 Por contactar <span id="hoyCnt"></span></div>
     <div class="tab" data-v="agenda">📅 Agenda{% if citas_proximas %} ({{ citas_proximas|length }}){% endif %}</div>
-    {% if puede_pos %}<div class="tab" data-v="pos">🛒 Vender</div>{% endif %}
+    <div class="tab" data-v="pos"{% if not puede_pos %} data-lock="Ventas Pro" data-feat="Punto de venta (POS)"{% endif %}>🛒 Vender{% if not puede_pos %} 🔒{% endif %}</div>
     <div class="tab" data-v="caja">💰 Caja</div>
     <div class="tab" data-v="reportes">📊 Reportes</div>
-    {% if puede_gastos %}<div class="tab" data-v="gastos">🧾 Gastos</div>{% endif %}
+    <div class="tab" data-v="gastos"{% if not puede_gastos %} data-lock="Escala" data-feat="Control de gastos avanzado"{% endif %}>🧾 Gastos{% if not puede_gastos %} 🔒{% endif %}</div>
     <div class="tab" data-v="equipo">👥 Equipo</div>
     <div class="grow"></div>
     <button class="btn" id="btnAdd">+ Agregar lead</button>
+  </div>
+
+  <!-- Vista Upsell (cuando se toca una función bloqueada por plan) -->
+  <div id="vUpsell" class="hidden">
+    <div class="upsell">
+      <div class="up-ico">🔒</div>
+      <h2 id="upFeat">Función bloqueada</h2>
+      <p>Esta función es parte del plan <b id="upPlan">Escala</b>. Mejora tu plan para desbloquearla
+         y llevar tu negocio al siguiente nivel con katia.</p>
+      <a class="btn" href="/facturacion">Mejorar mi plan →</a>
+      <a class="up-link" href="/precios" target="_blank">Ver qué incluye cada plan</a>
+    </div>
   </div>
 
   <!-- Vista Pipeline -->
@@ -692,7 +715,18 @@ const VISTAS=['pipe','hoy','agenda','pos','caja','reportes','gastos','equipo'];
 document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
   document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on')); t.classList.add('on');
   const v=t.dataset.v;
-  VISTAS.forEach(x=>{ const el=$('#v'+x.charAt(0).toUpperCase()+x.slice(1)); if(el) el.classList.toggle('hidden',x!==v); });
+  // Oculta todas las vistas (incluida la de upsell)
+  VISTAS.forEach(x=>{ const el=$('#v'+x.charAt(0).toUpperCase()+x.slice(1)); if(el) el.classList.add('hidden'); });
+  $('#vUpsell').classList.add('hidden');
+  // Función bloqueada por plan → muestra upsell en vez del contenido
+  if(t.dataset.lock){
+    $('#upPlan').textContent=t.dataset.lock;
+    $('#upFeat').textContent=t.dataset.feat||'Función bloqueada';
+    $('#vUpsell').classList.remove('hidden');
+    $('#btnAdd').style.display='none';
+    return;
+  }
+  const el=$('#v'+v.charAt(0).toUpperCase()+v.slice(1)); if(el) el.classList.remove('hidden');
   $('#btnAdd').style.display=(v==='pipe'||v==='hoy')?'':'none';
   if(v==='caja') cargarCaja();
   if(v==='reportes') cargarReportes();
