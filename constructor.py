@@ -2368,11 +2368,15 @@ def admin_asignar_dueno(request: Request, slug: str,
     email = (email or "").lower().strip()
     if not email:
         return RedirectResponse(url="/admin", status_code=303)
+    pwd = password if len(password or "") >= 6 else "katia12345"
     if not usuarios.buscar(email):
-        pwd = password if len(password or "") >= 6 else (password + "123456")[:12] or "katia12345"
         usuarios.crear(email, pwd, nombre=nombre or email.split("@")[0])
     plan = plan if plan in PLANES else "escala"
-    usuarios.actualizar(email, {"plan": plan, "sub_estado": "active"})
+    cambios = {"plan": plan, "sub_estado": "active"}
+    # Si se envió contraseña, la (re)establece aunque la cuenta ya exista
+    if len(password or "") >= 6:
+        cambios["password_hash"] = usuarios.hash_password(password)
+    usuarios.actualizar(email, cambios)
     tiendas.actualizar_tienda(slug, {"owner_email": email})
     return RedirectResponse(url="/admin", status_code=303)
 
