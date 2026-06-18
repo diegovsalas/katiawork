@@ -95,6 +95,28 @@
   .cita .fch .d{font-size:20px;font-weight:900;line-height:1} .cita .fch .m{font-size:11px;color:var(--tenue);font-weight:700;text-transform:uppercase}
   .cita .info{flex:1}.cita .info b{font-size:15px}.cita .info div{font-size:13px;color:var(--tenue)}
   .cita .hora{font-weight:800;color:var(--brand)}
+  /* Calendario semanal */
+  .cal-top{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+  .cal-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--linea);border-radius:14px;background:#fff}
+  .cal-grid{display:grid;min-width:640px}
+  .cal-hcell{padding:9px 4px;text-align:center;font-size:11.5px;color:var(--tenue);font-weight:700;
+        border-bottom:1px solid var(--linea);border-left:1px solid var(--linea);text-transform:uppercase}
+  .cal-hcell:first-child{border-left:none}
+  .cal-hcell b{display:block;font-size:17px;color:var(--ink);margin-top:2px}
+  .cal-hcell.hoy b{color:var(--brand)}
+  .cal-gutter{position:relative;border-right:1px solid var(--linea)}
+  .cal-hr{position:relative;border-bottom:1px solid #f4f1fb}
+  .cal-hr span{position:absolute;top:-8px;right:6px;background:#fff;padding:0 3px;font-size:11px;color:var(--tenue)}
+  .cal-col{position:relative;border-left:1px solid var(--linea)}
+  .cal-col.hoy{background:color-mix(in srgb,var(--brand) 4%,#fff)}
+  .cal-line{border-bottom:1px solid #f4f1fb}
+  .cal-ev{position:absolute;left:3px;right:3px;border-radius:8px;padding:3px 7px;font-size:11.5px;line-height:1.25;
+        color:#fff;overflow:hidden;cursor:pointer;box-shadow:0 4px 10px -4px rgba(34,38,66,.4);
+        background:linear-gradient(135deg,var(--brand-2),var(--brand))}
+  .cal-ev b{font-weight:800;font-size:11px;opacity:.95}
+  .cal-ev .nm{display:block;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cal-ev .cl{display:block;opacity:.9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cal-vacia{padding:30px;text-align:center;color:var(--tenue);font-size:13.5px}
   .hidden{display:none}
   /* Modal */
   .ov{position:fixed;inset:0;background:rgba(34,38,66,.45);backdrop-filter:blur(2px);display:none;align-items:flex-start;justify-content:center;z-index:50;overflow-y:auto;padding:40px 16px}
@@ -277,29 +299,17 @@
     <div class="agenda" id="hoyList"></div>
   </div>
 
-  <!-- Vista Agenda -->
+  <!-- Vista Agenda (calendario semanal) -->
   <div id="vAgenda" class="hidden">
-    {% if citas_proximas %}
-    <div class="agenda">
-      {% for c in citas_proximas %}
-      {% set wanum = (c.cliente_telefono or '') | replace('+','') | replace(' ','') | replace('-','') %}
-      <div class="cita">
-        <div class="fch">
-          <div class="d">{{ c.fecha.split('-')[2] }}</div>
-          <div class="m">{{ ['','ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'][c.fecha.split('-')[1]|int] }}</div>
-        </div>
-        <div class="info">
-          <b>{{ c.servicio_nombre }}</b>
-          <div>{{ c.cliente_nombre }} · {{ c.cliente_telefono }}</div>
-        </div>
-        <div class="hora">{{ c.hora }}</div>
-        {% if wanum %}<a class="wa" href="https://wa.me/{{ wanum }}" target="_blank">WhatsApp</a>{% endif %}
-      </div>
-      {% endfor %}
+    <div class="cal-top">
+      <button class="gbtn" id="calPrev" title="Semana anterior">‹</button>
+      <button class="gbtn" id="calToday">Hoy</button>
+      <button class="gbtn" id="calNext" title="Semana siguiente">›</button>
+      <b id="calTitulo" style="margin-left:6px;font-size:15px"></b>
+      <span style="flex:1"></span>
+      <span id="calCount" style="font-size:13px;color:var(--tenue)"></span>
     </div>
-    {% else %}
-    <div class="agenda"><div class="vacia" style="padding:36px">No tienes citas próximas. Cuando un cliente reserve, aparecerá aquí.</div></div>
-    {% endif %}
+    <div class="cal-scroll"><div class="cal-grid" id="cal"></div></div>
   </div>
 
   <!-- Vista POS (vender en mostrador) -->
@@ -744,7 +754,68 @@ document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
   if(v==='equipo') cargarEquipo();
   if(v==='gastos') cargarGastos();
   if(v==='pos') cargarPos();
+  if(v==='agenda') cargarAgenda();
 });
+
+// ===== AGENDA (calendario semanal) =====
+const CAL={weekStart:null, open:9, close:18, dias:[0,1,2,3,4,5]};
+const DOW=['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+function _iso(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function _addDays(d,n){ const x=new Date(d); x.setDate(x.getDate()+n); return x; }
+function _lunes(d){ const x=new Date(d); const wd=(x.getDay()+6)%7; x.setDate(x.getDate()-wd); x.setHours(0,0,0,0); return x; }
+async function cargarAgenda(){
+  if(!CAL.weekStart) CAL.weekStart=_lunes(new Date(HOY+'T00:00:00'));
+  const ini=CAL.weekStart, fin=_addDays(ini,6);
+  const d=await apk(`citas/${SLUG}?desde=${_iso(ini)}&hasta=${_iso(fin)}`);
+  const h=d.horarios||{};
+  CAL.open=parseInt((h.apertura||'09:00').slice(0,2))||9;
+  CAL.close=parseInt((h.cierre||'18:00').slice(0,2))||18;
+  CAL.dias=(h.dias&&h.dias.length)?h.dias.slice().sort((a,b)=>a-b):[0,1,2,3,4,5];
+  pintarCalendario(d.citas||[]);
+}
+document.getElementById('calPrev').onclick=()=>{ CAL.weekStart=_addDays(CAL.weekStart,-7); cargarAgenda(); };
+document.getElementById('calNext').onclick=()=>{ CAL.weekStart=_addDays(CAL.weekStart,7); cargarAgenda(); };
+document.getElementById('calToday').onclick=()=>{ CAL.weekStart=_lunes(new Date(HOY+'T00:00:00')); cargarAgenda(); };
+const MESC=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+function pintarCalendario(citas){
+  const ini=CAL.weekStart, HPX=54, span=Math.max(1,CAL.close-CAL.open);
+  const cols=CAL.dias.length;
+  $('#calTitulo').textContent=`${ini.getDate()} ${MESC[ini.getMonth()]} – ${_addDays(ini,6).getDate()} ${MESC[_addDays(ini,6).getMonth()]}`;
+  $('#calCount').textContent=`${citas.length} cita(s)`;
+  let html='';
+  // Cabecera
+  html+='<div class="cal-hcell"></div>';
+  CAL.dias.forEach(di=>{ const dt=_addDays(ini,di); const hoy=_iso(dt)===HOY;
+    html+=`<div class="cal-hcell${hoy?' hoy':''}">${DOW[di]}<b>${dt.getDate()}</b></div>`; });
+  // Gutter de horas
+  html+=`<div class="cal-gutter">`;
+  for(let hh=CAL.open;hh<CAL.close;hh++) html+=`<div class="cal-hr" style="height:${HPX}px"><span>${String(hh).padStart(2,'0')}:00</span></div>`;
+  html+='</div>';
+  // Columnas por día
+  CAL.dias.forEach(di=>{
+    const dt=_addDays(ini,di), fiso=_iso(dt), hoy=fiso===HOY;
+    let col=`<div class="cal-col${hoy?' hoy':''}">`;
+    for(let hh=CAL.open;hh<CAL.close;hh++) col+=`<div class="cal-line" style="height:${HPX}px"></div>`;
+    citas.filter(c=>c.fecha===fiso).forEach(c=>{
+      const p=(c.hora||'09:00').split(':'); const min=(+p[0])*60+(+p[1]||0);
+      const top=Math.max(0,(min-CAL.open*60)*HPX/60);
+      const dur=Math.max(Number(c.duracion)||30,30); const ht=Math.max(22,dur*HPX/60-3);
+      const tel=(c.cliente_telefono||'').replace(/[^0-9]/g,'');
+      col+=`<div class="cal-ev" style="top:${top}px;height:${ht}px" data-wa="${tel}"
+              data-info="${(c.hora||'')} · ${(c.servicio_nombre||'').replace(/"/g,'')} · ${(c.cliente_nombre||'').replace(/"/g,'')}">
+          <b>${c.hora||''}</b><span class="nm">${c.servicio_nombre||''}</span><span class="cl">${c.cliente_nombre||''}</span></div>`;
+    });
+    col+='</div>';
+    html+=col;
+  });
+  const grid=$('#cal');
+  grid.style.gridTemplateColumns=`54px repeat(${cols},minmax(88px,1fr))`;
+  grid.innerHTML=html;
+  grid.querySelectorAll('.cal-ev').forEach(el=>el.onclick=()=>{
+    const wa=el.dataset.wa;
+    if(wa && confirm(el.dataset.info+'\n\n¿Abrir WhatsApp del cliente?')) window.open('https://wa.me/'+wa,'_blank');
+  });
+}
 
 // ===== POS (vender en mostrador) =====
 let CART={};

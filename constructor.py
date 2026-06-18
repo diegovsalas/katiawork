@@ -1087,6 +1087,19 @@ def api_seed_spa(slug: str, k: str = ""):
     return JSONResponse(_sembrar_spa(slug, t))
 
 
+@app.get("/api/citas/{slug}")
+def api_citas(slug: str, k: str = "", desde: str = "", hasta: str = ""):
+    """Lista las citas (no canceladas) en un rango, para la vista calendario."""
+    t = _tienda_admin(slug, k)  # Pro+ (panel)
+    citas = [c for c in t.get("citas", []) if c.get("estado") != "cancelada"
+             and (not desde or _en_rango(c.get("fecha", ""), desde, hasta))]
+    return JSONResponse({
+        "citas": citas,
+        "horarios": t.get("horarios", {}) or {},
+        "equipo": [{"id": m.get("id"), "nombre": m.get("nombre")} for m in t.get("equipo", [])],
+    })
+
+
 @app.post("/admin/tienda/{slug}/seed-spa")
 def admin_seed_spa(request: Request, slug: str):
     """Botón del panel super-admin: sembrar catálogo SPA de ejemplo en una tienda."""
