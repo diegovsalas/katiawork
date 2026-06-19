@@ -603,6 +603,8 @@ def crear_wizard(request: Request):
         "temas": TEMAS,
         "paleta": PALETA_GRATIS,
         "colores_full": _rank(plan) >= _rank("tienda"),
+        "logueado": bool(u and u.get("rol") != "especialista"),
+        "mi_email": u["email"] if u else "",
     })
 
 
@@ -876,8 +878,24 @@ async def crear_tienda(request: Request):
 
     admin_token = secrets.token_urlsafe(9)
     usuario = _usuario_actual(request)
-    owner_email = usuario["email"] if usuario else (body.get("owner_email", "") or "")
-    plan_creador = (usuario or {}).get("plan", "gratis") if usuario else "gratis"
+    if not usuario:
+        # Sin sesión: crea (o identifica) la cuenta del dueño para que su tienda
+        # quede ligada a un correo y pueda volver con "Mis tiendas".
+        email = (body.get("cuenta_email") or "").strip().lower()
+        pwd = body.get("cuenta_password") or ""
+        if not email or len(pwd) < 6:
+            raise HTTPException(status_code=400,
+                                detail="Crea tu cuenta: pon tu correo y una contraseña (mín. 6) para publicar tu tienda.")
+        u, err = usuarios.crear(email, pwd, nombre=nombre)
+        if err:  # el correo ya existe → intenta identificarlo
+            u, err2 = usuarios.autenticar(email, pwd)
+            if err2:
+                raise HTTPException(status_code=400,
+                                    detail="Ese correo ya tiene cuenta. Revisa tu contraseña o inicia sesión.")
+        request.session["uid"] = email
+        usuario = usuarios.publico(usuarios.buscar(email))
+    owner_email = usuario["email"]
+    plan_creador = usuario.get("plan", "gratis")
 
     # Plantilla: solo si el plan la permite, si no cae a la gratis por defecto.
     tema = body.get("tema", "aurora")

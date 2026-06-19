@@ -292,6 +292,20 @@
     <h2>5 · Casi listo</h2>
     <p class="sub">Revisa el resumen y publica tu tienda.</p>
     <div id="resumen"></div>
+    {% if not logueado %}
+    <div class="cuenta-box" style="background:#f7f6fb;border:1px solid #ece8f7;border-radius:14px;padding:16px;margin:18px 0">
+      <div style="font-weight:800;font-size:15px;margin-bottom:3px">Crea tu cuenta</div>
+      <p style="font-size:13px;color:var(--tenue);margin-bottom:12px">La necesitas para administrar tu tienda, ver tus ventas y volver cuando quieras.</p>
+      <label style="font-weight:600;font-size:13px;display:block;margin-bottom:5px">Tu correo</label>
+      <input id="cuentaEmail" type="email" placeholder="tu@correo.com" autocomplete="email"
+             style="width:100%;padding:12px 14px;border:1.5px solid var(--linea);border-radius:11px;font-size:16px;margin-bottom:10px">
+      <label style="font-weight:600;font-size:13px;display:block;margin-bottom:5px">Contraseña</label>
+      <input id="cuentaPwd" type="password" placeholder="Mínimo 6 caracteres" autocomplete="new-password" minlength="6"
+             style="width:100%;padding:12px 14px;border:1.5px solid var(--linea);border-radius:11px;font-size:16px">
+      <p style="font-size:12px;color:var(--tenue);margin-top:8px">¿Ya tienes cuenta? <a href="/cuenta?modo=login" style="color:var(--brand);font-weight:700">Inicia sesión</a> y vuelve.</p>
+    </div>
+    {% endif %}
+    <div class="err" id="pubErr" style="display:none;background:#fde8e8;color:#b91c1c;border-radius:11px;padding:11px 14px;font-size:13.5px;margin-bottom:12px"></div>
     <div class="nav">
       <button class="btn ghost" data-prev>← Atrás</button>
       <button class="btn" id="publicar">🚀 Publicar mi tienda</button>
@@ -309,9 +323,11 @@
 
       <div class="panel-box">
         <div style="font-weight:700;margin-bottom:4px">🗂️ Tu panel de ventas (CRM)</div>
-        <p style="font-size:13.5px;color:var(--tenue);margin-bottom:10px">Aquí ves tus leads, citas y pipeline. <b>Guarda este enlace</b>: es tu acceso privado.</p>
+        <p style="font-size:13.5px;color:var(--tenue);margin-bottom:10px">Aquí ves tus leads, citas, ventas y pipeline.</p>
         <div class="linkbox" id="panelLink" style="margin:0 0 12px"></div>
-        <a class="btn ghost" id="verPanel" target="_blank">Abrir mi panel →</a>
+        <a class="btn ghost" id="verPanel" target="_blank" style="margin-bottom:8px">Abrir mi panel →</a>
+        <p style="font-size:13px;color:var(--tenue);margin-top:6px">✅ Tu cuenta quedó lista. Entra cuando quieras desde
+          <a href="/mis-tiendas" style="color:var(--brand);font-weight:700">Mis tiendas</a> con tu correo y contraseña.</p>
       </div>
     </div>
   </div>
@@ -576,10 +592,22 @@ function pintarResumen(){
 }
 
 // --- PUBLICAR ---
+const LOGUEADO = {{ 'true' if logueado else 'false' }};
+function pubError(msg){ const e=$('#pubErr'); if(e){ e.textContent=msg; e.style.display='block'; e.scrollIntoView({behavior:'smooth',block:'center'}); } }
 $('#publicar').onclick = async (e)=>{
   const btn=e.currentTarget;
+  if($('#pubErr')) $('#pubErr').style.display='none';
+  if(!$('#nombre').value.trim()){ pubError('Falta el nombre de tu negocio (paso 1).'); return; }
+  let cuentaEmail='', cuentaPwd='';
+  if(!LOGUEADO){
+    cuentaEmail=($('#cuentaEmail')?.value||'').trim();
+    cuentaPwd=$('#cuentaPwd')?.value||'';
+    if(!cuentaEmail || !cuentaEmail.includes('@')){ pubError('Escribe un correo válido para crear tu cuenta.'); return; }
+    if(cuentaPwd.length<6){ pubError('La contraseña debe tener al menos 6 caracteres.'); return; }
+  }
   spinner(btn,'Publicando…');
   const payload={
+    cuenta_email:cuentaEmail, cuenta_password:cuentaPwd,
     nombre:$('#nombre').value, giro:$('#giro').value, contexto:$('#contexto').value,
     eslogan:$('#eslogan').value, sobre_nosotros:$('#sobre').value,
     color:estado.color, color_2:estado.color_2, tono:estado.tono, logo:estado.logo,
@@ -594,7 +622,7 @@ $('#publicar').onclick = async (e)=>{
   try{
     const r=await fetch('/crear',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
     const d=await r.json();
-    if(!d.ok){ alert(d.detail||'Error al publicar'); unspin(btn); return; }
+    if(!d.ok){ pubError(d.detail||'Error al publicar. Intenta de nuevo.'); unspin(btn); return; }
     const dom = location.protocol+'//'+location.host;
     const url = d.url.startsWith('//')? location.protocol+d.url : dom+d.url;
     $('#doneLink').textContent=url;
