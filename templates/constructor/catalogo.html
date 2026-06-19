@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+{% include "constructor/_ga.html" %}
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Catálogo · {{ t.nombre }} · katia</title>
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/svg+xml" href="/static/img/katia-favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{--brand:#6d5dfb;--brand-2:#8b5cf6;--ink:#222642;--tenue:#6b6a83;--linea:#e9e6f3;--lav:#f4f1fd;--bg:#f6f5fb;--rojo:#dc2626;--mint:#16a34a}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',-apple-system,sans-serif;color:var(--ink);background:var(--bg);line-height:1.5}
+  a{color:inherit;text-decoration:none}
+  input,select,textarea,button{font-family:inherit}
+  .top{background:#fff;border-bottom:1px solid var(--linea);height:62px;display:flex;align-items:center;
+       justify-content:space-between;padding:0 22px;position:sticky;top:0;z-index:20}
+  .top .l{display:flex;align-items:center;gap:12px;font-weight:800}
+  .top .l img{height:28px}
+  .top .r{display:flex;gap:14px;font-size:13.5px;font-weight:600;color:var(--tenue)}
+  .top .r a:hover{color:var(--brand)}
+  .wrap{max-width:920px;margin:0 auto;padding:24px}
+  h1{font-size:22px;font-weight:900;letter-spacing:-.5px;margin-bottom:4px}
+  .sub{color:var(--tenue);font-size:14.5px;margin-bottom:22px}
+  .sec{background:#fff;border:1px solid var(--linea);border-radius:18px;padding:20px;margin-bottom:20px}
+  .sec-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+  .sec-h h2{font-size:17px;font-weight:800}
+  .btn{display:inline-flex;align-items:center;gap:7px;background:linear-gradient(120deg,var(--brand-2),var(--brand));
+       color:#fff;border:none;font-weight:700;font-size:14px;padding:10px 16px;border-radius:11px;cursor:pointer}
+  .btn.sm{padding:7px 12px;font-size:13px}
+  .btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--linea)}
+  .btn.ghost:hover{border-color:var(--brand);color:var(--brand)}
+  .row{display:flex;align-items:center;gap:13px;padding:11px 0;border-bottom:1px solid #f1eefb}
+  .row:last-child{border-bottom:none}
+  .ph{width:48px;height:48px;border-radius:11px;flex-shrink:0;overflow:hidden;background:var(--lav);display:grid;place-items:center}
+  .ph img{width:100%;height:100%;object-fit:cover}
+  .ph .m{color:var(--brand);font-weight:800;font-size:20px}
+  .row .a{flex:1;min-width:0}
+  .row .a b{font-weight:700;font-size:14.5px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .row .a span{color:var(--tenue);font-size:12.5px}
+  .row .pr{font-weight:800;color:var(--brand);font-size:14px;white-space:nowrap}
+  .iconbtn{background:none;border:1px solid var(--linea);border-radius:9px;padding:6px 9px;cursor:pointer;font-size:13px}
+  .iconbtn:hover{border-color:var(--brand)}
+  .iconbtn.del:hover{border-color:var(--rojo);color:var(--rojo)}
+  .vacio{color:var(--tenue);font-size:13.5px;padding:18px 0;text-align:center}
+  /* Modal */
+  .ov{position:fixed;inset:0;background:rgba(34,38,66,.5);backdrop-filter:blur(2px);display:none;
+      align-items:flex-start;justify-content:center;z-index:50;overflow-y:auto;padding:40px 16px}
+  .ov.open{display:flex}
+  .modal{background:#fff;border-radius:20px;width:100%;max-width:480px;padding:24px;box-shadow:0 30px 70px rgba(34,38,66,.4)}
+  .modal h3{font-size:19px;font-weight:800;margin-bottom:4px}
+  .modal .x{float:right;background:none;border:none;font-size:24px;color:var(--tenue);cursor:pointer;line-height:1}
+  label{display:block;font-weight:600;font-size:13px;margin:13px 0 5px}
+  .modal input,.modal select,.modal textarea{width:100%;padding:11px 13px;border:1.5px solid var(--linea);
+       border-radius:11px;background:#fcfbff;font-size:16px}
+  .modal input:focus,.modal select:focus,.modal textarea:focus{outline:none;border-color:var(--brand);background:#fff}
+  .modal textarea{min-height:64px;resize:vertical}
+  .g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .thumb-up{display:flex;align-items:center;gap:12px;margin-top:6px}
+  .thumb-up .pv{width:54px;height:54px;border-radius:11px;background:var(--lav);overflow:hidden;display:grid;place-items:center}
+  .thumb-up .pv img{width:100%;height:100%;object-fit:cover}
+  .err{background:#fde8e8;color:#b91c1c;border-radius:10px;padding:10px 13px;font-size:13.5px;margin-top:12px;display:none}
+  .acts{display:flex;gap:10px;margin-top:20px}
+  .acts .btn{flex:1;justify-content:center}
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="l"><a href="/"><img src="/static/img/katia-logo.svg" alt="katia"></a> Catálogo</div>
+  <div class="r">
+    <a href="{{ ruta_base }}/editar{% if k %}?k={{ k }}{% endif %}">✏️ Editar tienda</a>
+    <a href="{{ ruta_base }}/" target="_blank">Ver tienda ↗</a>
+  </div>
+</div>
+
+<div class="wrap">
+  <h1>Tus productos y servicios</h1>
+  <div class="sub">Agrega, edita o elimina lo que ofreces. Los cambios se ven al instante en tu tienda.</div>
+
+  <!-- Productos -->
+  <div class="sec">
+    <div class="sec-h"><h2>📦 Productos</h2><button class="btn sm" onclick="abrir('productos')">+ Agregar producto</button></div>
+    <div id="listaProductos"></div>
+  </div>
+
+  <!-- Servicios -->
+  <div class="sec">
+    <div class="sec-h"><h2>🧖 Servicios</h2><button class="btn sm" onclick="abrir('servicios')">+ Agregar servicio</button></div>
+    <div id="listaServicios"></div>
+  </div>
+</div>
+
+<!-- Modal agregar/editar -->
+<div class="ov" id="ov">
+  <div class="modal">
+    <button class="x" onclick="cerrar()">×</button>
+    <h3 id="mTitulo">Nuevo</h3>
+    <input type="hidden" id="mId"><input type="hidden" id="mTipo"><input type="hidden" id="mImagen">
+    <label>Nombre</label>
+    <input id="mNombre" placeholder="Ej. Masaje relajante">
+    <div class="g2">
+      <div><label>Precio ({{ moneda }})</label><input id="mPrecio" type="number" step="0.01" placeholder="Vacío = cotizar"></div>
+      <div id="boxStock"><label>Stock</label><input id="mStock" type="number" placeholder="0"></div>
+      <div id="boxDuracion" style="display:none"><label>Duración (min)</label><input id="mDuracion" type="number" placeholder="60"></div>
+    </div>
+    <div id="boxCategoria"><label>Categoría (opcional)</label><input id="mCategoria" placeholder="Ej. Café, Cuidado facial"></div>
+    <label>Descripción</label>
+    <textarea id="mDescripcion" placeholder="Breve descripción para tu cliente"></textarea>
+    <label>Imagen (opcional)</label>
+    <div class="thumb-up">
+      <div class="pv" id="mPreview"><span class="m">+</span></div>
+      <input type="file" id="mFile" accept="image/*" style="font-size:13px">
+    </div>
+    <div class="err" id="mErr"></div>
+    <div class="acts">
+      <button class="btn ghost" onclick="cerrar()">Cancelar</button>
+      <button class="btn" id="mGuardar" onclick="guardar()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SLUG={{ t.slug|tojson }}, K={{ k|tojson }}, MONEDA={{ moneda|tojson }};
+let PRODUCTOS={{ productos|tojson }}, SERVICIOS={{ servicios|tojson }};
+const $=s=>document.querySelector(s);
+const fmt=n=>n==null?'Cotizar':'$'+Number(n).toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2});
+function api(path,opts){ const sep=path.includes('?')?'&':'?'; return fetch(`/api/catalogo/${SLUG}/${path}${K?sep+'k='+K:''}`,opts).then(r=>r.json().then(d=>({ok:r.ok,d}))); }
+
+function pintar(){
+  const render=(arr,tipo)=>arr.length? arr.map(x=>`<div class="row">
+      <div class="ph">${x.imagen?`<img src="${x.imagen}">`:`<span class="m">${(x.nombre||'?')[0].toUpperCase()}</span>`}</div>
+      <div class="a"><b>${x.nombre||''}</b><span>${tipo==='productos'?('Stock: '+(x.stock??0)+(x.categoria?(' · '+x.categoria):'')):((x.duracion||30)+' min')}</span></div>
+      <div class="pr">${fmt(x.precio)}</div>
+      <button class="iconbtn" onclick='editar(${JSON.stringify(tipo)},${JSON.stringify(x.id)})'>✏️</button>
+      <button class="iconbtn del" onclick='borrar(${JSON.stringify(tipo)},${JSON.stringify(x.id)},${JSON.stringify(x.nombre||"")})'>🗑</button>
+    </div>`).join('') : '<div class="vacio">Aún no hay. Agrega el primero ↑</div>';
+  $('#listaProductos').innerHTML=render(PRODUCTOS,'productos');
+  $('#listaServicios').innerHTML=render(SERVICIOS,'servicios');
+}
+pintar();
+
+const ov=$('#ov');
+function abrir(tipo,item){
+  $('#mTipo').value=tipo; $('#mErr').style.display='none';
+  $('#boxStock').style.display=tipo==='productos'?'':'none';
+  $('#boxCategoria').style.display=tipo==='productos'?'':'none';
+  $('#boxDuracion').style.display=tipo==='servicios'?'':'none';
+  $('#mTitulo').textContent=(item?'Editar ':'Nuevo ')+(tipo==='productos'?'producto':'servicio');
+  $('#mId').value=item?.id||''; $('#mImagen').value=item?.imagen||'';
+  $('#mNombre').value=item?.nombre||''; $('#mPrecio').value=item?.precio??'';
+  $('#mStock').value=item?.stock??''; $('#mDuracion').value=item?.duracion??'';
+  $('#mCategoria').value=item?.categoria||''; $('#mDescripcion').value=item?.descripcion||'';
+  $('#mPreview').innerHTML=item?.imagen?`<img src="${item.imagen}">`:'<span class="m">+</span>';
+  $('#mFile').value='';
+  ov.classList.add('open');
+}
+function cerrar(){ ov.classList.remove('open'); }
+function editar(tipo,id){ const arr=tipo==='productos'?PRODUCTOS:SERVICIOS; abrir(tipo,arr.find(x=>x.id===id)); }
+
+$('#mFile').addEventListener('change',async e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const fd=new FormData(); fd.append('archivo',f);
+  $('#mPreview').innerHTML='…';
+  const r=await fetch('/api/upload-imagen',{method:'POST',body:fd}); const d=await r.json();
+  if(d.url){ $('#mImagen').value=d.url; $('#mPreview').innerHTML=`<img src="${d.url}">`; }
+  else { $('#mPreview').innerHTML='<span class="m">+</span>'; alert(d.error||'No se pudo subir la imagen.'); }
+});
+
+async function guardar(){
+  const tipo=$('#mTipo').value, id=$('#mId').value;
+  const nombre=$('#mNombre').value.trim();
+  if(!nombre){ $('#mErr').textContent='El nombre es obligatorio.'; $('#mErr').style.display='block'; return; }
+  const precioRaw=$('#mPrecio').value.trim();
+  const body={ nombre, precio: precioRaw===''?null:Number(precioRaw),
+    descripcion:$('#mDescripcion').value.trim(), imagen:$('#mImagen').value };
+  if(tipo==='productos'){ body.stock=Number($('#mStock').value||0); body.categoria=$('#mCategoria').value.trim(); }
+  else { body.duracion=Number($('#mDuracion').value||30); }
+  const btn=$('#mGuardar'); btn.disabled=true; btn.textContent='Guardando…';
+  const J={headers:{'Content-Type':'application/json'}};
+  const res = id
+    ? await api(`${tipo}/${id}`,{method:'PATCH',...J,body:JSON.stringify(body)})
+    : await api(`${tipo}`,{method:'POST',...J,body:JSON.stringify(body)});
+  btn.disabled=false; btn.textContent='Guardar';
+  if(!res.ok){ $('#mErr').textContent=res.d.detail||'No se pudo guardar.'; $('#mErr').style.display='block'; return; }
+  location.reload();
+}
+async function borrar(tipo,id,nombre){
+  if(!confirm('¿Eliminar "'+nombre+'"? No se puede deshacer.')) return;
+  const res=await api(`${tipo}/${id}`,{method:'DELETE'});
+  if(res.ok) location.reload(); else alert(res.d.detail||'No se pudo eliminar.');
+}
+ov.addEventListener('click',e=>{ if(e.target===ov) cerrar(); });
+</script>
+</body>
+</html>

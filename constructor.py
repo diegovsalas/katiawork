@@ -602,6 +602,106 @@ async def api_upload_imagen(archivo: UploadFile = File(...)):
     return JSONResponse({"url": url})
 
 
+# ------------------- Gestión de catálogo (productos / servicios) -------------------
+
+_TIPOS_CAT = {"productos", "servicios"}
+
+
+def _construir_item(tipo: str, b: dict, slug: str, basename: str, base: dict = None) -> dict:
+    """Arma un producto/servicio con sus campos. Mueve la imagen si es borrador."""
+    item = dict(base or {})
+    item["nombre"] = (b.get("nombre") or item.get("nombre") or "").strip()
+    if "precio" in b:
+        item["precio"] = _num(b.get("precio"))   # None = "cotizar"
+    if "descripcion" in b:
+        item["descripcion"] = (b.get("descripcion") or "").strip()
+    if "imagen" in b:
+        img = b.get("imagen") or ""
+        item["imagen"] = _mover_borrador(img, slug, basename) if "_borradores/" in img else img
+    if tipo == "productos":
+        if "stock" in b:
+            item["stock"] = int(_num(b.get("stock")) or 0)
+        if "categoria" in b:
+            item["categoria"] = (b.get("categoria") or "").strip()
+    else:  # servicios
+        if "duracion" in b:
+            item["duracion"] = max(5, min(int(_num(b.get("duracion")) or 30), 480))
+    return item
+
+
+@app.post("/api/catalogo/{slug}/{tipo}")
+async def api_catalogo_crear(request: Request, slug: str, tipo: str, k: str = ""):
+    tienda = tiendas.obtener_tienda(slug)
+    if not tienda or tipo not in _TIPOS_CAT:
+        raise HTTPException(status_code=404, detail="No encontrado")
+    _autorizar_panel(request, tienda, k)
+    b = await request.json()
+    if not (b.get("nombre") or "").strip():
+        raise HTTPException(status_code=400, detail="El nombre es obligatorio.")
+    plan = _plan_de_tienda(tienda)
+    if tipo == "productos" and not permite(plan, "productos_ilimitados") and len(tienda.get("productos", [])) >= 20:
+        raise HTTPException(status_code=402, detail="El plan Gratis permite hasta 20 productos. Mejora a Tienda para ilimitados.")
+    iid = secrets.token_hex(4)
+    item = _construir_item(tipo, b, slug, f"{tipo[:-1]}-{iid}", base={"id": iid})
+    tiendas.agregar(slug, tipo, item, al_inicio=False)
+    return JSONResponse({"ok": True, "item": item})
+
+
+@app.patch("/api/catalogo/{slug}/{tipo}/{iid}")
+async def api_catalogo_editar(request: Request, slug: str, tipo: str, iid: str, k: str = ""):
+    tienda = tiendas.obtener_tienda(slug)
+    if not tienda or tipo not in _TIPOS_CAT:
+        raise HTTPException(status_code=404, detail="No encontrado")
+    _autorizar_panel(request, tienda, k)
+    actual = next((x for x in tienda.get(tipo, []) if x.get("id") == iid), None)
+    if not actual:
+        raise HTTPException(status_code=404, detail="No existe ese elemento.")
+    b = await request.json()
+    cambios = _construir_item(tipo, b, slug, f"{tipo[:-1]}-{iid}", base=actual)
+    tiendas.actualizar_item(slug, tipo, iid, cambios)
+    return JSONResponse({"ok": True, "item": cambios})
+
+
+@app.delete("/api/catalogo/{slug}/{tipo}/{iid}")
+def api_catalogo_eliminar(slug: str, tipo: str, iid: str, request: Request, k: str = ""):
+    tienda = tiendas.obtener_tienda(slug)
+    if not tienda or tipo not in _TIPOS_CAT:
+        raise HTTPException(status_code=404, detail="No encontrado")
+    _autorizar_panel(request, tienda, k)
+    return JSONResponse({"ok": tiendas.eliminar_item(slug, tipo, iid)})
+
+
+@app.get("/t/{slug}/catalogo", response_class=HTMLResponse)
+def catalogo_local(request: Request, slug: str, k: str = ""):
+    tienda = tiendas.obtener_tienda(slug)
+    if not tienda:
+        raise HTTPException(status_code=404, detail="Tienda no encontrada")
+    _autorizar_panel(request, tienda, k)
+    return templates.TemplateResponse(request, "constructor/catalogo.html", _ctx_catalogo(request, tienda, f"/t/{slug}"))
+
+
+@app.get("/catalogo", response_class=HTMLResponse)
+def catalogo_subdominio(request: Request, k: str = ""):
+    slug = tiendas.resolver_por_host(request.headers.get("host", ""), DOMINIO_BASE)
+    if not slug:
+        raise HTTPException(status_code=404, detail="No encontrado")
+    tienda = tiendas.obtener_tienda(slug)
+    if not tienda:
+        raise HTTPException(status_code=404, detail="Tienda no encontrada")
+    _autorizar_panel(request, tienda, k)
+    return templates.TemplateResponse(request, "constructor/catalogo.html", _ctx_catalogo(request, tienda, ""))
+
+
+def _ctx_catalogo(request: Request, tienda: dict, ruta_base: str) -> dict:
+    return {
+        "request": request, "t": tienda, "ruta_base": ruta_base,
+        "k": tienda.get("admin_token", ""),
+        "productos": tienda.get("productos", []),
+        "servicios": tienda.get("servicios", []),
+        "moneda": tienda.get("moneda", "MXN"),
+    }
+
+
 # ------------------- Crear la tienda (fin del wizard) -------------------
 
 @app.post("/crear")
