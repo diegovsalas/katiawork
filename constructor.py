@@ -15,6 +15,7 @@ import csv
 import io
 import os
 import secrets
+import time
 import zipfile
 from datetime import datetime, timedelta, date as _date
 
@@ -257,6 +258,37 @@ async def _arrancar_backups():
     asyncio.create_task(_backup_loop())
 
 
+# ------------------- Rate limiting (anti-spam / fuerza bruta) -------------------
+
+_RL: dict = {}  # "nombre:ip" -> [timestamps]
+
+
+def _client_ip(request: Request) -> str:
+    """IP real del cliente (detrás del proxy de Render via X-Forwarded-For)."""
+    xff = request.headers.get("x-forwarded-for", "")
+    if xff:
+        return xff.split(",")[0].strip()
+    return request.client.host if request.client else "?"
+
+
+def _rate_limit(request: Request, nombre: str, limite: int, ventana: int):
+    """Permite `limite` peticiones por IP cada `ventana` segundos. Si se excede,
+    lanza HTTP 429. Limitador en memoria (suficiente para una sola instancia)."""
+    ip = _client_ip(request)
+    ahora = time.time()
+    key = f"{nombre}:{ip}"
+    arr = [t for t in _RL.get(key, []) if ahora - t < ventana]
+    if len(arr) >= limite:
+        raise HTTPException(status_code=429,
+                            detail="Demasiados intentos. Espera un momento e inténtalo de nuevo.")
+    arr.append(ahora)
+    _RL[key] = arr
+    # Poda de memoria: si crece mucho, descarta llaves sin actividad reciente
+    if len(_RL) > 5000:
+        for k in [k for k, v in _RL.items() if not v or ahora - v[-1] > 3600]:
+            _RL.pop(k, None)
+
+
 # ------------------- Sesión / usuario actual -------------------
 
 def _usuario_actual(request: Request):
@@ -359,6 +391,7 @@ def cuenta(request: Request, modo: str = "login", next: str = ""):
 @app.post("/registro")
 def registro(request: Request, nombre: str = Form(""), email: str = Form(...),
              password: str = Form(...), next: str = Form("")):
+    _rate_limit(request, "registro", 8, 3600)   # 8 cuentas / hora por IP
     u, error = usuarios.crear(email, password, nombre)
     if error:
         return templates.TemplateResponse(request, "constructor/cuenta.html",
@@ -373,6 +406,7 @@ def registro(request: Request, nombre: str = Form(""), email: str = Form(...),
 
 @app.post("/login")
 def login(request: Request, email: str = Form(...), password: str = Form(...), next: str = Form("")):
+    _rate_limit(request, "login", 15, 300)   # 15 intentos / 5 min por IP
     u, error = usuarios.autenticar(email, password)
     if error:
         return templates.TemplateResponse(request, "constructor/cuenta.html",
@@ -399,6 +433,7 @@ def recuperar_form(request: Request):
 def recuperar_enviar(request: Request, email: str = Form(...)):
     """Genera un enlace de restablecimiento y lo envía por correo.
     Siempre responde igual (no revela si el correo existe)."""
+    _rate_limit(request, "recuperar", 6, 3600)   # 6 / hora por IP
     token = usuarios.crear_token_reset(email)
     if token:
         from urllib.parse import quote
@@ -603,6 +638,7 @@ def demo_form(request: Request):
 @app.post("/api/demo")
 async def api_demo(request: Request):
     """Recibe una solicitud de demo del landing: la guarda y notifica al equipo."""
+    _rate_limit(request, "demo", 6, 3600)   # 6 / hora por IP
     b = await request.json()
     nombre = (b.get("nombre") or "").strip()
     whatsapp = (b.get("whatsapp") or "").strip()
@@ -1154,6 +1190,7 @@ def api_disponibilidad(slug: str, servicio: str, fecha: str):
 @app.post("/api/reservar/{slug}")
 async def api_reservar(slug: str, request: Request):
     """Crea una cita si el horario sigue libre. Devuelve la confirmación + link de WhatsApp."""
+    _rate_limit(request, "reservar", 12, 3600)   # 12 / hora por IP
     tienda = tiendas.obtener_tienda(slug)
     if not tienda:
         raise HTTPException(status_code=404, detail="Tienda no encontrada")
@@ -1347,6 +1384,7 @@ def admin_seed_spa(request: Request, slug: str):
 async def api_lead_publico(slug: str, request: Request):
     """Captura un lead desde el storefront (clic en 'Pedir por WhatsApp').
     Público: alimenta el pipeline del dueño antes de que el chat de WhatsApp ocurra."""
+    _rate_limit(request, "lead", 20, 3600)   # 20 / hora por IP
     tienda = tiendas.obtener_tienda(slug)
     if not tienda:
         raise HTTPException(status_code=404, detail="Tienda no encontrada")
@@ -2734,6 +2772,7 @@ def _mp_init_point(token: str, items: list, moneda: str, back_url: str):
 @app.post("/api/pedido/{slug}")
 async def api_pedido(slug: str, request: Request):
     """Checkout público: crea el pedido. SPEI → instrucciones; MP → link de pago."""
+    _rate_limit(request, "pedido", 12, 3600)   # 12 / hora por IP
     tienda = tiendas.obtener_tienda(slug)
     if not tienda or not _pago_online(tienda) or tienda.get("suspendida"):
         raise HTTPException(status_code=404, detail="Tienda no encontrada")
