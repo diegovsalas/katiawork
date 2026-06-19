@@ -69,7 +69,7 @@
 <div class="top">
   <div class="l"><a href="/"><img src="/static/img/katia-logo.svg" alt="katia"></a> Catálogo</div>
   <div class="r">
-    <a href="{{ ruta_base }}/editar{% if k %}?k={{ k }}{% endif %}">✏️ Editar tienda</a>
+    <a href="{{ ruta_base }}/editar{% if via_token %}?k={{ k }}{% endif %}">✏️ Editar tienda</a>
     <a href="{{ ruta_base }}/" target="_blank">Ver tienda ↗</a>
   </div>
 </div>

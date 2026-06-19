@@ -842,6 +842,7 @@ def catalogo_subdominio(request: Request, k: str = ""):
 def _ctx_catalogo(request: Request, tienda: dict, ruta_base: str) -> dict:
     return {
         "request": request, "t": tienda, "ruta_base": ruta_base,
+        "via_token": not _es_dueno(request, tienda),
         "k": tienda.get("admin_token", ""),
         "productos": tienda.get("productos", []),
         "servicios": tienda.get("servicios", []),
@@ -1481,6 +1482,7 @@ def _panel_ctx(request, tienda, ruta_base):
     onboarding_pend = sum(1 for x in onboarding if not x["done"])
     return {
         "request": request, "t": tienda, "ruta_base": ruta_base,
+        "via_token": not _es_dueno(request, tienda),
         "onboarding": onboarding, "onboarding_pend": onboarding_pend,
         "etapas": tiendas.ETAPAS_CRM, "k": tienda.get("admin_token", ""),
         "citas_proximas": citas, "tipo": tienda.get("tipo", "productos"),
@@ -1611,6 +1613,7 @@ def _ctx_editar(request: Request, tienda: dict, ruta_base: str):
     plan = _plan_de_tienda(tienda)
     return {
         "request": request, "t": tienda, "ruta_base": ruta_base,
+        "via_token": not _es_dueno(request, tienda),
         "k": tienda.get("admin_token", ""), "plan": plan,
         "plan_label": PLAN_LABEL.get(plan, "Gratis"),
         "temas": TEMAS, "paleta": PALETA_GRATIS,

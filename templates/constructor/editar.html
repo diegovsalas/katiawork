@@ -59,9 +59,10 @@
     <div class="tn">{{ t.nombre }}<small>Editar tienda · plan {{ plan_label }}</small></div>
   </div>
   <div class="r">
-    <a class="lnk" href="{{ ruta_base }}/catalogo">📦 Productos y servicios</a>
+    {% set kt = ('?k=' ~ k) if via_token else '' %}
+    <a class="lnk" href="{{ ruta_base }}/catalogo{{ kt }}">📦 Productos y servicios</a>
     <a class="lnk" href="{{ ruta_base }}/" target="_blank">Ver tienda ↗</a>
-    <a class="lnk" href="/mis-tiendas">Mis tiendas</a>
+    {% if not via_token %}<a class="lnk" href="/mis-tiendas">Mis tiendas</a>{% endif %}
   </div>
 </div>
 

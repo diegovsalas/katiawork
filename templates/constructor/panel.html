@@ -268,8 +268,9 @@
     <div class="tn">{{ t.nombre }}<small>Panel de ventas</small></div>
   </div>
   <div class="r">
-    <a class="lnk" href="{{ ruta_base }}/catalogo">📦 Catálogo</a>
-    <a class="lnk" href="{{ ruta_base }}/editar">✏️ Editar tienda</a>
+    {% set kt = ('?k=' ~ k) if via_token else '' %}
+    <a class="lnk" href="{{ ruta_base }}/catalogo{{ kt }}">📦 Catálogo</a>
+    <a class="lnk" href="{{ ruta_base }}/editar{{ kt }}">✏️ Editar tienda</a>
     <a class="lnk" href="{{ ruta_base }}/" target="_blank">Ver mi tienda ↗</a>
   </div>
 </div>
@@ -288,7 +289,7 @@
     <div class="onb-item {{ 'ok' if o.done else 'no' }}">
       <span class="ck">{{ '✓' if o.done else o.icon }}</span>
       <span class="tx">{{ o.label }}</span>
-      {% if not o.done %}<a class="go" href="{{ o.url }}">Hacerlo →</a>{% endif %}
+      {% if not o.done %}<a class="go" href="{{ o.url }}{{ '?k=' ~ k if via_token else '' }}">Hacerlo →</a>{% endif %}
     </div>
     {% endfor %}
   </div>
