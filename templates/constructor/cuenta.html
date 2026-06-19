@@ -62,6 +62,7 @@
         <input name="password" type="password" placeholder="Tu contraseña" required autocomplete="current-password">
         <button class="btn" type="submit">Entrar</button>
       </form>
+      <div class="alt"><a href="/recuperar">¿Olvidaste tu contraseña?</a></div>
       <div class="alt">¿Aún no tienes cuenta? <a href="/cuenta?modo=registro{% if next %}&next={{ next }}{% endif %}">Crear una gratis</a></div>
     {% endif %}
   </div>

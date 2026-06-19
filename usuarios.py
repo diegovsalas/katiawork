@@ -11,7 +11,8 @@ import hmac
 import json
 import os
 import re
-from datetime import datetime, timezone
+import secrets
+from datetime import datetime, timezone, timedelta
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 # En producción apunta al disco persistente (KATIA_DATA_DIR); en local a ./data
@@ -124,6 +125,50 @@ def autenticar(email: str, password: str):
     if not u or not verificar_password(password, u.get("password_hash", "")):
         return None, "Correo o contraseña incorrectos."
     return u, None
+
+
+# ------------------- Recuperación de contraseña -------------------
+
+def crear_token_reset(email: str, horas: int = 1) -> str | None:
+    """Genera un token de restablecimiento (válido `horas`) y lo guarda en el
+    usuario. Devuelve el token, o None si la cuenta no existe."""
+    data = _cargar()
+    email = (email or "").lower().strip()
+    if email not in data:
+        return None
+    token = secrets.token_urlsafe(32)
+    data[email]["reset_token"] = token
+    data[email]["reset_expira"] = (datetime.now(timezone.utc) + timedelta(hours=horas)).isoformat()
+    _guardar(data)
+    return token
+
+
+def validar_token_reset(email: str, token: str) -> bool:
+    u = buscar(email)
+    if not u or not token or not u.get("reset_token"):
+        return False
+    if not hmac.compare_digest(u.get("reset_token", ""), token):
+        return False
+    try:
+        exp = datetime.fromisoformat(u.get("reset_expira", ""))
+    except ValueError:
+        return False
+    return datetime.now(timezone.utc) <= exp
+
+
+def restablecer_password(email: str, token: str, nueva: str):
+    """Cambia la contraseña si el token es válido. Devuelve (ok, error)."""
+    if not validar_token_reset(email, token):
+        return False, "El enlace no es válido o ya expiró. Solicita uno nuevo."
+    if len(nueva or "") < 6:
+        return False, "La contraseña debe tener al menos 6 caracteres."
+    data = _cargar()
+    email = (email or "").lower().strip()
+    data[email]["password_hash"] = hash_password(nueva)
+    data[email].pop("reset_token", None)
+    data[email].pop("reset_expira", None)
+    _guardar(data)
+    return True, None
 
 
 def publico(usuario: dict) -> dict:

@@ -388,6 +388,52 @@ def logout(request: Request):
     return RedirectResponse(url="/", status_code=303)
 
 
+# ------------------- Recuperar contraseña -------------------
+
+@app.get("/recuperar", response_class=HTMLResponse)
+def recuperar_form(request: Request):
+    return templates.TemplateResponse(request, "constructor/recuperar.html", {"modo": "solicitar"})
+
+
+@app.post("/recuperar", response_class=HTMLResponse)
+def recuperar_enviar(request: Request, email: str = Form(...)):
+    """Genera un enlace de restablecimiento y lo envía por correo.
+    Siempre responde igual (no revela si el correo existe)."""
+    token = usuarios.crear_token_reset(email)
+    if token:
+        from urllib.parse import quote
+        enlace = f"{KATIA_BASE_URL}/restablecer?e={quote(email.lower().strip())}&t={token}"
+        html = (
+            "<p>Hola, recibimos una solicitud para restablecer tu contraseña en katia.</p>"
+            f"<p><a href='{enlace}' style='background:#6d5dfb;color:#fff;padding:12px 22px;"
+            "border-radius:10px;text-decoration:none;font-weight:700'>Crear nueva contraseña</a></p>"
+            "<p>El enlace vence en 1 hora. Si no fuiste tú, ignora este correo.</p>"
+            "<p style='color:#888;font-size:12px'>katia.work</p>"
+        )
+        try:
+            emails.enviar(email.lower().strip(), "Restablece tu contraseña · katia", html)
+        except Exception as e:  # noqa: BLE001
+            print(f"⚠  Correo de reset no enviado: {e}")
+    return templates.TemplateResponse(request, "constructor/recuperar.html", {"modo": "enviado"})
+
+
+@app.get("/restablecer", response_class=HTMLResponse)
+def restablecer_form(request: Request, e: str = "", t: str = ""):
+    valido = usuarios.validar_token_reset(e, t)
+    return templates.TemplateResponse(request, "constructor/recuperar.html",
+                                      {"modo": "restablecer", "email": e, "token": t, "valido": valido})
+
+
+@app.post("/restablecer", response_class=HTMLResponse)
+def restablecer_enviar(request: Request, email: str = Form(...), token: str = Form(...), password: str = Form(...)):
+    ok, error = usuarios.restablecer_password(email, token, password)
+    if not ok:
+        return templates.TemplateResponse(request, "constructor/recuperar.html",
+                                          {"modo": "restablecer", "email": email, "token": token,
+                                           "valido": True, "error": error})
+    return templates.TemplateResponse(request, "constructor/recuperar.html", {"modo": "listo"})
+
+
 # ------------------- Suscripción a katia (Stripe) -------------------
 
 @app.get("/facturacion", response_class=HTMLResponse)
