@@ -8,9 +8,11 @@
 # producción se puede mover a la BD (db.py ya tiene Postgres) sin tocar
 # el resto del código, porque toda la app pasa por estas funciones.
 # -------------------------------------------------------------------
+import functools
 import json
 import os
 import re
+import threading
 import unicodedata
 from datetime import datetime, timezone
 
@@ -58,6 +60,30 @@ METODOS_PAGO = ["Efectivo", "Tarjeta", "Transferencia", "SPEI"]
 def _asegurar_dirs():
     os.makedirs(DATA_DIR, exist_ok=True)
     os.makedirs(UPLOADS_DIR, exist_ok=True)
+
+
+# --- Bloqueo por tienda: serializa lectura-modificación-escritura de una misma
+#     tienda para que dos peticiones simultáneas no se pisen (lost update). ---
+_LOCKS: dict = {}
+_LOCKS_GUARD = threading.Lock()
+
+
+def _lock(slug: str):
+    with _LOCKS_GUARD:
+        lk = _LOCKS.get(slug)
+        if lk is None:
+            lk = _LOCKS[slug] = threading.RLock()
+    return lk
+
+
+def _con_lock(fn):
+    """Decorador para funciones cuyo primer argumento es `slug`: las serializa
+    por tienda."""
+    @functools.wraps(fn)
+    def wrap(slug, *a, **k):
+        with _lock(slug):
+            return fn(slug, *a, **k)
+    return wrap
 
 
 def slugify(texto: str) -> str:
@@ -163,6 +189,7 @@ def obtener_tienda(slug: str):
         return json.load(f)
 
 
+@_con_lock
 def actualizar_tienda(slug: str, cambios: dict):
     """Aplica cambios parciales a una tienda existente. Devuelve la tienda
     actualizada, o None si no existe."""
@@ -175,6 +202,7 @@ def actualizar_tienda(slug: str, cambios: dict):
     return tienda
 
 
+@_con_lock
 def eliminar_tienda(slug: str) -> bool:
     """Mueve la tienda (JSON + imágenes) a una papelera recuperable, en vez de
     borrarla definitivamente. Devuelve True si existía."""
@@ -196,9 +224,14 @@ def eliminar_tienda(slug: str) -> bool:
 
 
 def _guardar(tienda: dict):
+    """Escritura ATÓMICA: escribe a un archivo temporal y lo reemplaza de golpe,
+    para que nunca quede un JSON corrupto a medias (aunque el proceso muera)."""
     _asegurar_dirs()
-    with open(_ruta(tienda["slug"]), "w", encoding="utf-8") as f:
+    ruta = _ruta(tienda["slug"])
+    tmp = f"{ruta}.{os.getpid()}.tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
         json.dump(tienda, f, ensure_ascii=False, indent=2)
+    os.replace(tmp, ruta)
 
 
 def listar_tiendas():
@@ -272,6 +305,7 @@ def buscar_producto(tienda: dict, producto_id: str):
     return None
 
 
+@_con_lock
 def descontar_stock(slug: str, items: list):
     """Resta del inventario las cantidades vendidas. items=[{id, cantidad}]."""
     tienda = obtener_tienda(slug)
@@ -289,6 +323,7 @@ def descontar_stock(slug: str, items: list):
         _guardar(tienda)
 
 
+@_con_lock
 def agregar_cita(slug: str, cita: dict):
     """Persiste una cita en la tienda. Devuelve la cita o None si no existe la tienda."""
     tienda = obtener_tienda(slug)
@@ -330,6 +365,7 @@ def buscar_lead_por_telefono(tienda: dict, telefono: str):
     return None
 
 
+@_con_lock
 def crear_lead(slug: str, lead: dict):
     """Agrega un lead a la tienda. Devuelve el lead o None si no existe la tienda."""
     tienda = obtener_tienda(slug)
@@ -341,6 +377,7 @@ def crear_lead(slug: str, lead: dict):
     return lead
 
 
+@_con_lock
 def actualizar_lead(slug: str, lead_id: str, cambios: dict):
     """Aplica cambios parciales a un lead. Devuelve el lead actualizado o None."""
     tienda = obtener_tienda(slug)
@@ -356,6 +393,7 @@ def actualizar_lead(slug: str, lead_id: str, cambios: dict):
     return lead
 
 
+@_con_lock
 def eliminar_lead(slug: str, lead_id: str) -> bool:
     tienda = obtener_tienda(slug)
     if tienda is None:
@@ -375,6 +413,7 @@ def listar(slug: str, coleccion: str):
     return (obtener_tienda(slug) or {}).get(coleccion, [])
 
 
+@_con_lock
 def agregar(slug: str, coleccion: str, item: dict, al_inicio: bool = True):
     tienda = obtener_tienda(slug)
     if tienda is None:
@@ -386,6 +425,7 @@ def agregar(slug: str, coleccion: str, item: dict, al_inicio: bool = True):
     return item
 
 
+@_con_lock
 def actualizar_item(slug: str, coleccion: str, item_id: str, cambios: dict):
     tienda = obtener_tienda(slug)
     if tienda is None:
@@ -399,6 +439,7 @@ def actualizar_item(slug: str, coleccion: str, item_id: str, cambios: dict):
     return None
 
 
+@_con_lock
 def eliminar_item(slug: str, coleccion: str, item_id: str) -> bool:
     tienda = obtener_tienda(slug)
     if tienda is None:

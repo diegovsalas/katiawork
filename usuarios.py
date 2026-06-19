@@ -11,7 +11,9 @@ import hmac
 import json
 import os
 import re
+import functools
 import secrets
+import threading
 from datetime import datetime, timezone, timedelta
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -49,9 +51,24 @@ def _cargar() -> dict:
 
 
 def _guardar(data: dict):
+    """Escritura atómica (temp + replace) para no corromper el archivo de auth."""
     os.makedirs(DATA_DIR, exist_ok=True)
-    with open(ARCHIVO, "w", encoding="utf-8") as f:
+    tmp = f"{ARCHIVO}.{os.getpid()}.tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
+    os.replace(tmp, ARCHIVO)
+
+
+# Lock global: serializa los cambios sobre usuarios.json (un solo archivo).
+_LOCK = threading.Lock()
+
+
+def _con_lock(fn):
+    @functools.wraps(fn)
+    def wrap(*a, **k):
+        with _LOCK:
+            return fn(*a, **k)
+    return wrap
 
 
 def email_valido(email: str) -> bool:
@@ -62,6 +79,7 @@ def buscar(email: str):
     return _cargar().get((email or "").lower().strip())
 
 
+@_con_lock
 def crear(email: str, password: str, nombre: str = "",
           rol: str = "dueno", tienda_slug: str = "", miembro_id: str = ""):
     """Crea un usuario. rol = 'dueno' | 'especialista'. Para especialista se
@@ -92,6 +110,7 @@ def crear(email: str, password: str, nombre: str = "",
     return usuario, None
 
 
+@_con_lock
 def actualizar(email: str, cambios: dict):
     """Aplica cambios parciales a un usuario. Devuelve el usuario o None."""
     data = _cargar()
@@ -108,6 +127,7 @@ def listar() -> list:
     return [publico(u) for u in _cargar().values()]
 
 
+@_con_lock
 def eliminar(email: str) -> bool:
     """Borra una cuenta. Devuelve True si existía."""
     data = _cargar()
@@ -129,6 +149,7 @@ def autenticar(email: str, password: str):
 
 # ------------------- Recuperación de contraseña -------------------
 
+@_con_lock
 def crear_token_reset(email: str, horas: int = 1) -> str | None:
     """Genera un token de restablecimiento (válido `horas`) y lo guarda en el
     usuario. Devuelve el token, o None si la cuenta no existe."""
@@ -156,6 +177,7 @@ def validar_token_reset(email: str, token: str) -> bool:
     return datetime.now(timezone.utc) <= exp
 
 
+@_con_lock
 def restablecer_password(email: str, token: str, nueva: str):
     """Cambia la contraseña si el token es válido. Devuelve (ok, error)."""
     if not validar_token_reset(email, token):
