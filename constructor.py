@@ -1865,8 +1865,31 @@ async def api_equipo_editar(slug: str, mid: str, request: Request, k: str = ""):
         cambios["pct_comision"] = 0.0 if pct is None else max(0.0, min(float(pct), 1.0))
     if "activo" in b:
         cambios["activo"] = bool(b["activo"])
+    if "horario" in b:
+        h = b["horario"] or {}
+        dias = sorted({int(d) for d in (h.get("dias") or []) if str(d).isdigit() and 0 <= int(d) <= 6})
+        cambios["horario"] = {"dias": dias,
+                              "apertura": (h.get("apertura") or "09:00"),
+                              "cierre": (h.get("cierre") or "18:00")}
     m = tiendas.actualizar_item(slug, "equipo", mid, cambios)
     return JSONResponse({"ok": bool(m), "miembro": m})
+
+
+@app.patch("/api/cita/{slug}/{cita_id}")
+async def api_cita_editar(slug: str, cita_id: str, request: Request, k: str = ""):
+    """Asigna/cambia la terapeuta de una cita (o cambia su estado)."""
+    t = _tienda_admin(slug, k)
+    b = await request.json()
+    cambios = {}
+    if "agente_id" in b:
+        aid = b.get("agente_id") or ""
+        m = _miembro(t, aid)
+        cambios["agente_id"] = aid
+        cambios["agente_nombre"] = m["nombre"] if m else ""
+    if b.get("estado") in ("agendada", "cancelada", "completada"):
+        cambios["estado"] = b["estado"]
+    c = tiendas.actualizar_item(slug, "citas", cita_id, cambios)
+    return JSONResponse({"ok": bool(c), "cita": c})
 
 
 @app.delete("/api/equipo/{slug}/{mid}")

@@ -355,6 +355,7 @@
       <button class="gbtn" id="calNext" title="Semana siguiente">›</button>
       <b id="calTitulo" style="margin-left:6px;font-size:15px"></b>
       <span style="flex:1"></span>
+      <select id="calFiltro" style="padding:7px 11px;border:1px solid var(--linea);border-radius:9px;font:inherit;font-size:13px;font-weight:600;background:#fff"></select>
       <span id="calCount" style="font-size:13px;color:var(--tenue)"></span>
     </div>
     <div class="cal-scroll"><div class="cal-grid" id="cal"></div></div>
@@ -597,6 +598,39 @@
   </div>
 </div>
 
+<!-- Modal horario de terapeuta -->
+<div class="ov" id="ovHorario">
+  <div class="modal">
+    <button class="x" onclick="document.getElementById('ovHorario').classList.remove('open')">×</button>
+    <h3>Horario de <span id="hNombre"></span></h3>
+    <input type="hidden" id="hId">
+    <label>Días que trabaja</label>
+    <div id="hDias" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px"></div>
+    <div class="g2" style="margin-top:12px">
+      <div><label>Entrada</label><input id="hApertura" type="time" value="09:00"></div>
+      <div><label>Salida</label><input id="hCierre" type="time" value="18:00"></div>
+    </div>
+    <div class="modal-acts"><button class="btn" id="hGuardar">Guardar horario</button></div>
+  </div>
+</div>
+
+<!-- Modal cita (calendario): asignar terapeuta / cancelar -->
+<div class="ov" id="ovCita">
+  <div class="modal">
+    <button class="x" onclick="document.getElementById('ovCita').classList.remove('open')">×</button>
+    <h3 id="ciTitulo">Cita</h3>
+    <input type="hidden" id="ciId">
+    <p id="ciInfo" style="color:var(--tenue);font-size:14px;margin-bottom:6px"></p>
+    <label>Terapeuta asignada</label>
+    <select id="ciAgente"></select>
+    <div class="modal-acts">
+      <button class="btn" id="ciGuardar">Guardar</button>
+      <a class="wa hidden" id="ciWa" target="_blank">💬 WhatsApp</a>
+      <button class="del" id="ciCancelar">Cancelar cita</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const SLUG="{{ t.slug }}", K="{{ k }}", RUTA_BASE="{{ ruta_base }}", MONEDA="{{ t.moneda }}", HOY="{{ hoy }}";
 const PUEDE_LOGINS={{ 'true' if puede_logins else 'false' }};
@@ -811,6 +845,7 @@ const DOW=['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
 function _iso(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function _addDays(d,n){ const x=new Date(d); x.setDate(x.getDate()+n); return x; }
 function _lunes(d){ const x=new Date(d); const wd=(x.getDay()+6)%7; x.setDate(x.getDate()-wd); x.setHours(0,0,0,0); return x; }
+const CAL_PAL=['#6d5dfb','#16a34a','#e11d8f','#0ea5e9','#f59e0b','#7c3aed','#ef4444','#0d9488'];
 async function cargarAgenda(){
   if(!CAL.weekStart) CAL.weekStart=_lunes(new Date(HOY+'T00:00:00'));
   const ini=CAL.weekStart, fin=_addDays(ini,6);
@@ -819,15 +854,22 @@ async function cargarAgenda(){
   CAL.open=parseInt((h.apertura||'09:00').slice(0,2))||9;
   CAL.close=parseInt((h.cierre||'18:00').slice(0,2))||18;
   CAL.dias=(h.dias&&h.dias.length)?h.dias.slice().sort((a,b)=>a-b):[0,1,2,3,4,5];
-  pintarCalendario(d.citas||[]);
+  CAL.equipo=d.equipo||[]; CAL.citas=d.citas||[]; CAL.colores={};
+  CAL.equipo.forEach((m,i)=>CAL.colores[m.id]=CAL_PAL[i%CAL_PAL.length]);
+  const sel=$('#calFiltro'), prev=sel.value;
+  sel.innerHTML='<option value="">Todas las terapeutas</option>'+CAL.equipo.map(m=>`<option value="${m.id}">${m.nombre}</option>`).join('')+'<option value="__none">Sin asignar</option>';
+  sel.value=prev||''; sel.onchange=pintarCalendario;
+  pintarCalendario();
 }
 document.getElementById('calPrev').onclick=()=>{ CAL.weekStart=_addDays(CAL.weekStart,-7); cargarAgenda(); };
 document.getElementById('calNext').onclick=()=>{ CAL.weekStart=_addDays(CAL.weekStart,7); cargarAgenda(); };
 document.getElementById('calToday').onclick=()=>{ CAL.weekStart=_lunes(new Date(HOY+'T00:00:00')); cargarAgenda(); };
 const MESC=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
-function pintarCalendario(citas){
+function pintarCalendario(){
   const ini=CAL.weekStart, HPX=64, span=Math.max(1,CAL.close-CAL.open);
   const cols=CAL.dias.length;
+  const f=$('#calFiltro').value;
+  const citas=(CAL.citas||[]).filter(c=> !f ? true : (f==='__none' ? !c.agente_id : c.agente_id===f));
   $('#calTitulo').textContent=`${ini.getDate()} ${MESC[ini.getMonth()]} – ${_addDays(ini,6).getDate()} ${MESC[_addDays(ini,6).getMonth()]}`;
   $('#calCount').textContent=`${citas.length} cita(s)`;
   let html='';
@@ -848,10 +890,10 @@ function pintarCalendario(citas){
       const p=(c.hora||'09:00').split(':'); const min=(+p[0])*60+(+p[1]||0);
       const top=Math.max(0,(min-CAL.open*60)*HPX/60);
       const dur=Math.max(Number(c.duracion)||30,30); const ht=Math.max(30,dur*HPX/60-3);
-      const tel=(c.cliente_telefono||'').replace(/[^0-9]/g,'');
-      col+=`<div class="cal-ev" style="top:${top}px;height:${ht}px" data-wa="${tel}"
-              data-info="${(c.hora||'')} · ${(c.servicio_nombre||'').replace(/"/g,'')} · ${(c.cliente_nombre||'').replace(/"/g,'')}">
-          <span class="t"><b>${c.hora||''}</b> ${c.servicio_nombre||''}</span><span class="cl">${c.cliente_nombre||''}</span></div>`;
+      const color=(c.agente_id&&CAL.colores[c.agente_id])?CAL.colores[c.agente_id]:'#9aa0b4';
+      col+=`<div class="cal-ev" style="top:${top}px;height:${ht}px;background:${color}" data-id="${c.id}">
+          <span class="t"><b>${c.hora||''}</b> ${c.servicio_nombre||''}</span>
+          <span class="cl">${c.cliente_nombre||''}${c.agente_nombre?(' · '+c.agente_nombre):''}</span></div>`;
     });
     col+='</div>';
     html+=col;
@@ -859,11 +901,28 @@ function pintarCalendario(citas){
   const grid=$('#cal');
   grid.style.gridTemplateColumns=`54px repeat(${cols},minmax(88px,1fr))`;
   grid.innerHTML=html;
-  grid.querySelectorAll('.cal-ev').forEach(el=>el.onclick=()=>{
-    const wa=el.dataset.wa;
-    if(wa && confirm(el.dataset.info+'\n\n¿Abrir WhatsApp del cliente?')) window.open('https://wa.me/'+wa,'_blank');
-  });
+  grid.querySelectorAll('.cal-ev').forEach(el=>el.onclick=()=>abrirCita(el.dataset.id));
 }
+function abrirCita(id){
+  const c=(CAL.citas||[]).find(x=>x.id===id); if(!c) return;
+  $('#ciId').value=c.id;
+  $('#ciTitulo').textContent=c.servicio_nombre||'Cita';
+  $('#ciInfo').textContent=`${c.fecha} ${c.hora||''} · ${c.cliente_nombre||''}${c.cliente_telefono?(' · '+c.cliente_telefono):''}`;
+  $('#ciAgente').innerHTML='<option value="">— Sin asignar —</option>'+CAL.equipo.map(m=>`<option value="${m.id}" ${m.id===c.agente_id?'selected':''}>${m.nombre}</option>`).join('');
+  const tel=(c.cliente_telefono||'').replace(/[^0-9]/g,''); const wa=$('#ciWa');
+  if(tel){ wa.href='https://wa.me/'+tel; wa.classList.remove('hidden'); } else wa.classList.add('hidden');
+  $('#ovCita').classList.add('open');
+}
+$('#ciGuardar').onclick=async()=>{
+  await apk(`cita/${SLUG}/${$('#ciId').value}`,{method:'PATCH',...J,body:JSON.stringify({agente_id:$('#ciAgente').value})});
+  $('#ovCita').classList.remove('open'); cargarAgenda();
+};
+$('#ciCancelar').onclick=async()=>{
+  if(!confirm('¿Cancelar esta cita? Dejará de aparecer en la agenda.')) return;
+  await apk(`cita/${SLUG}/${$('#ciId').value}`,{method:'PATCH',...J,body:JSON.stringify({estado:'cancelada'})});
+  $('#ovCita').classList.remove('open'); cargarAgenda();
+};
+document.getElementById('ovCita').addEventListener('click',e=>{ if(e.target.id==='ovCita') e.currentTarget.classList.remove('open'); });
 
 // ===== POS (vender en mostrador) =====
 let CART={};
@@ -1080,12 +1139,14 @@ async function cargarEquipo(){
   const d=await apk(`equipo/${SLUG}`); EQUIPO=d.equipo||[];
   const cont=$('#equipoLista');
   cont.innerHTML=EQUIPO.length? EQUIPO.map(m=>`<div class="li">
-      <div class="a"><b>${m.nombre}</b><span>${Math.round((m.pct_comision||0)*100)}% de comisión${m.email?' · '+m.email:''}</span></div>
+      <div class="a"><b>${m.nombre}</b><span>${Math.round((m.pct_comision||0)*100)}% comisión · ${horarioTxt(m.horario)}${m.email?' · '+m.email:''}</span></div>
+      <button class="inv" data-h="${m.id}">🕐</button>
       ${m.email?'<span class="pill" style="background:#ecfdf5;color:#047857">acceso ✓</span>':(PUEDE_LOGINS?`<button class="inv" data-id="${m.id}" data-nombre="${m.nombre}">🔑 Dar acceso</button>`:`<a class="pill" href="/facturacion" title="Disponible en Escala">🔒 Escala</a>`)}
       <button class="x2" data-id="${m.id}">×</button></div>`).join('')
     : '<div class="vacia2">Agrega a tu equipo para registrar ingresos por persona.</div>';
+  cont.querySelectorAll('[data-h]').forEach(b=>b.onclick=()=>abrirHorario(EQUIPO.find(x=>x.id===b.dataset.h)));
   cont.querySelectorAll('.x2').forEach(b=>b.onclick=async()=>{ if(confirm('¿Quitar del equipo?')){ await apk(`equipo/${SLUG}/${b.dataset.id}`,{method:'DELETE'}); cargarEquipo(); }});
-  cont.querySelectorAll('.inv').forEach(b=>b.onclick=async()=>{
+  cont.querySelectorAll('[data-nombre]').forEach(b=>b.onclick=async()=>{
     const email=prompt(`Correo para que ${b.dataset.nombre} entre a registrar su caja:`); if(!email) return;
     const password=prompt('Contraseña temporal (mínimo 6 caracteres):'); if(!password) return;
     const r=await apk(`equipo/${SLUG}/${b.dataset.id}/invitar`,{method:'POST',...J,body:JSON.stringify({email,password})});
@@ -1094,6 +1155,27 @@ async function cargarEquipo(){
     cargarEquipo();
   });
 }
+// --- Horario de terapeuta ---
+const DIAS_SEM=['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+function horarioTxt(h){
+  if(!h||!(h.dias||[]).length) return 'sin horario';
+  const ds=h.dias.slice().sort((a,b)=>a-b).map(d=>DIAS_SEM[d]).join(' ');
+  return `${ds} ${h.apertura||'09:00'}–${h.cierre||'18:00'}`;
+}
+function abrirHorario(m){
+  if(!m) return;
+  $('#hId').value=m.id; $('#hNombre').textContent=m.nombre;
+  const h=m.horario||{dias:[0,1,2,3,4,5],apertura:'09:00',cierre:'18:00'};
+  $('#hApertura').value=h.apertura||'09:00'; $('#hCierre').value=h.cierre||'18:00';
+  $('#hDias').innerHTML=DIAS_SEM.map((d,i)=>`<label style="display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:600;background:var(--bg);border:1px solid var(--linea);border-radius:9px;padding:6px 10px;cursor:pointer"><input type="checkbox" value="${i}" ${(h.dias||[]).includes(i)?'checked':''} style="width:auto"> ${d}</label>`).join('');
+  $('#ovHorario').classList.add('open');
+}
+$('#hGuardar').onclick=async()=>{
+  const dias=[...document.querySelectorAll('#hDias input:checked')].map(c=>Number(c.value));
+  await apk(`equipo/${SLUG}/${$('#hId').value}`,{method:'PATCH',...J,body:JSON.stringify({horario:{dias,apertura:$('#hApertura').value,cierre:$('#hCierre').value}})});
+  $('#ovHorario').classList.remove('open'); cargarEquipo();
+};
+document.getElementById('ovHorario').addEventListener('click',e=>{ if(e.target.id==='ovHorario') e.currentTarget.classList.remove('open'); });
 $('#eGuardar').onclick=async()=>{
   const nombre=$('#eNombre').value.trim(); const pct=(Number($('#ePct').value)||0)/100;
   if(!nombre){ alert('Pon el nombre.'); return; }
