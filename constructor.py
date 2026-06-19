@@ -1465,8 +1465,23 @@ def _panel_ctx(request, tienda, ruta_base):
         key=lambda c: (c.get("fecha", ""), c.get("hora", "")),
     )
     plan = _plan_de_tienda(tienda)
+    # Checklist de primer uso (estado real de configuración de la tienda)
+    pg = tienda.get("pagos", {}) or {}
+    n_catalogo = len(tienda.get("productos", [])) + len(tienda.get("servicios", []))
+    onboarding = [
+        {"icon": "🎨", "label": "Personaliza tu tienda (logo y colores)",
+         "done": bool(tienda.get("logo")), "url": f"{ruta_base}/editar"},
+        {"icon": "📦", "label": "Agrega tus productos o servicios",
+         "done": n_catalogo > 0, "url": f"{ruta_base}/catalogo"},
+        {"icon": "💬", "label": "Pon tu WhatsApp para recibir pedidos",
+         "done": bool(tienda.get("whatsapp")), "url": f"{ruta_base}/editar"},
+        {"icon": "💳", "label": "Activa cobros en línea (SPEI o tarjeta)",
+         "done": bool(pg.get("spei_activo") or pg.get("mp_activo")), "url": f"{ruta_base}/editar"},
+    ]
+    onboarding_pend = sum(1 for x in onboarding if not x["done"])
     return {
         "request": request, "t": tienda, "ruta_base": ruta_base,
+        "onboarding": onboarding, "onboarding_pend": onboarding_pend,
         "etapas": tiendas.ETAPAS_CRM, "k": tienda.get("admin_token", ""),
         "citas_proximas": citas, "tipo": tienda.get("tipo", "productos"),
         "servicios": tienda.get("servicios", []),

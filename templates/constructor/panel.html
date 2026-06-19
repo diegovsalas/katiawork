@@ -201,6 +201,20 @@
   .edr tr.tot td.pos{color:var(--verde)} .edr tr.tot td.neg{color:var(--rojo)}
   @media(max-width:860px){.cajagrid{grid-template-columns:1fr}}
   @media(max-width:760px){.stats{grid-template-columns:1fr 1fr 1fr}.g2{grid-template-columns:1fr}}
+  /* Checklist de primer uso */
+  .onb{background:#fff;border:1px solid var(--linea);border-radius:18px;padding:18px 20px;margin-bottom:18px;
+       box-shadow:0 12px 30px -22px rgba(80,60,200,.4)}
+  .onb-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+  .onb-h b{font-size:15.5px;font-weight:800}
+  .onb-h .cerrar{background:none;border:none;color:var(--tenue);font-size:13px;cursor:pointer}
+  .onb-bar{height:8px;border-radius:6px;background:#eee9f7;overflow:hidden;margin-bottom:14px}
+  .onb-bar i{display:block;height:100%;border-radius:6px;background:linear-gradient(90deg,var(--brand-2),var(--brand))}
+  .onb-item{display:flex;align-items:center;gap:11px;padding:9px 0;border-top:1px solid #f4f1fb;font-size:14px}
+  .onb-item .ck{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:13px;flex-shrink:0}
+  .onb-item.ok .ck{background:#e7f8ef;color:var(--verde)}
+  .onb-item.no .ck{background:var(--lav);color:var(--brand)}
+  .onb-item .tx{flex:1}.onb-item.ok .tx{color:var(--tenue);text-decoration:line-through}
+  .onb-item .go{font-weight:700;color:var(--brand);font-size:13px;white-space:nowrap}
 
   /* ===== Optimización táctil (iPad / tablet en Chrome) ===== */
   button,a,.tab,.rbtn,.gbtn,.lead,.li,.inv,.setp,.del,.x{
@@ -261,6 +275,32 @@
 </div>
 
 <div class="wrap">
+  {% if onboarding_pend > 0 %}
+  <!-- Checklist de primer uso -->
+  <div class="onb" id="onb" data-slug="{{ t.slug }}">
+    {% set total = onboarding|length %}{% set listos = total - onboarding_pend %}
+    <div class="onb-h">
+      <b>🚀 Pon a punto tu tienda — {{ listos }} de {{ total }} listos</b>
+      <button class="cerrar" onclick="cerrarOnb()">Ocultar</button>
+    </div>
+    <div class="onb-bar"><i style="width:{{ (listos / total * 100)|round }}%"></i></div>
+    {% for o in onboarding %}
+    <div class="onb-item {{ 'ok' if o.done else 'no' }}">
+      <span class="ck">{{ '✓' if o.done else o.icon }}</span>
+      <span class="tx">{{ o.label }}</span>
+      {% if not o.done %}<a class="go" href="{{ o.url }}">Hacerlo →</a>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  <script>
+    (function(){ const o=document.getElementById('onb'); if(!o) return;
+      const key='onb_oculto_'+o.dataset.slug;
+      if(localStorage.getItem(key)) o.style.display='none';
+      window.cerrarOnb=function(){ localStorage.setItem(key,'1'); o.style.display='none'; };
+    })();
+  </script>
+  {% endif %}
+
   <!-- Resumen del mes (pipeline ganado + caja) -->
   <div id="resumenMes"></div>
   <!-- Stats -->
