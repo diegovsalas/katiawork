@@ -176,15 +176,22 @@ def actualizar_tienda(slug: str, cambios: dict):
 
 
 def eliminar_tienda(slug: str) -> bool:
-    """Borra la tienda (su JSON y su carpeta de imágenes). Devuelve True si existía."""
+    """Mueve la tienda (JSON + imágenes) a una papelera recuperable, en vez de
+    borrarla definitivamente. Devuelve True si existía."""
     import shutil
     ruta = _ruta(slug)
     if not os.path.exists(ruta):
         return False
-    os.remove(ruta)
+    papelera = os.path.join(DATA_ROOT, "backups", "papelera")
+    os.makedirs(papelera, exist_ok=True)
+    ts = datetime.now().strftime("%Y%m%d-%H%M%S")
+    shutil.move(ruta, os.path.join(papelera, f"{slug}-{ts}.json"))
     carpeta = os.path.join(UPLOADS_DIR, slug)
     if os.path.isdir(carpeta):
-        shutil.rmtree(carpeta, ignore_errors=True)
+        try:
+            shutil.move(carpeta, os.path.join(papelera, f"{slug}-{ts}-img"))
+        except Exception:  # noqa: BLE001
+            shutil.rmtree(carpeta, ignore_errors=True)
     return True
 
 

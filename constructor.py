@@ -10,10 +10,12 @@
 # Correr en local:   uvicorn constructor:app --reload
 # Abrir:             http://localhost:8000
 # -------------------------------------------------------------------
+import asyncio
 import csv
 import io
 import os
 import secrets
+import zipfile
 from datetime import datetime, timedelta, date as _date
 
 from fastapi import FastAPI, Request, UploadFile, File, Form, HTTPException
@@ -192,6 +194,67 @@ app.mount("/u", StaticFiles(directory=UPLOADS_DIR), name="uploads")            #
 templates = Jinja2Templates(directory="templates")
 # ID de Google Analytics (gtag). Configurable por env; disponible en todas las plantillas.
 templates.env.globals["GA_ID"] = os.getenv("GA_MEASUREMENT_ID", "G-B4E71MQFQT")
+
+
+# ------------------- Respaldos (backups) -------------------
+
+BACKUP_DIR = os.path.join(DATA_ROOT, "backups")
+
+
+def _respaldo_zip(incluir_imagenes: bool = False) -> bytes:
+    """Genera en memoria un ZIP con los datos (tiendas, usuarios, demos) y,
+    opcionalmente, las imágenes subidas. Devuelve los bytes del ZIP."""
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
+        td = os.path.join(DATA_ROOT, "tiendas")
+        if os.path.isdir(td):
+            for f in os.listdir(td):
+                if f.endswith(".json"):
+                    z.write(os.path.join(td, f), f"tiendas/{f}")
+        for f in ("usuarios.json", "demos.json"):
+            p = os.path.join(DATA_ROOT, f)
+            if os.path.exists(p):
+                z.write(p, f)
+        if incluir_imagenes and os.path.isdir(UPLOADS_DIR):
+            for raiz, _dirs, archivos in os.walk(UPLOADS_DIR):
+                if "_borradores" in raiz:
+                    continue
+                for a in archivos:
+                    full = os.path.join(raiz, a)
+                    rel = os.path.relpath(full, DATA_ROOT)
+                    z.write(full, rel)
+    return buf.getvalue()
+
+
+def _snapshot_disco(keep: int = 14):
+    """Guarda un ZIP de datos (sin imágenes) en backups/ y conserva los últimos `keep`."""
+    os.makedirs(BACKUP_DIR, exist_ok=True)
+    nombre = f"respaldo-{datetime.now().strftime('%Y%m%d-%H%M')}.zip"
+    with open(os.path.join(BACKUP_DIR, nombre), "wb") as f:
+        f.write(_respaldo_zip(incluir_imagenes=False))
+    snaps = sorted(x for x in os.listdir(BACKUP_DIR) if x.startswith("respaldo-") and x.endswith(".zip"))
+    for viejo in snaps[:-keep]:
+        try:
+            os.remove(os.path.join(BACKUP_DIR, viejo))
+        except OSError:
+            pass
+    return nombre
+
+
+async def _backup_loop():
+    """Respaldo automático: snapshot al arrancar y luego cada 24 h."""
+    while True:
+        try:
+            n = _snapshot_disco()
+            print(f"✓ Respaldo automático creado: {n}")
+        except Exception as e:  # noqa: BLE001
+            print(f"⚠  Respaldo automático falló: {e}")
+        await asyncio.sleep(24 * 60 * 60)
+
+
+@app.on_event("startup")
+async def _arrancar_backups():
+    asyncio.create_task(_backup_loop())
 
 
 # ------------------- Sesión / usuario actual -------------------
@@ -2545,6 +2608,25 @@ def admin_enviar_prueba(request: Request, plan: str = "pro", email: str = "", no
         "enviados": resultados,
         "nota": "" if emails.disponible() else "RESEND_API_KEY no está configurada; no se envió nada.",
     })
+
+
+@app.get("/admin/respaldo")
+def admin_respaldo(request: Request):
+    """Descarga un respaldo completo (datos + imágenes) como ZIP (super-admin)."""
+    _guard_admin(request)
+    data = _respaldo_zip(incluir_imagenes=True)
+    fecha = datetime.now().strftime("%Y%m%d-%H%M")
+    return Response(content=data, media_type="application/zip",
+                    headers={"Content-Disposition": f'attachment; filename="katia-respaldo-{fecha}.zip"'})
+
+
+@app.get("/cron/backup")
+def cron_backup(token: str = ""):
+    """Crea un snapshot de datos en disco. Para cron externo (cron-job.org)."""
+    if not CRON_TOKEN or token != CRON_TOKEN:
+        raise HTTPException(status_code=403, detail="Token inválido.")
+    nombre = _snapshot_disco()
+    return JSONResponse({"ok": True, "respaldo": nombre})
 
 
 # ------------------- A) Checkout online (storefront) -------------------
