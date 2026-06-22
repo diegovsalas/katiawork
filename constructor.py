@@ -2521,7 +2521,7 @@ _COLS_REPORTE = ["Día", "Fecha", "Nombre Cliente", "Servicio", "Pago Recibido",
                  "Comision", "Forma Pago", "Empleada", "Categoria", "Prop TC", "Conteo", "Prox cita"]
 
 
-def _fila_reporte(m: dict):
+def _fila_reporte(m: dict, pct_por_agente: dict = None):
     try:
         d = datetime.strptime(m.get("fecha", ""), "%Y-%m-%d").date()
         dia = _DIAS_SEM[d.weekday()]
@@ -2529,9 +2529,12 @@ def _fila_reporte(m: dict):
     except ValueError:
         dia, fecha = "", m.get("fecha", "")
     n = lambda v: (int(v) if float(v) == int(v) else float(v)) if v else ""   # "" si 0/None
+    # Comisión real de esa empleada sobre lo cobrado (no el monto bruto).
+    pct = (pct_por_agente or {}).get(m.get("agente_id") or "—", 0.0)
+    comision = round(float(m.get("pago_recibido") or 0) * pct, 2)
     return [
         dia, fecha, m.get("cliente_nombre", ""), m.get("servicio_nombre", ""),
-        n(m.get("pago_recibido")), n(m.get("no_recibido")), n(m.get("monto")),
+        n(m.get("pago_recibido")), n(m.get("no_recibido")), n(comision),
         m.get("metodo_pago", ""), m.get("agente_nombre", "na") or "na",
         m.get("categoria", ""), n(m.get("propina")), m.get("conteo", 1) or 1,
         m.get("prox_cita", ""),
@@ -2544,7 +2547,8 @@ def api_reporte_export(slug: str, ext: str, k: str = "", desde: str = "", hasta:
     tienda = _tienda_admin(slug, k)
     movs = [m for m in tienda.get("movimientos", []) if _en_rango(m.get("fecha", ""), desde, hasta)]
     movs.sort(key=lambda m: (m.get("fecha", ""), m.get("creado", "")))
-    rows = [_fila_reporte(m) for m in movs]
+    pct_por_agente = {x["id"]: float(x.get("pct_comision") or 0) for x in tienda.get("equipo", [])}
+    rows = [_fila_reporte(m, pct_por_agente) for m in movs]
     nombre = f"reporte-{slug}-{desde or 'todo'}"
 
     if ext == "xlsx":
