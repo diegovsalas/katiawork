@@ -2059,9 +2059,14 @@ async def api_misleads_editar(request: Request, slug: str, lead_id: str):
 
 # ---- Movimientos (caja / ingresos) ----
 @app.get("/api/movimientos/{slug}")
-def api_mov_listar(slug: str, k: str = "", desde: str = "", hasta: str = ""):
+def api_mov_listar(slug: str, k: str = "", desde: str = "", hasta: str = "", estado: str = ""):
     t = _tienda_admin(slug, k)
-    movs = [m for m in t.get("movimientos", []) if _en_rango(m.get("fecha", ""), desde, hasta)]
+    movs = t.get("movimientos", [])
+    if estado:   # ej. estado=por_cobrar → todos los pendientes, sin filtrar por fecha
+        movs = [m for m in movs if m.get("estado_pago") == estado]
+        movs.sort(key=lambda m: m.get("fecha", ""), reverse=True)
+    else:
+        movs = [m for m in movs if _en_rango(m.get("fecha", ""), desde, hasta)]
     return JSONResponse({"movimientos": movs, "metodos": tiendas.METODOS_PAGO})
 
 
@@ -2168,6 +2173,27 @@ async def api_pos(slug: str, request: Request, k: str = ""):
         msg = f"🧾 Ticket de {t.get('nombre')}\n{lineas}\nTotal: ${total:,.2f} {t.get('moneda','MXN')}\n¡Gracias por tu compra!"
         wa_url = f"https://wa.me/{tel}?text={quote(msg)}"
     return JSONResponse({"ok": True, "movimiento": mov, "total": total, "ticket_wa": wa_url})
+
+
+@app.patch("/api/movimientos/{slug}/{mov_id}")
+def api_mov_pagar(slug: str, mov_id: str, k: str = ""):
+    """Marca un movimiento 'por cobrar' como 'pagado' (concilia el pago):
+    actualiza pago_recibido al total y descuenta el inventario de sus items."""
+    t = _tienda_admin(slug, k)
+    mov = next((m for m in t.get("movimientos", []) if m.get("id") == mov_id), None)
+    if not mov:
+        raise HTTPException(status_code=404, detail="Movimiento no encontrado")
+    if mov.get("estado_pago") == "pagado":
+        return JSONResponse({"ok": True, "ya_pagado": True})
+    monto = float(mov.get("monto") or 0)
+    tiendas.actualizar_item(slug, "movimientos", mov_id,
+                            {"estado_pago": "pagado", "pago_recibido": monto, "no_recibido": 0})
+    # El stock no se descontó al crear el pedido por cobrar: hazlo ahora.
+    stock_items = [{"id": i["id"], "cantidad": int(i.get("cantidad") or 1)}
+                   for i in (mov.get("items") or []) if i.get("id")]
+    if stock_items:
+        tiendas.descontar_stock(slug, stock_items)
+    return JSONResponse({"ok": True})
 
 
 @app.delete("/api/movimientos/{slug}/{mov_id}")

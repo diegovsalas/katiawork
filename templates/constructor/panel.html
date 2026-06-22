@@ -423,6 +423,13 @@
       </div>
     </div>
 
+    <!-- Pendientes de cobro (pedidos online / por cobrar) -->
+    <div class="pcard" id="porCobrarCard" style="margin-top:16px;display:none">
+      <div class="pc-row"><h3 class="pc-t">⏳ Pendientes de cobro</h3><b id="porCobrarTotal" class="pc-total">$0</b></div>
+      <p style="font-size:12.5px;color:var(--tenue);margin:2px 0 10px">Pedidos en línea y ventas por cobrar. Marca "pagado" cuando recibas el dinero.</p>
+      <div id="porCobrarLista" class="lista"></div>
+    </div>
+
     <!-- Paquetes / bonos -->
     <div class="pcard" style="margin-top:16px">
       <h3 class="pc-t">📦 Paquetes / bonos por sesiones</h3>
@@ -1088,7 +1095,25 @@ async function cargarCaja(){
       <button class="x2" data-id="${m.id}" title="Eliminar">×</button></div>`).join('')
     : '<div class="vacia2">Aún no hay ingresos hoy. Registra el primero ←</div>';
   lista.querySelectorAll('.x2').forEach(b=>b.onclick=async()=>{ if(confirm('¿Eliminar este ingreso?')){ await apk(`movimientos/${SLUG}/${b.dataset.id}`,{method:'DELETE'}); cargarCaja(); }});
+  cargarPorCobrar();
   cargarPaquetes();
+}
+async function cargarPorCobrar(){
+  const d=await apk(`movimientos/${SLUG}?estado=por_cobrar`);
+  const pend=d.movimientos||[];
+  const card=$('#porCobrarCard');
+  if(!pend.length){ card.style.display='none'; return; }
+  card.style.display='';
+  $('#porCobrarTotal').textContent=fmt(pend.reduce((s,m)=>s+Number(m.monto||0),0));
+  $('#porCobrarLista').innerHTML=pend.map(m=>`<div class="li">
+      <div class="a"><b>${m.servicio_nombre}</b><span>${m.fecha} · ${m.cliente_nombre||''}${m.cliente_telefono?(' · '+m.cliente_telefono):''} · ${m.metodo_pago}</span></div>
+      <div class="m">${fmt(m.monto)}</div>
+      <button class="inv" data-pagar="${m.id}">✓ Pagado</button></div>`).join('');
+  $('#porCobrarLista').querySelectorAll('[data-pagar]').forEach(b=>b.onclick=async()=>{
+    b.disabled=true; b.textContent='…';
+    await apk(`movimientos/${SLUG}/${b.dataset.pagar}`,{method:'PATCH'});
+    cargarCaja();
+  });
 }
 // ----- Paquetes -----
 $('#pkVender').onclick=async()=>{
