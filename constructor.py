@@ -2445,21 +2445,22 @@ def api_reportes(slug: str, k: str = "", desde: str = "", hasta: str = ""):
         por_servicio[sn] = por_servicio.get(sn, 0) + float(m.get("monto") or 0)
 
     # Comisiones por miembro del equipo
+    # Comisiones sobre lo COBRADO (no sobre ventas por cobrar), consistente con la utilidad.
     comisiones, comision_total = [], 0.0
     pct_por_agente = {x["id"]: float(x.get("pct_comision") or 0) for x in t.get("equipo", [])}
     base_por_agente = {}
     for m in movs:
         aid = m.get("agente_id") or "—"
-        base_por_agente.setdefault(aid, {"nombre": m.get("agente_nombre", "Sin asignar"), "ventas": 0.0, "n": 0})
-        base_por_agente[aid]["ventas"] += float(m.get("monto") or 0)
+        base_por_agente.setdefault(aid, {"nombre": m.get("agente_nombre", "Sin asignar"), "cobrado": 0.0, "n": 0})
+        base_por_agente[aid]["cobrado"] += float(m.get("pago_recibido") or 0)
         base_por_agente[aid]["n"] += 1
     for aid, d in base_por_agente.items():
         pct = pct_por_agente.get(aid, 0.0)
-        com = round(d["ventas"] * pct, 2)
+        com = round(d["cobrado"] * pct, 2)
         comision_total += com
-        comisiones.append({"agente": d["nombre"], "ventas": d["ventas"], "pct": pct,
+        comisiones.append({"agente": d["nombre"], "cobrado": d["cobrado"], "pct": pct,
                            "comision": com, "servicios": d["n"]})
-    comisiones.sort(key=lambda x: x["ventas"], reverse=True)
+    comisiones.sort(key=lambda x: x["cobrado"], reverse=True)
 
     # Gastos por cuenta
     por_cuenta = {c["codigo"]: 0.0 for c in tiendas.CUENTAS_CONTABLES}

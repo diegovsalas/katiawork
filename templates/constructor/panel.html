@@ -1242,7 +1242,7 @@ async function cargarReportes(){
   $('#edr').innerHTML=edr;
   // Comisiones
   $('#repComisiones').innerHTML=C.detalle.length? C.detalle.map(c=>`<div class="li">
-      <div class="a"><b>${c.agente}</b><span>${c.servicios} servicio(s) · ${Math.round(c.pct*100)}% · ventas ${fmt(c.ventas)}</span></div>
+      <div class="a"><b>${c.agente}</b><span>${c.servicios} servicio(s) · ${Math.round(c.pct*100)}% sobre cobrado ${fmt(c.cobrado)}</span></div>
       <div class="m">${fmt(c.comision)}</div></div>`).join('') : '<div class="vacia2">Sin movimientos en el periodo.</div>';
   // Por servicio
   const ps=Object.entries(I.por_servicio).sort((a,b)=>b[1]-a[1]);
