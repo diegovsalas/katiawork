@@ -108,7 +108,16 @@
       </div>
     </div>
 
+    {% if terapeutas %}
+    <div class="step-t"><span class="num">1</span> ¿Con quién?</div>
+    <select id="agente" style="width:100%;padding:12px 14px;border:1.5px solid var(--linea);border-radius:12px;font-size:16px;background:#fff;font-family:inherit">
+      <option value="">La que esté disponible</option>
+      {% for m in terapeutas %}<option value="{{ m.id }}">{{ m.nombre }}</option>{% endfor %}
+    </select>
+    <div class="step-t" style="margin-top:22px"><span class="num">2</span> Elige el día</div>
+    {% else %}
     <div class="step-t"><span class="num">1</span> Elige el día</div>
+    {% endif %}
     <div class="dias" id="dias"></div>
 
     <div id="slotsWrap" class="hidden">
@@ -149,6 +158,11 @@ const MON=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','di
 const $=s=>document.querySelector(s);
 let sel={fecha:null,hora:null};
 
+// Al cambiar de terapeuta, recarga los horarios del día elegido
+if($('#agente')) $('#agente').onchange=()=>{
+  const on=document.querySelector('.dia.on');
+  if(on && sel.fecha){ elegirDia(on, sel.fecha); }
+};
 // Construye los próximos 14 días
 function pintarDias(){
   const cont=$('#dias'); cont.innerHTML='';
@@ -172,7 +186,8 @@ async function elegirDia(el,fecha){
   const slots=$('#slots'), msg=$('#slotsMsg');
   slots.innerHTML='<div class="msg">Buscando horarios…</div>'; msg.classList.add('hidden');
   try{
-    const r=await fetch(`/api/disponibilidad/${SLUG}?servicio=${SERV_ID}&fecha=${fecha}`);
+    const ag=$('#agente')?$('#agente').value:'';
+    const r=await fetch(`/api/disponibilidad/${SLUG}?servicio=${SERV_ID}&fecha=${fecha}&agente=${encodeURIComponent(ag)}`);
     const d=await r.json();
     slots.innerHTML='';
     if(d.cerrado){ msg.textContent='Cerrado este día. Elige otro.'; msg.classList.remove('hidden'); return; }
@@ -198,8 +213,9 @@ $('#confirmar').onclick=async(e)=>{
   if(!sel.fecha||!sel.hora){ alert('Elige día y hora.'); return; }
   btn.disabled=true; btn.innerHTML='<span class="spin"></span> Confirmando…';
   try{
+    const ag=$('#agente')?$('#agente').value:'';
     const r=await fetch(`/api/reservar/${SLUG}`,{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({servicio:SERV_ID,fecha:sel.fecha,hora:sel.hora,nombre,telefono:tel})});
+      body:JSON.stringify({servicio:SERV_ID,fecha:sel.fecha,hora:sel.hora,nombre,telefono:tel,agente_id:ag})});
     const d=await r.json();
     if(!r.ok||!d.ok){ alert(d.detail||'No se pudo reservar.'); btn.disabled=false; btn.textContent='Confirmar reserva'; return; }
     const f=new Date(sel.fecha+'T00:00:00');

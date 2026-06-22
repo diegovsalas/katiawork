@@ -1048,31 +1048,39 @@ def _es_hora(s) -> bool:
         return False
 
 
-def _slots_disponibles(tienda: dict, servicio: dict, fecha: str):
-    """Devuelve los horarios libres (lista de 'HH:MM') para un servicio en una
-    fecha YYYY-MM-DD, según el horario del negocio y las citas ya reservadas.
+def _terapeutas_agendables(tienda: dict) -> list:
+    """Terapeutas activas con horario configurado (días). Si no hay, la reserva
+    es a nivel tienda (sin elegir terapeuta)."""
+    return [m for m in tienda.get("equipo", [])
+            if m.get("activo") is not False and (m.get("horario") or {}).get("dias")]
+
+
+def _slots_de(tienda: dict, servicio: dict, fecha: str, agente: dict = None):
+    """Slots libres para un agente concreto (su horario y sus citas) o, si
+    agente es None, a nivel tienda (horario del negocio y todas las citas).
     Devuelve (slots, cerrado)."""
     try:
         dia = datetime.strptime(fecha, "%Y-%m-%d").date()
     except ValueError:
         return [], True
-
     hoy = datetime.now().date()
     ahora = datetime.now()
     if dia < hoy:
         return [], True
 
-    horarios = tienda.get("horarios") or tiendas.HORARIO_DEFAULT
-    if dia.weekday() not in horarios.get("dias", []):
-        return [], True   # cerrado ese día de la semana
+    horario = (agente.get("horario") if agente else None) or tienda.get("horarios") or tiendas.HORARIO_DEFAULT
+    if dia.weekday() not in horario.get("dias", []):
+        return [], True
 
-    apertura = datetime.strptime(horarios.get("apertura", "09:00"), "%H:%M").time()
-    cierre = datetime.strptime(horarios.get("cierre", "18:00"), "%H:%M").time()
+    apertura = datetime.strptime(horario.get("apertura", "09:00"), "%H:%M").time()
+    cierre = datetime.strptime(horario.get("cierre", "18:00"), "%H:%M").time()
     dur = int(servicio.get("duracion", 30))
 
-    # Intervalos ya ocupados ese día (cualquier servicio): [(inicio, fin)]
+    # Ocupados: si hay agente, solo SUS citas; si no, todas las de la tienda.
     ocupados = []
     for c in tiendas.citas_de_fecha(tienda, fecha):
+        if agente and c.get("agente_id") != agente["id"]:
+            continue
         try:
             ini = datetime.combine(dia, datetime.strptime(c["hora"], "%H:%M").time())
             ocupados.append((ini, ini + timedelta(minutes=int(c.get("duracion", 30)))))
@@ -1086,12 +1094,43 @@ def _slots_disponibles(tienda: dict, servicio: dict, fecha: str):
         s_ini, s_fin = t, t + timedelta(minutes=dur)
         if dia == hoy and s_ini <= ahora + timedelta(minutes=30):
             t += timedelta(minutes=dur)
-            continue   # no agendar en el pasado ni con < 30 min de anticipación
-        choca = any(s_ini < o_fin and o_ini < s_fin for o_ini, o_fin in ocupados)
-        if not choca:
+            continue
+        if not any(s_ini < o_fin and o_ini < s_fin for o_ini, o_fin in ocupados):
             slots.append(s_ini.strftime("%H:%M"))
         t += timedelta(minutes=dur)
     return slots, False
+
+
+def _slots_disponibles(tienda: dict, servicio: dict, fecha: str, agente_id: str = ""):
+    """Slots libres considerando terapeutas:
+    - sin terapeutas configuradas → nivel tienda (comportamiento clásico);
+    - con agente_id → disponibilidad de esa terapeuta;
+    - sin agente_id (cualquiera) → unión de todas las terapeutas agendables."""
+    bk = _terapeutas_agendables(tienda)
+    if not bk:
+        return _slots_de(tienda, servicio, fecha, None)
+    if agente_id:
+        ag = next((m for m in bk if m["id"] == agente_id), None)
+        if not ag:
+            return [], True
+        return _slots_de(tienda, servicio, fecha, ag)
+    # "Cualquiera": un horario está libre si alguna terapeuta lo tiene libre
+    union, alguna_abierta = set(), False
+    for m in bk:
+        s, cerrado = _slots_de(tienda, servicio, fecha, m)
+        if not cerrado:
+            alguna_abierta = True
+        union.update(s)
+    return sorted(union), (not alguna_abierta)
+
+
+def _agente_libre(tienda: dict, servicio: dict, fecha: str, hora: str):
+    """Primera terapeuta agendable libre a esa hora (para 'cualquiera')."""
+    for m in _terapeutas_agendables(tienda):
+        slots, _ = _slots_de(tienda, servicio, fecha, m)
+        if hora in slots:
+            return m
+    return None
 
 
 # ------------------- Storefront por ruta local /t/<slug> -------------------
@@ -1168,9 +1207,11 @@ def _render_reservar(request: Request, tienda: dict, servicio_id: str, ruta_base
     s = tiendas.buscar_servicio(tienda, servicio_id)
     if not s:
         return RedirectResponse(url=(ruta_base or "/"), status_code=303)
+    terapeutas = [{"id": m["id"], "nombre": m["nombre"]} for m in _terapeutas_agendables(tienda)]
     return templates.TemplateResponse(request, "constructor/reservar.html", {
         "t": tienda, "s": s, "ruta_base": ruta_base,
         "base_url": str(request.base_url).rstrip("/"),
+        "terapeutas": terapeutas,
     })
 
 
@@ -1194,15 +1235,15 @@ def reservar_local(request: Request, slug: str, servicio_id: str):
 
 
 @app.get("/api/disponibilidad/{slug}")
-def api_disponibilidad(slug: str, servicio: str, fecha: str):
-    """Devuelve los horarios libres de un servicio en una fecha YYYY-MM-DD."""
+def api_disponibilidad(slug: str, servicio: str, fecha: str, agente: str = ""):
+    """Horarios libres de un servicio en una fecha (opcionalmente por terapeuta)."""
     tienda = tiendas.obtener_tienda(slug)
     if not tienda:
         raise HTTPException(status_code=404, detail="Tienda no encontrada")
     s = tiendas.buscar_servicio(tienda, servicio)
     if not s:
         raise HTTPException(status_code=404, detail="Servicio no encontrado")
-    slots, cerrado = _slots_disponibles(tienda, s, fecha)
+    slots, cerrado = _slots_disponibles(tienda, s, fecha, agente)
     return JSONResponse({"slots": slots, "cerrado": cerrado})
 
 
@@ -1222,12 +1263,21 @@ async def api_reservar(slug: str, request: Request):
     hora = body.get("hora", "")
     nombre = (body.get("nombre") or "").strip()
     telefono = (body.get("telefono") or "").strip()
+    agente_id = (body.get("agente_id") or "").strip()
     if not (nombre and telefono and fecha and hora):
         raise HTTPException(status_code=400, detail="Faltan datos de la reserva.")
 
     # Revalida que el horario siga libre (evita doble reserva).
-    slots, cerrado = _slots_disponibles(tienda, s, fecha)
+    slots, cerrado = _slots_disponibles(tienda, s, fecha, agente_id)
     if cerrado or hora not in slots:
+        raise HTTPException(status_code=409, detail="Ese horario ya no está disponible. Elige otro.")
+
+    # Resuelve la terapeuta: la elegida, o (si hay equipo y eligió "cualquiera")
+    # la primera libre a esa hora.
+    agente = _miembro(tienda, agente_id) if agente_id else None
+    if not agente and _terapeutas_agendables(tienda):
+        agente = _agente_libre(tienda, s, fecha, hora)
+    if _terapeutas_agendables(tienda) and not agente:
         raise HTTPException(status_code=409, detail="Ese horario ya no está disponible. Elige otro.")
 
     cita = {
@@ -1239,6 +1289,8 @@ async def api_reservar(slug: str, request: Request):
         "hora": hora,
         "cliente_nombre": nombre,
         "cliente_telefono": telefono,
+        "agente_id": agente["id"] if agente else "",
+        "agente_nombre": agente["nombre"] if agente else "",
         "estado": "agendada",
         "creada": datetime.now().isoformat(),
     }
