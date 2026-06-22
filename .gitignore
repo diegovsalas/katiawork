@@ -38,3 +38,6 @@ _tmp*
 # Son datos de runtime, no se versionan.
 data/
 static/tiendas/
+
+# Documentos sensibles (contratos, inversión) — no subir al repo
+docs/
