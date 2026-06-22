@@ -2470,11 +2470,19 @@ def api_reportes(slug: str, k: str = "", desde: str = "", hasta: str = ""):
 
     utilidad = round(cobrado - comision_total - gastos_total, 2)
 
+    # Cobrado por día (para la gráfica de tendencia)
+    por_dia = {}
+    for m in movs:
+        if m.get("estado_pago") == "pagado":
+            f = m.get("fecha", "")
+            por_dia[f] = por_dia.get(f, 0) + float(m.get("pago_recibido") or 0)
+    por_dia = [{"fecha": f, "total": round(v, 2)} for f, v in sorted(por_dia.items())]
+
     return JSONResponse({
         "rango": {"desde": desde, "hasta": hasta},
         "ingresos": {"ventas": ventas, "cobrado": cobrado, "por_cobrar": por_cobrar,
                      "por_metodo": por_metodo, "por_servicio": por_servicio,
-                     "num_movimientos": len(movs)},
+                     "por_dia": por_dia, "num_movimientos": len(movs)},
         "comisiones": {"detalle": comisiones, "total": round(comision_total, 2)},
         "gastos": {"por_cuenta": por_cuenta, "total": gastos_total,
                    "cuentas": tiendas.CUENTAS_CONTABLES},

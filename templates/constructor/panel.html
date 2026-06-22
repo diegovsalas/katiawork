@@ -199,6 +199,15 @@
   .edr tr.sub td{color:var(--tenue);font-size:13px;padding-left:12px;font-weight:500}
   .edr tr.tot td{border-top:2px solid var(--ink);border-bottom:none;font-size:17px;font-weight:900;padding-top:12px}
   .edr tr.tot td.pos{color:var(--verde)} .edr tr.tot td.neg{color:var(--rojo)}
+  /* Gráfica de ventas por día */
+  .chart{display:flex;align-items:flex-end;gap:6px;height:160px;overflow-x:auto;padding-top:18px}
+  .chart .bar{flex:1;min-width:18px;display:flex;flex-direction:column;align-items:center;gap:5px;height:100%;justify-content:flex-end}
+  .chart .bar .col{width:70%;max-width:34px;border-radius:6px 6px 0 0;background:linear-gradient(180deg,var(--brand-2),var(--brand));
+        min-height:2px;position:relative;transition:.2s}
+  .chart .bar .col:hover{filter:brightness(1.08)}
+  .chart .bar .col .val{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:700;color:var(--ink);white-space:nowrap;opacity:0;transition:.15s}
+  .chart .bar .col:hover .val{opacity:1}
+  .chart .bar .lbl{font-size:10.5px;color:var(--tenue);font-weight:600}
   @media(max-width:860px){.cajagrid{grid-template-columns:1fr}}
   @media(max-width:760px){.stats{grid-template-columns:1fr 1fr 1fr}.g2{grid-template-columns:1fr}}
   /* Checklist de primer uso */
@@ -462,6 +471,10 @@
       <a class="rbtn" id="dlXls" download>⬇ Excel</a>
     </div>
     <div class="stats" id="rStats" style="grid-template-columns:repeat(4,1fr)"></div>
+    <div class="pcard" id="chartCard" style="margin-bottom:16px;display:none">
+      <h3 class="pc-t" style="margin-bottom:14px">Ventas por día (cobrado)</h3>
+      <div id="chart" class="chart"></div>
+    </div>
     <div class="cajagrid">
       <div class="pcard">
         <h3 class="pc-t">Estado de resultados</h3>
@@ -1248,6 +1261,17 @@ async function cargarReportes(){
   $('#repComisiones').innerHTML=C.detalle.length? C.detalle.map(c=>`<div class="li">
       <div class="a"><b>${c.agente}</b><span>${c.servicios} servicio(s) · ${Math.round(c.pct*100)}% sobre cobrado ${fmt(c.cobrado)}</span></div>
       <div class="m">${fmt(c.comision)}</div></div>`).join('') : '<div class="vacia2">Sin movimientos en el periodo.</div>';
+  // Gráfica de ventas por día
+  const dias=I.por_dia||[]; const card=$('#chartCard');
+  if(dias.length){
+    card.style.display='';
+    const max=Math.max(...dias.map(x=>x.total),1);
+    $('#chart').innerHTML=dias.map(x=>{
+      const dd=new Date(x.fecha+'T00:00:00');
+      const h=Math.round(x.total/max*120);
+      return `<div class="bar"><div class="col" style="height:${h}px"><span class="val">${fmt(x.total)}</span></div><span class="lbl">${dd.getDate()}/${dd.getMonth()+1}</span></div>`;
+    }).join('');
+  } else { card.style.display='none'; }
   // Por servicio
   const ps=Object.entries(I.por_servicio).sort((a,b)=>b[1]-a[1]);
   $('#repServicios').innerHTML=ps.length? ps.map(([n,v])=>`<div class="li"><div class="a"><b>${n}</b></div><div class="m">${fmt(v)}</div></div>`).join('') : '<div class="vacia2">Sin ventas en el periodo.</div>';
