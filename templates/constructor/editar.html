@@ -78,7 +78,14 @@
       <div><label>Ciudad</label><input id="f-ciudad" value="{{ t.ciudad }}"></div>
       <div><label>WhatsApp</label><input id="f-whatsapp" value="{{ t.whatsapp }}"></div>
     </div>
-    <label>Correo</label><input id="f-correo" value="{{ t.correo }}">
+    <div class="row">
+      <div><label>Moneda</label>
+        <select id="f-moneda">
+          {% for cod, nom in monedas %}<option value="{{ cod }}" {{ 'selected' if cod == moneda else '' }}>{{ cod }} · {{ nom }}</option>{% endfor %}
+        </select>
+      </div>
+      <div><label>Correo</label><input id="f-correo" value="{{ t.correo }}"></div>
+    </div>
     <label>Sobre nosotros</label><textarea id="f-sobre">{{ t.sobre_nosotros }}</textarea>
   </div>
 
@@ -219,6 +226,7 @@ const qh=$('#quitarHero'); if(qh) qh.onclick=e=>{ e.preventDefault(); est.hero='
 $('#guardar').onclick=async()=>{
   const b={nombre:$('#f-nombre').value,eslogan:$('#f-eslogan').value,giro:$('#f-giro').value,
     ciudad:$('#f-ciudad').value,whatsapp:$('#f-whatsapp').value,correo:$('#f-correo').value,sobre_nosotros:$('#f-sobre').value,
+    moneda:$('#f-moneda').value,
     tema:est.tema,color:est.color};
   if(COLORES_FULL) b.color_2=est.color_2;
   if(REDES_FULL){ b.redes={}; ['instagram','facebook','tiktok','youtube','x','sitio','maps','google_review'].forEach(n=>{ const el=$('#r-'+n); if(el) b.redes[n]=el.value; });

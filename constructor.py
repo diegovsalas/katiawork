@@ -66,6 +66,17 @@ CAPS = {
                "logins_equipo", "multi_sucursal", "gastos_avanzado"},
 }
 PLAN_LABEL = {"gratis": "Gratis", "tienda": "Tienda", "pro": "Ventas Pro", "escala": "Escala"}
+
+# Monedas soportadas (LATAM + USD/EUR). El código se muestra junto al precio.
+MONEDAS = [
+    ("MXN", "Peso mexicano"), ("USD", "Dólar estadounidense"), ("COP", "Peso colombiano"),
+    ("ARS", "Peso argentino"), ("CLP", "Peso chileno"), ("PEN", "Sol peruano"),
+    ("GTQ", "Quetzal guatemalteco"), ("UYU", "Peso uruguayo"), ("BOB", "Boliviano"),
+    ("CRC", "Colón costarricense"), ("DOP", "Peso dominicano"), ("PYG", "Guaraní paraguayo"),
+    ("HNL", "Lempira hondureño"), ("NIO", "Córdoba nicaragüense"), ("VES", "Bolívar venezolano"),
+    ("EUR", "Euro"),
+]
+MONEDAS_CODIGOS = {c for c, _ in MONEDAS}
 # Plan mínimo que incluye cada capacidad (para mensajes de upsell).
 PLAN_MINIMO = {"dominio_propio": "tienda", "sin_marca": "tienda", "panel": "pro",
                "crm": "pro", "caja": "pro", "reportes": "pro", "recordatorios": "pro",
@@ -1671,6 +1682,7 @@ def _ctx_editar(request: Request, tienda: dict, ruta_base: str):
         "temas": TEMAS, "paleta": PALETA_GRATIS,
         "colores_full": _rank(plan) >= _rank("tienda"),
         "redes_full": permite(plan, "redes_sociales"),
+        "monedas": MONEDAS, "moneda": tienda.get("moneda", "MXN"),
     }
 
 
@@ -1710,6 +1722,9 @@ async def api_editar_tienda(request: Request, slug: str, k: str = ""):
             cambios[campo] = (b[campo] or "").strip()
     if cambios.get("nombre") == "":
         raise HTTPException(status_code=400, detail="El nombre no puede quedar vacío.")
+    if "moneda" in b:
+        mon = (b.get("moneda") or "MXN").strip().upper()
+        cambios["moneda"] = mon if mon in MONEDAS_CODIGOS else "MXN"
     # Plantilla (gating)
     if "tema" in b:
         cambios["tema"] = b["tema"] if (b["tema"] in TEMAS and tema_permitido(plan, b["tema"])) else tienda.get("tema", "aurora")
