@@ -77,6 +77,26 @@ MONEDAS = [
     ("EUR", "Euro"),
 ]
 MONEDAS_CODIGOS = {c for c, _ in MONEDAS}
+
+# Formato por moneda: (decimales, separador_miles, separador_decimal, símbolo)
+_MON_FMT = {
+    "MXN": (2, ",", ".", "$"),  "USD": (2, ",", ".", "$"),  "PEN": (2, ",", ".", "S/ "),
+    "DOP": (2, ",", ".", "RD$"), "GTQ": (2, ",", ".", "Q"),  "HNL": (2, ",", ".", "L "),
+    "NIO": (2, ",", ".", "C$"),
+    "ARS": (2, ".", ",", "$"),   "CLP": (0, ".", ",", "$"),  "COP": (0, ".", ",", "$"),
+    "UYU": (2, ".", ",", "$"),   "BOB": (2, ".", ",", "Bs "), "PYG": (0, ".", ",", "₲"),
+    "CRC": (2, ".", ",", "₡"),   "VES": (2, ".", ",", "Bs "), "EUR": (2, ".", ",", "€"),
+}
+
+
+def formato_precio(valor, moneda="MXN"):
+    """Formatea un precio según la convención del país (ej. ARS: $1.234,56; MXN: $1,234.56)."""
+    if valor is None or valor == "":
+        return ""
+    dec, sep_mil, sep_dec, sim = _MON_FMT.get((moneda or "MXN").upper(), _MON_FMT["MXN"])
+    s = f"{float(valor):,.{dec}f}"               # base estilo EE.UU.: 1,234.56
+    s = s.replace(",", "\x00").replace(".", sep_dec).replace("\x00", sep_mil)
+    return f"{sim}{s}"
 # Plan mínimo que incluye cada capacidad (para mensajes de upsell).
 PLAN_MINIMO = {"dominio_propio": "tienda", "sin_marca": "tienda", "panel": "pro",
                "crm": "pro", "caja": "pro", "reportes": "pro", "recordatorios": "pro",
@@ -206,6 +226,8 @@ app.mount("/u", StaticFiles(directory=UPLOADS_DIR), name="uploads")            #
 templates = Jinja2Templates(directory="templates")
 # ID de Google Analytics (gtag). Configurable por env; disponible en todas las plantillas.
 templates.env.globals["GA_ID"] = os.getenv("GA_MEASUREMENT_ID", "G-B4E71MQFQT")
+templates.env.filters["precio"] = formato_precio          # uso: {{ p.precio | precio(t.moneda) }}
+templates.env.globals["MON_FMT"] = _MON_FMT               # para formateo en JS
 
 
 # ------------------- Respaldos (backups) -------------------
@@ -727,7 +749,6 @@ async def api_ia_logo(request: Request):
     return JSONResponse({
         "url": f"/u/_borradores/{archivo}",
         "generado_por_ia": gemini_ia.disponible() and ruta.endswith(".png"),
-        "debug": getattr(gemini_ia, "ultimo_error_logo", ""),
     })
 
 

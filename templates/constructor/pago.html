@@ -93,7 +93,7 @@
       </div>
       <div>
         <h1>{{ p.nombre }}</h1>
-        <div class="precio">${{ '{:,.2f}'.format(p.precio) }} <small style="color:var(--tenue);font-weight:600">{{ moneda }}</small></div>
+        <div class="precio">{{ p.precio | precio(moneda) }} <small style="color:var(--tenue);font-weight:600">{{ moneda }}</small></div>
       </div>
     </div>
 
@@ -122,7 +122,7 @@
       {% endif %}
     </div>
 
-    <div class="total"><span>Total a pagar</span><b id="tTotal">${{ '{:,.2f}'.format(p.precio) }}</b></div>
+    <div class="total"><span>Total a pagar</span><b id="tTotal">{{ p.precio | precio(moneda) }}</b></div>
     <div class="err" id="err"></div>
     <button class="btn" id="pagar">Confirmar pedido</button>
     <div class="seguro">🔒 Tus datos van directo al negocio. Katia no cobra comisión.</div>
@@ -144,7 +144,17 @@ const SLUG = {{ t.slug|tojson }};
 const PRECIO = {{ p.precio }};
 const PID = {{ p.id|tojson }};
 const RUTA = {{ (ruta_base or '')|tojson }};
+const MFMT = {{ (MON_FMT.get(moneda, MON_FMT['MXN']))|tojson }};   // [dec, sepMil, sepDec, símbolo]
 const $ = s => document.querySelector(s);
+// Formato de precio según la moneda del negocio
+function fmtM(v){
+  const [dec, sm, sd, sim] = MFMT;
+  let s = Number(v).toFixed(dec);
+  let [ent, frac] = s.split('.');
+  ent = ent.replace(/\B(?=(\d{3})+(?!\d))/g, '\x00');
+  s = ent.replace(/\x00/g, sm) + (frac ? sd + frac : '');
+  return sim + s;
+}
 
 // Selección de método de pago
 let metodo = null;
@@ -164,7 +174,7 @@ if(first){ first.click(); }
 const cantEl = $('#cantidad');
 cantEl.addEventListener('input', ()=>{
   const c = Math.max(1, parseInt(cantEl.value)||1);
-  $('#tTotal').textContent = '$' + (PRECIO*c).toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2});
+  $('#tTotal').textContent = fmtM(PRECIO*c);
 });
 
 function showErr(m){ const e=$('#err'); e.textContent=m; e.style.display='block'; }
@@ -191,7 +201,7 @@ $('#pagar').addEventListener('click', async ()=>{
     if(pg.titular) rows += `<div class="l"><span>Titular</span><b>${pg.titular}</b></div>`;
     if(pg.banco) rows += `<div class="l"><span>Banco</span><b>${pg.banco}</b></div>`;
     if(pg.clabe) rows += `<div class="l"><span>CLABE</span><b class="copia">${pg.clabe}</b></div>`;
-    rows += `<div class="l"><span>Monto</span><b>$${d.total.toLocaleString('es-MX',{minimumFractionDigits:2})}</b></div>`;
+    rows += `<div class="l"><span>Monto</span><b>${fmtM(d.total)}</b></div>`;
     rows += `<div class="l"><span>Referencia</span><b class="copia">${d.referencia}</b></div>`;
     if(pg.instrucciones) rows += `<div class="l" style="display:block"><span>Indicaciones</span><div style="margin-top:6px">${pg.instrucciones}</div></div>`;
     $('#datos').innerHTML = rows;

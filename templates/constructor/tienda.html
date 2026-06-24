@@ -342,7 +342,7 @@
         <h3><a href="{{ ruta_base }}/reservar/{{ s.id }}">{{ s.nombre }}</a></h3>
         <p class="desc">{{ s.descripcion or '' }}</p>
         {% if s.precio is not none %}
-          <div class="price">${{ "{:,.2f}".format(s.precio) }} {{ t.moneda }}</div>
+          <div class="price">{{ s.precio | precio(t.moneda) }} {{ t.moneda }}</div>
         {% else %}
           <div class="cot">Precio a consultar</div>
         {% endif %}
@@ -387,8 +387,8 @@
         <h3><a href="{{ ruta_base }}/producto/{{ p.id }}">{{ p.nombre }}</a></h3>
         <p class="desc">{{ p.descripcion or '' }}</p>
         {% if p.precio is not none %}
-          <div class="price">${{ "{:,.2f}".format(p.precio) }} {{ t.moneda }}
-            {% if p.precio_anterior %}<span class="antes">${{ "{:,.2f}".format(p.precio_anterior) }}</span>{% endif %}
+          <div class="price">{{ p.precio | precio(t.moneda) }} {{ t.moneda }}
+            {% if p.precio_anterior %}<span class="antes">{{ p.precio_anterior | precio(t.moneda) }}</span>{% endif %}
           </div>
         {% else %}
           <div class="cot">Precio bajo cotización</div>

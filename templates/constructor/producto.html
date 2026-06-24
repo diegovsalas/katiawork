@@ -148,8 +148,8 @@
 
       {% if p.precio is not none %}
         <div class="precio">
-          <span class="now">${{ "{:,.2f}".format(p.precio) }} {{ t.moneda }}</span>
-          {% if p.precio_anterior %}<span class="antes">${{ "{:,.2f}".format(p.precio_anterior) }}</span>{% endif %}
+          <span class="now">{{ p.precio | precio(t.moneda) }} {{ t.moneda }}</span>
+          {% if p.precio_anterior %}<span class="antes">{{ p.precio_anterior | precio(t.moneda) }}</span>{% endif %}
         </div>
       {% else %}
         <div class="cot">Precio bajo cotización</div>
@@ -195,7 +195,7 @@
         </div>
         <div class="b">
           <h3>{{ r.nombre }}</h3>
-          {% if r.precio is not none %}<div class="pr">${{ "{:,.2f}".format(r.precio) }} {{ t.moneda }}</div>
+          {% if r.precio is not none %}<div class="pr">{{ r.precio | precio(t.moneda) }} {{ t.moneda }}</div>
           {% else %}<div class="pr" style="color:var(--tenue)">Cotizar</div>{% endif %}
         </div>
       </a>
@@ -225,7 +225,7 @@
         <button type="button" class="xsel" data-n="{{ r.nombre }}" data-p="{{ r.precio }}">
           <span class="xs-chk">+</span>
           <span class="xs-n">{{ r.nombre }}</span>
-          <span class="xs-p">${{ "{:,.2f}".format(r.precio) }}</span>
+          <span class="xs-p">{{ r.precio | precio(t.moneda) }}</span>
         </button>
         {% endfor %}
       </div>

@@ -103,7 +103,7 @@
       <div class="ph">{% if s.imagen %}<img src="{{ s.imagen }}" alt="">{% else %}<div class="m">{{ s.nombre[0]|upper }}</div>{% endif %}</div>
       <div>
         <h1>{{ s.nombre }}</h1>
-        <div class="meta">⏱ {{ s.duracion }} min{% if s.precio is not none %} · <b>${{ "{:,.2f}".format(s.precio) }} {{ t.moneda }}</b>{% endif %}</div>
+        <div class="meta">⏱ {{ s.duracion }} min{% if s.precio is not none %} · <b>{{ s.precio | precio(t.moneda) }} {{ t.moneda }}</b>{% endif %}</div>
         {% if s.descripcion %}<div class="meta">{{ s.descripcion }}</div>{% endif %}
       </div>
     </div>
