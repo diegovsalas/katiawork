@@ -189,11 +189,16 @@ def describir_servicio(nombre: str, giro: str = "") -> str:
 
 # ------------------- 3) Generar logo -------------------
 
+ultimo_error_logo = ""   # diagnóstico del último intento de logo con IA
+
+
 def generar_logo(nombre: str, giro: str, color: str, ruta_destino: str) -> str:
     """Genera un logo. Si hay IA, crea un PNG con Gemini y lo guarda en
     `ruta_destino` (debe terminar en .png). Si no, escribe un monograma SVG
     junto a la ruta y devuelve esa ruta .svg. Devuelve la ruta del archivo
     creado, o '' si todo falló."""
+    global ultimo_error_logo
+    ultimo_error_logo = ""
     if disponible():
         prompt = (
             f"Diseña un logo profesional, minimalista y moderno para un negocio "
@@ -202,20 +207,22 @@ def generar_logo(nombre: str, giro: str, color: str, ruta_destino: str) -> str:
             f"simple representativo y, si cabe, el nombre. Sin texto extra ni marca de agua."
         )
         try:
-            # El modelo de imagen requiere pedir explícitamente salida IMAGE;
-            # sin esto devuelve solo texto y no se genera ninguna imagen.
+            # El modelo de imagen requiere pedir salida IMAGE (algunos modelos
+            # exigen también TEXT en response_modalities).
             resp = _client().models.generate_content(
                 model=MODELO_IMAGEN, contents=prompt,
-                config=genai_types.GenerateContentConfig(response_modalities=["IMAGE"]),
+                config=genai_types.GenerateContentConfig(response_modalities=["TEXT", "IMAGE"]),
             )
             for part in resp.candidates[0].content.parts:
                 if getattr(part, "inline_data", None) and part.inline_data.data:
                     with open(ruta_destino, "wb") as f:
                         f.write(part.inline_data.data)
                     return ruta_destino
-            print("⚠  Gemini (logo): la respuesta no trajo imagen; usando monograma SVG.")
+            ultimo_error_logo = f"respuesta sin imagen (modelo {MODELO_IMAGEN})"
+            print("⚠  Gemini (logo): " + ultimo_error_logo)
         except Exception as e:  # noqa: BLE001
-            print(f"⚠  Gemini (logo) falló, usando monograma SVG: {e}")
+            ultimo_error_logo = f"{type(e).__name__}: {e}"[:400]
+            print(f"⚠  Gemini (logo) falló: {ultimo_error_logo}")
 
     # --- Fallback sin IA: monograma SVG con las iniciales ---
     ruta_svg = re.sub(r"\.png$", ".svg", ruta_destino)

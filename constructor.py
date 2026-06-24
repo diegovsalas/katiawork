@@ -727,6 +727,7 @@ async def api_ia_logo(request: Request):
     return JSONResponse({
         "url": f"/u/_borradores/{archivo}",
         "generado_por_ia": gemini_ia.disponible() and ruta.endswith(".png"),
+        "debug": getattr(gemini_ia, "ultimo_error_logo", ""),
     })
 
 
