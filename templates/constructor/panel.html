@@ -679,7 +679,16 @@ function apk(path,opts={}){
   return fetch(`/api/${path}${sep}k=${encodeURIComponent(K)}`,opts).then(r=>r.json());
 }
 const J={headers:{'Content-Type':'application/json'}};
-const fmt=n=> (n||n===0)? '$'+Number(n).toLocaleString('es-MX',{minimumFractionDigits:0,maximumFractionDigits:2}):'';
+const MFMT={{ (MON_FMT.get(t.moneda, MON_FMT['MXN']))|tojson }};
+function fmt(n){
+  if(!(n||n===0)) return '';
+  const [dec,sm,sd,sim]=MFMT;
+  let s=Number(n).toFixed(dec);
+  if(dec>0) s=s.replace(/\.?0+$/,'');
+  let [ent,frac]=s.split('.');
+  ent=ent.replace(/\B(?=(\d{3})+(?!\d))/g,'\x00');
+  return sim+ent.replace(/\x00/g,sm)+(frac?sd+frac:'');
+}
 const cuentaNombre=c=>(CUENTAS.find(x=>x.codigo===c)||{}).nombre||c;
 
 async function cargar(){
