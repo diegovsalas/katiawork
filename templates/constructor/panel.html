@@ -56,6 +56,16 @@
   .tab.tab-pos:hover{border-color:var(--mint)}
   .tab.tab-pos.on{background:linear-gradient(120deg,#16a34a,#0c8a5f);color:#fff;border-color:transparent;
         box-shadow:0 8px 20px -8px rgba(16,163,74,.55)}
+  .ap-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .ap-op{border:1px solid var(--linea);border-radius:12px;padding:14px;text-align:center}
+  .ap-op span{display:block;font-size:12px;color:var(--tenue)}
+  .ap-op b{display:block;font-size:22px;margin-top:4px;color:var(--ink)}
+  .ap-op small{display:block;color:var(--tenue);font-size:11.5px;margin-top:2px}
+  .ap-rec{border-color:var(--brand);background:var(--lav);box-shadow:0 0 0 3px rgba(109,93,251,.1)}
+  .ap-just{margin:14px 0 0;font-size:14px;color:#3a3650;line-height:1.45}
+  .ap-tips{margin:10px 0 0;padding-left:18px;font-size:13px;color:#555}
+  .ap-tips li{margin:4px 0}
+  .ap-src{margin-top:12px;font-size:11.5px;color:var(--tenue)}
   .tab[data-lock]{color:var(--tenue)}
   .tab[data-lock].on{background:var(--ink);border-color:var(--ink);color:#fff}
   /* Upsell de función bloqueada */
@@ -324,6 +334,7 @@
     <div class="tab tab-pos" data-v="pos"{% if not puede_pos %} data-lock="Ventas Pro" data-feat="Punto de venta (POS)"{% endif %}>🛒 Vender{% if not puede_pos %} 🔒{% endif %}</div>
     <div class="tab" data-v="caja">💰 Caja</div>
     <div class="tab" data-v="reportes">📊 Reportes</div>
+    <div class="tab" data-v="precios">💡 Precios IA</div>
     <div class="tab" data-v="gastos"{% if not puede_gastos %} data-lock="Escala" data-feat="Control de gastos avanzado"{% endif %}>🧾 Gastos{% if not puede_gastos %} 🔒{% endif %}</div>
     <div class="tab" data-v="equipo">👥 Equipo</div>
     <div class="grow"></div>
@@ -499,6 +510,25 @@
         <button class="btn ghost sm" id="gGuardar" style="margin-top:10px">+ Registrar gasto (IA clasifica)</button>
         <div id="gastosLista" class="lista" style="margin-top:12px"></div>
       </div>
+    </div>
+  </div>
+
+  <!-- Vista PRECIOS (Asesor de precios con IA) -->
+  <div id="vPrecios" class="hidden">
+    <div class="pcard">
+      <div class="pc-row"><h3 class="pc-t">💡 Asesor de precios con IA</h3></div>
+      <p style="color:var(--tenue);font-size:13.5px;margin:2px 0 14px">
+        Dinos qué vendes y, si lo sabes, cuánto te cuesta. katia te sugiere un precio
+        rentable, un rango y consejos para venderlo mejor.</p>
+      <div class="g2">
+        <div><label>¿Qué vendes? *</label><input id="apNombre" placeholder="Ej. Manicura con gelish"></div>
+        <div><label>Costo de insumos ({{ t.moneda }})</label><input id="apCosto" type="number" placeholder="opcional"></div>
+      </div>
+      <div class="g2" style="margin-top:10px">
+        <div><label>Margen que quieres (%)</label><input id="apMargen" type="number" placeholder="opcional · ej. 60"></div>
+        <div style="display:flex;align-items:flex-end"><button class="btn" id="apGo" style="width:100%">✨ Sugerir precio</button></div>
+      </div>
+      <div id="apResult" class="hidden" style="margin-top:18px"></div>
     </div>
   </div>
 
@@ -847,7 +877,7 @@ $('#borrar').onclick=async()=>{
 };
 
 // Tabs
-const VISTAS=['pipe','hoy','agenda','pos','caja','reportes','gastos','equipo'];
+const VISTAS=['pipe','hoy','agenda','pos','caja','reportes','precios','gastos','equipo'];
 document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
   document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on')); t.classList.add('on');
   const v=t.dataset.v;
@@ -871,6 +901,34 @@ document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
   if(v==='pos') cargarPos();
   if(v==='agenda') cargarAgenda();
 });
+
+// ===== ASESOR DE PRECIOS (IA) =====
+async function asesorPrecios(){
+  const nombre=$('#apNombre').value.trim();
+  if(!nombre){ alert('Escribe qué vendes (ej. Manicura con gelish).'); $('#apNombre').focus(); return; }
+  const btn=$('#apGo'), res=$('#apResult'), txt=btn.textContent;
+  btn.disabled=true; btn.textContent='Pensando…';
+  try{
+    const d=await apk(`asesor-precios/${SLUG}`,{method:'POST',...J,body:JSON.stringify({
+      nombre, costo:$('#apCosto').value||null, margen:$('#apMargen').value||null })});
+    if(d.error||d.detail){ alert('No se pudo: '+(d.detail||d.error)); return; }
+    const tips=(d.tips||[]).map(t=>`<li>${t}</li>`).join('');
+    const mg=(d.margen_pct!=null)?`margen ${d.margen_pct}%`:'';
+    const fuente=d.por==='ia'?'✨ Sugerencia con IA':'🧮 Cálculo sobre tu costo';
+    res.innerHTML=`
+      <div class="ap-grid">
+        <div class="ap-op"><span>Económico</span><b>${fmt(d.precio_min)}</b></div>
+        <div class="ap-op ap-rec"><span>Recomendado</span><b>${fmt(d.precio_sugerido)}</b><small>${mg}</small></div>
+        <div class="ap-op"><span>Premium</span><b>${fmt(d.precio_max)}</b></div>
+      </div>
+      ${d.justificacion?`<p class="ap-just">${d.justificacion}</p>`:''}
+      ${tips?`<ul class="ap-tips">${tips}</ul>`:''}
+      <div class="ap-src">${fuente}</div>`;
+    res.classList.remove('hidden');
+  }catch(e){ alert('Error de conexión. Intenta de nuevo.'); }
+  finally{ btn.disabled=false; btn.textContent=txt; }
+}
+$('#apGo').onclick=asesorPrecios;
 
 // ===== AGENDA (calendario semanal) =====
 const CAL={weekStart:null, open:9, close:18, dias:[0,1,2,3,4,5]};

@@ -732,6 +732,19 @@ async def api_ia_productos(request: Request):
     return JSONResponse({"productos": enriquecidos})
 
 
+@app.post("/api/asesor-precios/{slug}")
+async def api_asesor_precios(slug: str, request: Request, k: str = ""):
+    """Asesor de precios con IA (Pro+). Sugiere precio, rango y margen para un ítem."""
+    t = _tienda_admin(slug, k, "reportes")
+    b = await request.json()
+    data = gemini_ia.asesor_precios(
+        nombre=b.get("nombre", ""), giro=t.get("giro", ""),
+        costo=b.get("costo"), moneda=t.get("moneda", "MXN"),
+        margen_deseado=b.get("margen"), contexto=b.get("contexto", ""),
+    )
+    return JSONResponse(data)
+
+
 @app.post("/api/ia/logo")
 async def api_ia_logo(request: Request):
     """Genera un logo (IA o monograma) y lo guarda como borrador. Devuelve su URL."""

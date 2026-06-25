@@ -348,3 +348,103 @@ def clasificar_gasto(concepto: str, monto=None) -> dict:
         if any(k in c for k in claves):
             return {"cuenta": cuenta, "confianza": 0.5, "por": "regla"}
     return {"cuenta": "GASTOS_OP", "confianza": 0.3, "por": "regla"}
+
+
+# ------------------- 6) Asesor de precios (gancho de retención) -------------------
+
+def asesor_precios(nombre: str, giro: str = "", costo=None, moneda: str = "MXN",
+                   margen_deseado=None, contexto: str = "") -> dict:
+    """Sugiere precio de venta para un producto o servicio.
+    Devuelve { precio_sugerido, precio_min, precio_max, margen_pct, costo,
+               justificacion, tips:[], por }.
+    Si hay IA usa el contexto de mercado; si no, calcula por markup sobre costo."""
+    nombre = (nombre or "").strip()
+    costo_n = None
+    try:
+        if costo is not None and costo != "":
+            costo_n = max(0.0, float(costo))
+    except (TypeError, ValueError):
+        costo_n = None
+    margen_n = None
+    try:
+        if margen_deseado is not None and margen_deseado != "":
+            margen_n = min(95.0, max(0.0, float(margen_deseado)))
+    except (TypeError, ValueError):
+        margen_n = None
+
+    if disponible() and nombre:
+        partes = [
+            "Eres un asesor de precios para PyMEs en LATAM, experto en negocios "
+            "personales y de servicios (belleza, bienestar, repostería, hecho a mano). "
+            "Sugiere un precio de venta realista y rentable, considerando el mercado "
+            "local típico, sin sobrevaluar.\n",
+            f"Producto/servicio: {nombre}\n",
+            f"Giro del negocio: {giro}\n" if giro else "",
+            f"Moneda: {moneda}\n",
+            f"Costo unitario (insumos/material): {costo_n}\n" if costo_n is not None else "Costo: no proporcionado (estímalo razonablemente)\n",
+            f"Margen deseado por el dueño: {margen_n}%\n" if margen_n is not None else "",
+            f"Contexto del dueño: {contexto}\n" if contexto else "",
+            "\nDevuelve SOLO un JSON con esta forma exacta (números sin símbolo de moneda):\n"
+            '{\n'
+            '  "precio_sugerido": número (precio recomendado de venta),\n'
+            '  "precio_min": número (opción económica),\n'
+            '  "precio_max": número (opción premium),\n'
+            '  "margen_pct": número (margen bruto % al precio sugerido),\n'
+            '  "justificacion": "1-2 oraciones claras, en español, tono cálido y cercano",\n'
+            '  "tips": ["2 a 3 consejos breves y accionables para vender o subir el precio"]\n'
+            "}"
+        ]
+        try:
+            data = _extraer_json(_generar_texto("".join(partes), json_mode=True))
+            if data and data.get("precio_sugerido") is not None:
+                ps = _num_pos(data.get("precio_sugerido"))
+                if ps is not None:
+                    pmin = _num_pos(data.get("precio_min")) or round(ps * 0.85, 2)
+                    pmax = _num_pos(data.get("precio_max")) or round(ps * 1.3, 2)
+                    mg = data.get("margen_pct")
+                    try:
+                        mg = round(float(mg), 1)
+                    except (TypeError, ValueError):
+                        mg = (round((1 - costo_n / ps) * 100, 1) if costo_n and ps else None)
+                    tips = data.get("tips") or []
+                    if isinstance(tips, str):
+                        tips = [tips]
+                    return {
+                        "precio_sugerido": round(ps, 2), "precio_min": round(pmin, 2),
+                        "precio_max": round(pmax, 2), "margen_pct": mg, "costo": costo_n,
+                        "justificacion": (data.get("justificacion") or "").strip()[:300],
+                        "tips": [str(t).strip()[:160] for t in tips][:3], "por": "ia",
+                    }
+        except Exception as e:  # noqa: BLE001
+            print(f"⚠  Gemini (precios) falló, usando cálculo: {e}")
+
+    # --- Fallback determinista: markup sobre costo ---
+    margen = (margen_n if margen_n is not None else 55.0) / 100.0
+    if costo_n and costo_n > 0:
+        precio = costo_n / max(0.05, (1 - margen))
+        just = (f"Con un costo de {costo_n:g} y un margen de {round(margen*100)}%, "
+                f"este precio cubre tus insumos y deja ganancia sana.")
+    else:
+        precio = 0.0
+        just = ("Agrega tu costo (insumos o material) para calcular un precio que "
+                "cubra tus gastos y deje ganancia.")
+    mg_real = round((1 - costo_n / precio) * 100, 1) if (costo_n and precio) else None
+    return {
+        "precio_sugerido": round(precio, 2), "precio_min": round(precio * 0.85, 2),
+        "precio_max": round(precio * 1.3, 2), "margen_pct": mg_real, "costo": costo_n,
+        "justificacion": just,
+        "tips": [
+            "Ofrece 3 opciones (económica, recomendada y premium): la mayoría elige la de en medio.",
+            "Redondea a una cifra atractiva (p. ej. 199 en vez de 205).",
+            "Suma tu tiempo y tu experiencia, no solo el material.",
+        ],
+        "por": "calculo",
+    }
+
+
+def _num_pos(v):
+    try:
+        n = float(v)
+        return n if n > 0 else None
+    except (TypeError, ValueError):
+        return None
