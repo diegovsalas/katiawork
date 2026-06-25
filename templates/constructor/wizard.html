@@ -87,6 +87,12 @@
   .tipo-opt .ti{font-size:24px}
   .tipo-opt b{font-size:14.5px}
   .tipo-opt small{font-size:11.5px;color:var(--tenue)}
+  .ejemplos-wrap{margin:10px 0 2px}
+  .ej-lbl{font-size:12.5px;color:var(--tenue)}
+  .ejemplos{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+  .ej-chip{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:999px;
+    border:1.5px solid #e6e3f2;background:#fff;cursor:pointer;font-size:13px;color:#3a3650;transition:.15s;line-height:1}
+  .ej-chip:hover{border-color:var(--brand);background:var(--lav);color:var(--brand)}
   /* Días de atención */
   .dias{display:flex;gap:8px;flex-wrap:wrap}
   .dia{padding:9px 14px;border-radius:11px;border:1.5px solid var(--linea);background:#fff;cursor:pointer;
@@ -164,6 +170,11 @@
       <button type="button" class="tipo-opt" data-tipo="ambos">
         <span class="ti">✨</span><b>Ambos</b><small>Productos y citas</small>
       </button>
+    </div>
+
+    <div class="ejemplos-wrap">
+      <span class="ej-lbl">💡 ¿Apenas empiezas? Toca un ejemplo y edítalo a tu gusto:</span>
+      <div class="ejemplos" id="ejemplos"></div>
     </div>
 
     <label>Nombre del negocio *</label>
@@ -521,6 +532,36 @@ document.querySelectorAll('#tipoSel .tipo-opt').forEach(b=>b.onclick=()=>{
   estado.tipo=b.dataset.tipo;
   aplicarTipo();
 });
+
+// Ejemplos del nicho: precargan tipo + nombre + giro + contexto para arrancar rápido.
+const EJEMPLOS=[
+  {ic:'💅', et:'Estudio de uñas', tipo:'servicios', nombre:'Bella Uñas', giro:'Nail studio: manicura y uñas acrílicas',
+   ctx:'Manicura, pedicura y uñas acrílicas con cita. Cuido cada detalle y uso productos de calidad. Ambiente cálido y trato personal.'},
+  {ic:'🧁', et:'Repostería', tipo:'ambos', nombre:'Dulce Hogar', giro:'Repostería artesanal y postres por encargo',
+   ctx:'Pasteles, cupcakes y mesas de postres por pedido. Recetas caseras y decoración personalizada para cada ocasión.'},
+  {ic:'🧖', et:'Spa y masajes', tipo:'servicios', nombre:'Serena Spa', giro:'Spa y masajes de relajación',
+   ctx:'Masajes, faciales y rituales de bienestar con cita. Ambiente tranquilo y atención personalizada para que te consientas.'},
+  {ic:'💆', et:'Estética facial', tipo:'servicios', nombre:'Glow Estética', giro:'Estética facial y cuidado de la piel',
+   ctx:'Limpieza facial, depilación y tratamientos de piel con cita. Resultados visibles y un trato cercano y profesional.'},
+  {ic:'👜', et:'Accesorios', tipo:'productos', nombre:'Aretes & Co.', giro:'Accesorios y bisutería artesanal',
+   ctx:'Aretes, collares y accesorios hechos a mano. Piezas únicas con envíos a todo el país.'},
+  {ic:'🌿', et:'Skincare natural', tipo:'productos', nombre:'Raíz Natural', giro:'Skincare y productos naturales',
+   ctx:'Jabones, cremas y cuidado natural hecho a mano, con ingredientes nobles y libres de crueldad animal.'},
+];
+(function renderEjemplos(){
+  const cont=$('#ejemplos'); if(!cont) return;
+  EJEMPLOS.forEach(e=>{
+    const b=document.createElement('button');
+    b.type='button'; b.className='ej-chip'; b.innerHTML=`<span>${e.ic}</span>${e.et}`;
+    b.onclick=()=>{
+      $('#nombre').value=e.nombre; $('#giro').value=e.giro; $('#contexto').value=e.ctx;
+      const opt=document.querySelector(`#tipoSel .tipo-opt[data-tipo="${e.tipo}"]`);
+      if(opt) opt.click();
+      $('#nombre').focus();
+    };
+    cont.appendChild(b);
+  });
+})();
 function aplicarTipo(){
   const prod = estado.tipo==='productos' || estado.tipo==='ambos';
   const serv = estado.tipo==='servicios' || estado.tipo==='ambos';

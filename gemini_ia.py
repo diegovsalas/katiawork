@@ -77,8 +77,11 @@ def redactar_negocio(nombre: str, giro: str, contexto: str) -> dict:
        { eslogan, sobre_nosotros, color, color_2, tono }."""
     if disponible():
         prompt = (
-            "Eres un experto en branding para PyMEs en México. Con la siguiente "
-            "información de un negocio, genera su identidad de marca.\n\n"
+            "Eres un experto en branding para PyMEs en México, con sensibilidad "
+            "para negocios personales y artesanales (belleza, bienestar, estética, "
+            "repostería, hechos a mano). Tono cálido, humano y cercano, evitando "
+            "clichés. Con la siguiente información de un negocio, genera su "
+            "identidad de marca.\n\n"
             f"Nombre: {nombre}\nGiro: {giro}\nContexto del dueño: {contexto}\n\n"
             "Devuelve SOLO un JSON con esta forma exacta:\n"
             '{\n'
@@ -204,7 +207,9 @@ def generar_logo(nombre: str, giro: str, color: str, ruta_destino: str) -> str:
             f"Diseña un logo profesional, minimalista y moderno para un negocio "
             f"llamado '{nombre}' del giro '{giro}'. Estilo plano vectorial, fondo "
             f"blanco, usando el color {color} como protagonista. Incluye un ícono "
-            f"simple representativo y, si cabe, el nombre. Sin texto extra ni marca de agua."
+            f"simple representativo y, si cabe, el nombre. Cuando el giro sea de "
+            f"belleza, bienestar, repostería o hecho a mano, usa una estética cálida "
+            f"y acogedora, sin clichés. Sin texto extra ni marca de agua."
         )
         try:
             # El modelo de imagen requiere pedir salida IMAGE (algunos modelos
